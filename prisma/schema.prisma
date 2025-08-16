@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== EXISTING AUTH MODELS ==========
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? 
+  access_token             String? 
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? 
+  session_state            String?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refresh_token_expires_in Int?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String           @id @default(cuid())
+  name          String?
+  email         String?          @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
+  memberships   ProjectMember[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById String
+
+  @@index([name])
+}
+
+// ========== NEW PROJECT MODELS ==========
+
+model Project {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  members     ProjectMember[]
+  files       File[]
+  scripts     Script[]
+  labels      Label[]
+}
+
+enum ProjectRole {
+    admin
+    manager
+    member
+    guest
+    banned
+}
+model ProjectMember {
+  id        String    @id @default(cuid())
+  role      ProjectRole @default(banned)
+  userId    String
+  projectId String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId]) // Prevent duplicates
+}
+
+// ========== FILE SYSTEM MODELS ==========
+
+model File {
+  id          String    @id @default(cuid())
+  name        String
+  isDirectory Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Hierarchy
+  parentId    String?
+  parent      File?     @relation("FileHierarchy", fields: [parentId], references: [id])
+  children    File[]    @relation("FileHierarchy")
+
+  // Project association
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Labels
+  labels      FileLabel[]
+}
+
+// ========== SCRIPT + VERSIONING ==========
+
+model Script {
+  id          String           @id @default(cuid())
+  title       String
+  projectId   String
+  project     Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions    ScriptVersion[]
+  labels      ScriptLabel[]
+  archived    Boolean
+}
+
+model ScriptVersion {
+  id        String   @id @default(cuid())
+  version   Int
+  content   String
+  createdAt DateTime @default(now())
+
+  scriptId  String
+  script    Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+
+  scenes    Scene[]  // <-- make sure this exists
+
+  @@unique([scriptId, version])
+}
+
+model Scene {
+  id          String   @id @default(cuid())
+  versionId   String?
+  version     ScriptVersion?   @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  sceneNumber Int
+  title       String
+  orderIndex  Int
+
+  lines       Line[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Line {
+  id        String   @id @default(cuid())
+  sceneId   String
+  scene     Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  type      String
+  content   String
+  orderIndex Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== LABELING SYSTEM ==========
+
+model Label {
+  id        String   @id @default(cuid())
+  tag       String
+  color     String   // Hex or CSS color
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Connections
+  fileLabels   FileLabel[]
+  scriptLabels ScriptLabel[]
+}
+
+model FileLabel {
+  fileId  String
+  labelId String
+  file    File  @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, labelId])
+}
+
+model ScriptLabel {
+  scriptId String
+  labelId  String
+  script   Script @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  label    Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([scriptId, labelId])
+}

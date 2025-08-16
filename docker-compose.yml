@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  keydb:
+    image: eqalpha/keydb:latest
+    container_name: keydb
+    restart: always
+    environment:
+      KEYDB_PASSWORD: mysecurepass
+    ports:
+      - "6379:6379"
+    volumes:
+      - keydb_data:/data
+
+  db:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init-scripts:/docker-entrypoint-initdb.d
+
+volumes:
+  keydb_data:
+  postgres_data:
