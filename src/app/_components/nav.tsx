@@ -74,7 +74,7 @@ export default function Nav({
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60",
+        "sticky top-0 z-50 w-full bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-black/60",
         className
       )}
     >

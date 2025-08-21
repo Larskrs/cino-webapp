@@ -212,6 +212,8 @@ function setLineTypeSafely(editor: LexicalEditor, lineNode: LineNode, type: Line
   }
 }
 
+const TYPE_ORDER = Object.keys(LINE_TYPES) as LineTypeKey[];
+
 function DebugExposeEditorPlugin({ enabled }: { enabled: boolean }) {
   const [editor] = useLexicalComposerContext();
   useEffect(() => {
@@ -269,7 +271,7 @@ editor.update(() => {
 
   if (!(currentLine instanceof LineNode)) return;
 
-  const newLine = new LineNode("action");
+  const newLine = LineNode.create("action");
   currentLine.insertAfter(newLine);
 
   // Check TYPE_SHORTCUTS for auto type
@@ -317,32 +319,30 @@ useEffect(() => {
   );
 }, [editor]);
 
-// CTRL + number shortcuts
-useEffect(() => {
-  const handler = (e: KeyboardEvent) => {
-    if (!e.ctrlKey) return;
-    const keyNum = parseInt(e.key);
-    if (isNaN(keyNum) || keyNum < 1 || keyNum > 6) return;
+  // --- CTRL + number shortcuts ---
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!e.ctrlKey) return;
+      const keyNum = parseInt(e.key);
+      if (isNaN(keyNum) || keyNum < 1 || keyNum > TYPE_ORDER.length) return;
 
-    const typeOrder: LineTypeKey[] = ["scene","action","character","dialogue","parenthetical","transition"];
-    const targetType = typeOrder[keyNum - 1];
-
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        const node = selection.anchor.getNode();
-        const lineNode = node.getParentOrThrow();
-        if (lineNode instanceof LineNode) {
-          setLineTypeSafely(editor, lineNode, targetType);
+      const targetType = TYPE_ORDER[keyNum - 1] || "action";
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const node = selection.anchor.getNode();
+          const lineNode = node.getParentOrThrow();
+          if (lineNode instanceof LineNode) {
+            setLineTypeSafely(editor, lineNode, targetType);
+          }
         }
-      }
-    });
-    e.preventDefault();
-  };
+      });
+      e.preventDefault();
+    };
 
-  document.addEventListener("keydown", handler);
-  return () => document.removeEventListener("keydown", handler);
-}, [editor]);
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [editor]);
 
 
   return null;
@@ -533,7 +533,7 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
-                  className="outline-none screenplay-content"
+                  className="outline-none screenplay-content line"
                   style={{ minHeight: "var(--page-h)" }}
                 />
               }
@@ -574,26 +574,7 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
         </div>
       </div>
 
-      <style jsx global>{`
-        .screenplay-paragraph {
-          margin: 0;
-          margin-bottom: var(--line-gap);
-          white-space: pre-wrap;
-        }
-        .screenplay-content {
-          color: white;
-          font-family: "Courier Prime", Courier, monospace;
-          line-height: 1.3;
-        }
-        /* Visualize line types */
-        .line { margin: 0 0 var(--line-gap) 0; white-space: pre-wrap; }
-        .line-scene { text-transform: uppercase; letter-spacing: .5px; }
-        .line-action { }
-        .line-character { text-transform: uppercase; margin-left: 14ch; }
-        .line-dialogue { margin-left: 10ch; max-width: 52ch; }
-        .line-parenthetical { margin-left: 9ch; max-width: 30ch; font-style: italic; }
-        .line-transition { text-transform: uppercase; text-align: right; }
-      `}</style>
+
     </div>
   );
 }
@@ -602,16 +583,16 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
 export function LineNodePlugin() {
   const [editor] = useLexicalComposerContext();
 
-useEffect(() => {
-  return editor.registerNodeTransform(ParagraphNode, (node) => {
-    if (!(node instanceof LineNode)) {
-      // Use node.getKey() which returns NodeKey (string internally)
-      const lineNode = new LineNode("action", node.getKey());
-      lineNode.append(...node.getChildren());
-      node.replace(lineNode);
-    }
-  });
-}, [editor]);
+  useEffect(() => {
+    return editor.registerNodeTransform(ParagraphNode, (node) => {
+      if (!(node instanceof LineNode)) {
+        // Use node.getKey() which returns NodeKey (string internally)
+        const lineNode = LineNode.create("action");
+        lineNode.append(...node.getChildren());
+        node.replace(lineNode);
+      }
+    });
+  }, [editor]);
 
   return null;
 }
