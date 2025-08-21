@@ -31,7 +31,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode, session: Session }>) {
   return (
     <html lang="en" className={cn(geist.variable, courier.variable)}>
-      <body>
+      <body className="bg-white">
         <SessionProvider session={session}>
           <ThemeProvider>
             <TRPCReactProvider>{children}</TRPCReactProvider>

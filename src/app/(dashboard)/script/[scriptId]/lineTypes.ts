@@ -1,6 +1,12 @@
-import { FileText, Edit3, User, MessageCircle, type LucideIcon, PersonStanding } from "lucide-react";
+import { FileText, Edit3, User, MessageCircle, type LucideIcon, PersonStanding, ArrowRight, QuoteIcon } from "lucide-react";
 
-export type LineTypeKey = "scene_header" | "action" | "character" | "dialog" | "page_start";
+export type LineTypeKey =
+  | "scene"
+  | "action"
+  | "character"
+  | "dialogue"
+  | "parenthetical"
+  | "transition"
 
 export type LineTypeData = {
   displayName: string;
@@ -9,7 +15,7 @@ export type LineTypeData = {
 };
 
 export const LINE_TYPES: Record<LineTypeKey, LineTypeData> = {
-  scene_header: {
+  scene: {
     displayName: "Scene Header",
     icon: FileText,
     nextLine: "action",
@@ -22,24 +28,37 @@ export const LINE_TYPES: Record<LineTypeKey, LineTypeData> = {
   character: {
     displayName: "Character",
     icon: User,
-    nextLine: "dialog",
+    nextLine: "dialogue",
   },
-  dialog: {
-    displayName: "Dialog",
+  dialogue: {
+    displayName: "Dialogue",
     icon: MessageCircle,
-    nextLine: "dialog",
+    nextLine: "dialogue",
   },
-  page_start: {
-    displayName: "Page Break",
-    icon: FileText,
-    nextLine: "scene_header",
+  parenthetical: {
+    displayName: "Parenthetical",
+    icon: QuoteIcon,
+    nextLine: "dialogue",
+  },
+  transition: {
+    displayName: "Transition",
+    icon: ArrowRight,
+    nextLine: "scene",
   },
 };
 
-// Now your Line type remains mostly the same:
+// Line type
 export type Line = {
   id: string;
   type: LineTypeKey;
   content: string;
 };
 
+export const LINE_STYLES: Record<LineTypeKey, string> = {
+  scene: "line-scene",
+  action: "line-action",
+  character: "line-character",
+  dialogue: "line-dialogue",
+  parenthetical: "line-parenthetical",
+  transition: "line-transition",
+};

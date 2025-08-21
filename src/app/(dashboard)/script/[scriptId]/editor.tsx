@@ -1,0 +1,617 @@
+"use client";
+
+import React, { useEffect, useMemo, useRef, useState, useCallback, type RefObject } from "react";
+import {
+  LexicalComposer,
+} from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { LINE_TYPES } from "./lineTypes";
+import { LineNode } from "./LineNode";
+import {
+  $getSelection,
+  $isRangeSelection,
+  $isRootOrShadowRoot,
+  $getRoot,
+  $createTextNode,
+  KEY_TAB_COMMAND,
+  KEY_ENTER_COMMAND,
+  ParagraphNode,
+  type EditorConfig,
+  type LexicalNode,
+  type LexicalEditor,
+} from "lexical";
+import { HeadingNode } from "@lexical/rich-text";
+
+/**********************
+ * Line types & styles
+ **********************/
+export type LineTypeKey =
+  | "scene"
+  | "action"
+  | "character"
+  | "dialogue"
+  | "parenthetical"
+  | "transition";
+
+// Simple icon components to avoid extra deps
+const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
+  <span style={{ display: "inline-block", width: size, height: size, borderRadius: "50%", background: "currentColor" }} />
+);
+
+export const LINE_STYLES: Record<LineTypeKey, string> = {
+  scene: "line line-scene",
+  action: "line line-action",
+  character: "line line-character",
+  dialogue: "line line-dialogue",
+  parenthetical: "line line-parenthetical",
+  transition: "line line-transition",
+};
+
+/**********************
+ * Logger utilities
+ **********************/
+function makeLogger(enabledRef: { current: boolean }) {
+  const prefix = "%c[Screenplay]";
+  const style = "color:#8b5cf6;font-weight:600"; // violet
+  const log = (...args: any[]) => enabledRef.current && console.log(prefix, style, ...args);
+  const warn = (...args: any[]) => enabledRef.current && console.warn(prefix, style, ...args);
+  const group = (label: string, fn: () => void) => {
+    if (!enabledRef.current) return;
+    console.groupCollapsed(prefix + " " + label, style);
+    try { fn(); } finally { console.groupEnd(); }
+  };
+  return { log, warn, group };
+}
+
+/**********************
+ * Types
+ **********************/
+export type Line = {
+  id: string;
+  type: LineTypeKey;
+  content: string;
+};
+
+/**********************
+ * Theme (Lexical classes)
+ **********************/
+const theme = {
+  paragraph: "screenplay-paragraph",
+  text: {
+    bold: "font-semibold",
+    italic: "italic",
+  },
+};
+
+/**********************
+ * Layout helpers
+ **********************/
+const A4_RATIO = 297 / 210; // height / width
+const BASE_PAGE_WIDTH = 794; // px baseline (approx A4 @ ~96dpi margins)
+
+function usePageMetrics(containerRef: React.RefObject<HTMLDivElement>) {
+  const [metrics, setMetrics] = useState({
+    pageWidth: BASE_PAGE_WIDTH,
+    pageHeight: Math.round(BASE_PAGE_WIDTH * A4_RATIO),
+    scale: 1,
+  });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const vw = el.clientWidth;
+      const max = BASE_PAGE_WIDTH;
+      const pageWidth = Math.min(vw, max);
+      const pageHeight = Math.round(pageWidth * A4_RATIO);
+      const scale = pageWidth / BASE_PAGE_WIDTH;
+      setMetrics({ pageWidth, pageHeight, scale });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [containerRef]);
+
+  return metrics;
+}
+
+function registerLineNodeTransform(editor: LexicalEditor) {
+  return editor.registerNodeTransform(ParagraphNode, (node) => {
+    // Already a LineNode? Do nothing
+    if (node instanceof LineNode) return;
+
+    // Create a LineNode with same content
+    const lineNode = new LineNode("action");
+    lineNode.append(...node.getChildren());
+    node.replace(lineNode);
+  });
+}
+
+/**********************
+ * Debug plugins
+ **********************/
+function DebugSelectionPlugin({ enabled }: { enabled: boolean }) {
+  const [editor] = useLexicalComposerContext();
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+  const { log, group } = makeLogger(enabledRef);
+
+  useEffect(() => {
+    // Log selection and top-level children on every update
+    const unregister = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, prevEditorState, tags }) => {
+      if (!enabledRef.current) return;
+      group("Update", () => {
+        log("tags:", Array.from(tags || []));
+        editorState.read(() => {
+          const root = $getRoot();
+          const children = root.getChildren();
+          log(`root has ${children.length} children`);
+          children.forEach((child, idx) => {
+            const t = child instanceof LineNode ? child.getLineType() : (child as any).constructor.name;
+            log(`#${idx}`, "type:", t, "text:", (child as any).getTextContent?.());
+          });
+          const sel = $getSelection();
+          if ($isRangeSelection(sel)) {
+            const anchorNode = sel.anchor.getNode();
+            const focusNode = sel.focus.getNode();
+            log("selection:", {
+              anchorPath: sel.anchor.getNode().getKey?.(),
+              anchorOffset: sel.anchor.offset,
+              focusPath: sel.focus.getNode().getKey?.(),
+              focusOffset: sel.focus.offset,
+              isCollapsed: sel.isCollapsed(),
+              anchorNode: (anchorNode as any).constructor?.name,
+              focusNode: (focusNode as any).constructor?.name,
+            });
+          } else {
+            log("no range selection");
+          }
+        });
+      });
+    });
+    return () => unregister();
+  }, [editor]);
+
+  useEffect(() => {
+    // Mutation logger for LineNode lifecycle
+    const unregister = editor.registerMutationListener(LineNode, (mutations) => {
+      if (!enabledRef.current) return;
+      const entries = Array.from(mutations.entries());
+      if (entries.length === 0) return;
+      console.groupCollapsed("%c[Screenplay] LineNode mutations", "color:#8b5cf6;font-weight:600");
+      try {
+        entries.forEach(([key, type]) => console.log("node", key, type));
+      } finally {
+        console.groupEnd();
+      }
+    });
+    return () => unregister();
+  }, [editor]);
+
+  return null;
+}
+
+function setLineTypeSafely(editor: LexicalEditor, lineNode: LineNode, type: LineTypeKey) {
+  lineNode.setLineType(type);
+
+  // Ensure at least one text node exists
+  if (lineNode.getChildren().length === 0) {
+    const textNode = $createTextNode("");
+    lineNode.append(textNode);
+
+    // Move caret into the new text node
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      selection.anchor.set(textNode, 0, "text");
+      selection.focus.set(textNode, 0, "text");
+    }
+  }
+}
+
+function DebugExposeEditorPlugin({ enabled }: { enabled: boolean }) {
+  const [editor] = useLexicalComposerContext();
+  useEffect(() => {
+    if (!enabled) return;
+    (window as any).__screenplayEditor = editor;
+    return () => { delete (window as any).__screenplayEditor; };
+  }, [editor, enabled]);
+  return null;
+}
+
+/**********************
+ * Screenplay helpers
+ **********************/
+const TYPE_SHORTCUTS: Array<[RegExp, LineTypeKey]> = [
+  [/^(int\.|ext\.|int\/ext\.|i\/e\.)\b/i, "scene"],
+  [/^cut to:$/i, "transition"],
+  [/^fade (in|out):?$/i, "transition"],
+];
+
+function cycleType(t: LineTypeKey): LineTypeKey {
+  const order: LineTypeKey[] = ["scene", "action", "character", "dialogue", "parenthetical", "transition"];
+  const i = order.indexOf(t);
+  return order[(i + 1) % order.length] as LineTypeKey;
+}
+
+function createTextNodesFromContent(text: string) {
+  return text.split(/\n/).map((t: string, i: number) => {
+    const n = $createTextNode(t);
+    if (i > 0) n.setMode("normal");
+    return n;
+  });
+}
+
+/**********************
+ * Plugins
+ **********************/
+function ScreenplayKeybindingsPlugin({ debug }: { debug: boolean }) {
+  const [editor] = useLexicalComposerContext();
+  const enabledRef = useRef(debug);
+  enabledRef.current = debug;
+  const { log } = makeLogger(enabledRef);
+
+  // Enter-based type switching (post-enter)
+useEffect(() => {
+  return editor.registerCommand(
+    KEY_ENTER_COMMAND,
+    (event) => {
+      event.preventDefault();
+editor.update(() => {
+  const selection = $getSelection();
+  if (!$isRangeSelection(selection)) return;
+
+  const anchorNode = selection.anchor.getNode();
+  const currentLine = anchorNode.getParentOrThrow();
+
+  if (!(currentLine instanceof LineNode)) return;
+
+  const newLine = new LineNode("action");
+  currentLine.insertAfter(newLine);
+
+  // Check TYPE_SHORTCUTS for auto type
+  const text = currentLine.getTextContent();
+  for (const [regex, type] of TYPE_SHORTCUTS) {
+    if (regex.test(text)) {
+      setLineTypeSafely(editor, currentLine, type);
+      break;
+    }
+  }
+
+  // Ensure new line has at least one text node
+  setLineTypeSafely(editor, newLine, "character");
+});
+
+      return true;
+    },
+    0
+  );
+}, [editor]);
+
+
+
+  // Tab: cycle line types
+useEffect(() => {
+  return editor.registerCommand(
+    KEY_TAB_COMMAND,
+    (event: KeyboardEvent) => {
+      event.preventDefault();
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const node = selection.anchor.getNode();
+          const lineNode = node.getParentOrThrow();
+          if (lineNode instanceof LineNode) {
+            const currentType = lineNode.getLineType();
+            const nextType = cycleType(currentType);
+            setLineTypeSafely(editor, lineNode, nextType);
+          }
+        }
+      });
+      return true;
+    },
+    0
+  );
+}, [editor]);
+
+// CTRL + number shortcuts
+useEffect(() => {
+  const handler = (e: KeyboardEvent) => {
+    if (!e.ctrlKey) return;
+    const keyNum = parseInt(e.key);
+    if (isNaN(keyNum) || keyNum < 1 || keyNum > 6) return;
+
+    const typeOrder: LineTypeKey[] = ["scene","action","character","dialogue","parenthetical","transition"];
+    const targetType = typeOrder[keyNum - 1];
+
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        const node = selection.anchor.getNode();
+        const lineNode = node.getParentOrThrow();
+        if (lineNode instanceof LineNode) {
+          setLineTypeSafely(editor, lineNode, targetType);
+        }
+      }
+    });
+    e.preventDefault();
+  };
+
+  document.addEventListener("keydown", handler);
+  return () => document.removeEventListener("keydown", handler);
+}, [editor]);
+
+
+  return null;
+}
+
+function ScreenplayInitPlugin({ defaultContent, debug }: { defaultContent?: { lines?: Line[] }; debug: boolean }) {
+  const [editor] = useLexicalComposerContext();
+  const enabledRef = useRef(debug);
+  enabledRef.current = debug;
+  const { log, group } = makeLogger(enabledRef);
+
+  useEffect(() => {
+    const unregister = registerLineNodeTransform(editor);
+    return () => unregister();
+  }, [editor]);
+
+  useEffect(() => {
+    editor.update(() => {
+      const root = $getRoot();
+      if (root.getFirstChild() != null) return; // already has content
+
+      const seed: Line[] = (defaultContent?.lines as Line[]) ?? [
+        { id: "l1", type: "scene", content: "INT. LIVING ROOM — NIGHT" },
+        { id: "l2", type: "action", content: "A cat jumps onto the table." },
+        { id: "l3", type: "character", content: "ALICE" },
+        { id: "l4", type: "dialogue", content: "We should leave." },
+        { id: "l5", type: "character", content: "BOB" },
+        { id: "l6", type: "dialogue", content: "Now? It’s pouring outside." },
+        { id: "l7", type: "transition", content: "CUT TO:" },
+      ];
+
+      group("Seeding", () => {
+        seed.forEach((line, idx) => {
+          const p = new LineNode(line.type);
+          p.append(...createTextNodesFromContent(line.content));
+          log(`#${idx}`, "append", line.type, JSON.stringify(line.content));
+          root.append(p);
+        });
+      });
+    });
+  }, [editor, defaultContent]);
+
+  return null;
+}
+
+/**********************
+ * Toolbar
+ **********************/
+function Toolbar({ debug, setDebug }: { debug: boolean; setDebug: (v: boolean) => void }) {
+  const [editor] = useLexicalComposerContext();
+  const [currentLineType, setCurrentLineType] = useState<LineTypeKey>("action");
+
+  // Track current line type under caret (read-only)
+  useEffect(() => {
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const selection = $getSelection();
+    console.log("Selection after update:", selection ? selection.getTextContent() : "null");
+        if (!$isRangeSelection(selection)) return;
+        const node = selection.anchor.getNode();
+        const parent = node.getParent();
+        const target = parent && !$isRootOrShadowRoot(parent) ? parent : node;
+
+        const type = target instanceof LineNode ? target.getLineType() : "action";
+        setCurrentLineType(type);
+      });
+    });
+    return () => unregister();
+  }, [editor]);
+
+const setType = useCallback(
+  (t: LineTypeKey) => {
+    if (!editor) return;
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        const node = selection.anchor.getNode();
+        const lineNode = node.getParentOrThrow();
+        if (lineNode instanceof LineNode) {
+          lineNode.setLineType(t); // <-- use the argument
+        }
+      }
+    });
+  },
+  [editor]
+);
+
+  return (
+    <div className="fixed top-18 z-10 rounded-2xl px-8 py-4 bg-gray-800/25 backdrop-blur-xl left-0 right-0 mx-auto mb-2 flex flex-col items-center gap-2 text-sm select-none" style={{ width: "var(--page-w)" }}>
+      <div className="flex flex-row gap-2 flex-wrap">
+        {Object.entries(LINE_TYPES).map(([key, data]) => {
+          const typeKey = key as LineTypeKey;
+          const isActive = currentLineType === typeKey;
+          const Icon = data.icon;
+          return (
+            <button
+              key={typeKey}
+              onClick={() => setCurrentLineType(typeKey)}
+              className={`px-2 py-1 rounded-xl border-2 flex items-center gap-1 ${
+                !isActive ? "bg-transparent border-white/5 font-semibold text-neutral-400" : "bg-indigo-600 border-transparent text-white font-semibold"
+              }`}
+            >
+              <Icon size={16} />
+              {data.displayName}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* <div className="ml-auto flex items-center gap-3 text-neutral-600">
+        <span>Tab: cycle types • Enter: shortcuts</span>
+        <label className="inline-flex items-center gap-1 cursor-pointer select-none">
+          <input type="checkbox" checked={debug} onChange={(e) => setDebug(e.target.checked)} />
+          <span>Debug</span>
+        </label>
+      </div> */}
+    </div>
+  );
+}
+
+/**********************
+ * Placeholder
+ **********************/
+function Placeholder() {
+  return (
+    <div className="text-neutral-400 pointer-events-none" style={{ position: "absolute" }}>
+      Start writing your screenplay…
+    </div>
+  );
+}
+
+/**********************
+ * Main Editor (exported)
+ **********************/
+export default function ScreenplayEditor({ defaultContent }: { defaultContent?: { lines?: Line[] } }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { pageWidth, pageHeight, scale } = usePageMetrics(containerRef as RefObject<HTMLDivElement>);
+  const [debug, setDebug] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("screenplay-debug") === "1";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("screenplay-debug", debug ? "1" : "0");
+    }
+  }, [debug]);
+
+  const initialConfig = useMemo(() => ({
+    namespace: "screenplay-editor",
+    theme,
+    onError(error: Error) {
+      console.error("[Screenplay] Lexical error:", error);
+    },
+    nodes: [LineNode],
+  }), []);
+
+  const styleVars: React.CSSProperties = {
+    ["--page-w" as any]: `${pageWidth}px`,
+    ["--page-h" as any]: `${pageHeight}px`,
+    ["--scale" as any]: String(scale),
+    ["--base-font" as any]: `16px`,
+    ["--indent" as any]: `calc(1ch * var(--scale))`,
+    ["--page-padding" as any]: `calc(48px * var(--scale))`,
+    ["--line-gap" as any]: `calc(8px * var(--scale))`,
+  };
+
+  return (
+    <div className="w-full min-h-screen bg-black flex flex-col items-center p-2 md:p-4" ref={containerRef}>
+      <div className="w-full mt-28 max-w-full" style={styleVars}>
+        <LexicalComposer initialConfig={initialConfig}>
+          <Toolbar debug={debug} setDebug={setDebug} />
+
+          <div
+            className="mx-auto border-1 rounded-xl border-gray-900 bg-gray-900/25 shadow-xl rounded-none relative overflow-auto"
+            style={{
+              width: "var(--page-w)",
+              minHeight: "var(--page-h)",
+              padding: "var(--page-padding)",
+              fontSize: "calc(var(--base-font) * var(--scale))",
+              lineHeight: 1.5,
+              outline: "none",
+              color: "white",
+              backgroundSize: `100% var(--page-h)`,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+            }}
+          >
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  className="outline-none screenplay-content"
+                  style={{ minHeight: "var(--page-h)" }}
+                />
+              }
+              placeholder={<Placeholder />}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+
+            <HistoryPlugin />
+
+            {/* Log full editor state diffs */}
+            <OnChangePlugin
+              onChange={(editorState, editor) => {
+                if (!debug) return;
+                editorState.read(() => {
+                  const root = $getRoot();
+                  const children = root.getChildren();
+                  const snapshot = children.map((c, idx) => ({
+                    idx,
+                    key: (c as any).getKey?.(),
+                    type: c instanceof LineNode ? c.getLineType() : (c as any).constructor?.name,
+                    text: (c as any).getTextContent?.(),
+                  }));
+                  console.table(snapshot);
+                });
+              }}
+            />
+
+            <ScreenplayKeybindingsPlugin debug={debug} />
+            <ScreenplayInitPlugin defaultContent={defaultContent} debug={debug} />
+            <DebugSelectionPlugin enabled={debug} />
+            <DebugExposeEditorPlugin enabled={debug} />
+          </div>
+        </LexicalComposer>
+
+        <div className="mx-auto flex justify-between text-xs text-neutral-600 mt-2" style={{ width: "var(--page-w)" }}>
+          <span>A4 page width: {Math.round(pageWidth)} px</span>
+          <span>Scale: {scale.toFixed(2)}×</span>
+        </div>
+      </div>
+
+      <style jsx global>{`
+        .screenplay-paragraph {
+          margin: 0;
+          margin-bottom: var(--line-gap);
+          white-space: pre-wrap;
+        }
+        .screenplay-content {
+          color: white;
+          font-family: "Courier Prime", Courier, monospace;
+          line-height: 1.3;
+        }
+        /* Visualize line types */
+        .line { margin: 0 0 var(--line-gap) 0; white-space: pre-wrap; }
+        .line-scene { text-transform: uppercase; letter-spacing: .5px; }
+        .line-action { }
+        .line-character { text-transform: uppercase; margin-left: 14ch; }
+        .line-dialogue { margin-left: 10ch; max-width: 52ch; }
+        .line-parenthetical { margin-left: 9ch; max-width: 30ch; font-style: italic; }
+        .line-transition { text-transform: uppercase; text-align: right; }
+      `}</style>
+    </div>
+  );
+}
+
+
+export function LineNodePlugin() {
+  const [editor] = useLexicalComposerContext();
+
+useEffect(() => {
+  return editor.registerNodeTransform(ParagraphNode, (node) => {
+    if (!(node instanceof LineNode)) {
+      // Use node.getKey() which returns NodeKey (string internally)
+      const lineNode = new LineNode("action", node.getKey());
+      lineNode.append(...node.getChildren());
+      node.replace(lineNode);
+    }
+  });
+}, [editor]);
+
+  return null;
+}

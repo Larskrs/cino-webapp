@@ -124,3 +124,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+.line-scene {
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.line-action {
+  text-transform: none;
+}
+.line-character {
+  margin-left: 14px;
+  font-weight: bold;
+}
+.line-dialogue {
+  margin-left: 10px;
+}
+.line-parenthetical {
+  font-style: italic;
+  margin-left: 10px;
+}
+.line-transition {
+  text-align: right;
+  font-weight: bold;
+}
+* {
+  --base-font: 20px;
+}
