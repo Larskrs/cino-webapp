@@ -1,101 +1,107 @@
 "use client";
 
 import * as React from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { LINE_TYPES, type LineTypeKey } from "../lineTypes";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import type { LineNode } from "../LineNode";
 import { $getSelection, $isRangeSelection } from "lexical";
-import { getEnclosingLineNode, setLineTypeSafely } from "../utils";
+import { getEnclosingLineNode, getAllLinesByType } from "../utils"; 
+import { cn } from "@/lib/utils";
+import type { LineNode } from "../LineNode";
 
-type LineTypeDropdownProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSelect: (type: LineTypeKey) => void;
-  anchorPoint: { x: number; y: number } | null;
-};
-
-export function LineTypeDropdown({ open, onOpenChange, onSelect, anchorPoint }: LineTypeDropdownProps) {
-  if (!anchorPoint) return null;
-
-  return (
-    <DropdownMenu open={open} onOpenChange={onOpenChange}>
-      {/* Hidden trigger just to satisfy Radix */}
-      <DropdownMenuTrigger asChild>
-        <div />
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        forceMount
-        side="right"
-        align="start"
-        style={{ position: "fixed", left: anchorPoint.x, top: anchorPoint.y }}
-        className="max-h-64 z-1000 overflow-y-auto"
-      >
-        {Object.entries(LINE_TYPES).map(([key, data]) => {
-          const typeKey = key as LineTypeKey;
-          const Icon = data.icon;
-          return (
-            <DropdownMenuItem key={typeKey} onSelect={() => onSelect(typeKey)}>
-              <Icon size={14} className="mr-2" />
-              {data.displayName}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export function LineContextMenuPlugin() {
+export function LineDropdownPlugin() {
   const [editor] = useLexicalComposerContext();
-  const [open, setOpen] = React.useState(false);
-  const [anchorPoint, setAnchorPoint] = React.useState<{x:number, y:number} | null>(null);
-  const currentLineRef = React.useRef<LineNode | null>(null);
+  const [position, setPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [currentLineType, setCurrentLineType] = React.useState<string | null>(null);
+  const [characters, setCharacters] = React.useState<string[]>([]);
 
   React.useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      e.preventDefault();
-
-      editor.update(() => {
-        const domSelection = window.getSelection();
-        if (!domSelection || domSelection.rangeCount === 0) return;
-        const node = editor.getElementByKey(domSelection.anchorNode?.parentElement?.getAttribute("data-lexical-node-key") || "");
-        // You already have getEnclosingLineNode helper
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
         const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          const lineNode = getEnclosingLineNode(selection.anchor.getNode());
-          if (lineNode) {
-            currentLineRef.current = lineNode;
-            setAnchorPoint({ x: e.clientX, y: e.clientY });
-            setOpen(true);
-          }
+        if (!$isRangeSelection(selection)) {
+          setPosition(null);
+          return;
+        }
+
+        const node = selection.anchor.getNode();
+        const lineNode = getEnclosingLineNode(node);
+        if (!lineNode) {
+          setPosition(null);
+          return;
+        }
+
+        const dom = editor.getElementByKey(lineNode.getKey());
+        if (!dom) {
+          setPosition(null);
+          return;
+        }
+
+        const rect = dom.getBoundingClientRect();
+        const fontSize = parseFloat(window.getComputedStyle(dom).fontSize);
+
+        const editorRoot = editor.getRootElement();
+        if (!editorRoot) return;
+
+        const containerRect = editorRoot.getBoundingClientRect();
+
+        setPosition({
+          top: rect.top - containerRect.top + editorRoot.scrollTop + fontSize,
+          left: rect.left - containerRect.left + editorRoot.scrollLeft,
+        });
+        setCurrentLineType(lineNode.getLineType());
+
+        // If this line is a CHARACTER line → collect all characters
+        if (lineNode.getLineType() === "character") {
+          const lines = getAllLinesByType(editor, "character");
+          const uniqueChars = Array.from(
+            new Set(
+              lines
+                .map((ln: LineNode) => ln.getTextContent().trim())
+                .filter((txt) => txt.length > 0)
+            )
+          );
+          setCharacters(uniqueChars);
+        } else {
+          setCharacters([]);
         }
       });
-    };
-
-    document.addEventListener("contextmenu", handler);
-    return () => document.removeEventListener("contextmenu", handler);
+    });
   }, [editor]);
 
-  const handleSelect = React.useCallback(
-    (type: LineTypeKey) => {
-      if (!currentLineRef.current) return;
-      editor.update(() => {
-        setLineTypeSafely(editor, currentLineRef.current!, type);
-      });
-      setOpen(false);
-    },
-    [editor]
-  );
+  if (!position || currentLineType !== "character") return null;
 
   return (
-    <LineTypeDropdown
-      open={open}
-      onOpenChange={setOpen}
-      onSelect={handleSelect}
-      anchorPoint={anchorPoint}
-    />
+    <div
+      className={cn(
+        "absolute z-50 left-1/2 -translate-x-1/2 bg-neutral-900/25 rounded-md shadow-lg flex flex-col gap-1"
+      )}
+      style={{
+        top: position.top + 64,
+        // left: position.left,
+      }}
+    >
+      {characters.map((char) => (
+        <button
+          key={char}
+          className={cn(
+            "px-4 py-1 rounded text-[0.9em] text-center",
+            "bg-neutral-800/75 hover:bg-neutral-700"
+          )}
+          onClick={() => {
+            editor.update(() => {
+              const selection = $getSelection();
+              if ($isRangeSelection(selection)) {
+                const node = selection.anchor.getNode();
+                const lineNode = getEnclosingLineNode(node);
+                if (lineNode) {
+                  lineNode.setextContent(char);
+                }
+              }
+            });
+          }}
+        >
+          {char}
+        </button>
+      ))}
+    </div>
   );
 }

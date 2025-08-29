@@ -35,11 +35,12 @@ import { setLineTypeSafely, getEnclosingLineNode } from "./utils";
 import SceneAutoDetectPlugin from "./plugins/scene-detection-plugin";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { LineContextMenuPlugin } from "./plugins/context-menu-plugin";
+import { LineDropdownPlugin } from "./plugins/context-menu-plugin";
 import NextRecommendedTypePlugin from "./plugins/next-type";
 import { SceneSearchPlugin } from "./plugins/scene-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import TransitionAutoDetectPlugin from "./plugins/transition-detection-plugin";
 
 // Simple icon components to avoid extra deps
 const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
@@ -613,9 +614,10 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
             <HistoryPlugin />
             <AutoScrollPlugin />
             <SceneAutoDetectPlugin />
+            <TransitionAutoDetectPlugin />
             <NextRecommendedTypePlugin />
             <SceneSearchPlugin />
-            {/* <LineContextMenuPlugin /> */}
+            <LineDropdownPlugin />
             {/* Log full editor state diffs */}
             <OnChangePlugin
               onChange={(editorState, editor) => {

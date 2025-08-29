@@ -27,6 +27,10 @@ interface ThemeColors {
   }
   components: {
     tooltip: string,
+    dialog: {
+      container: string,
+      title: string
+    }
   }
 }
 
@@ -56,6 +60,10 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     },
     components: {
       tooltip: "bg-gray-500 fill-gray-500",
+      dialog: {
+        container: "backdrop-blur-lg supports-[backdrop-filter]:bg-white/75 text-zinc-700",
+        title: "text-zinc-900"
+      },
     }
   },
   dark: {
@@ -76,12 +84,16 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     editor: {
       toolbar: {
         background: "bg-black/25 border-1 border-white/10",
-        activeButton: "text-white border-transparent bg-indigo-800",
+        activeButton: "text-white border-transparent shadow-indigo-500/25 shadow-lg bg-indigo-800",
         inactiveButton: "border-transparent",
       },
     },
     components: {
       tooltip: "bg-gray-200 fill-gray-200 text-black",
+      dialog: {
+        container: "backdrop-blur-lg supports-[backdrop-filter]:bg-zinc-700/10 text-zinc-300",
+        title: "text-zinc-200"
+      },
     }
   },
 };
