@@ -11,7 +11,7 @@ export default async function ProjectPage({ params }: PageProps) {
   const scriptId = (await params).scriptId;
 
   return (
-    <div>
+    <div className="">
       {/* <ScreenplayEditor scriptId={scriptId} /> */}
       <MyEditor />
     </div>

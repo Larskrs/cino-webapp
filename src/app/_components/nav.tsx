@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, ChevronDown, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -33,6 +33,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTheme } from "@/hooks/use-theme";
 
 // ---------------------------------------------
 // Types
@@ -40,6 +41,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export type NavLink = {
   label: string;
   href?: string;
+  onClick?: () => void,
   badge?: string;
   children?: NavLink[]; // nested groups / mega menu style
 };
@@ -66,6 +68,7 @@ export default function Nav({
 }: NavProps) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false); // mobile sheet
+  const { colors } = useTheme()
 
   // Split into primary + overflow for scalable navigation
   const primary = React.useMemo(() => links.slice(0, maxPrimaryLinks), [links, maxPrimaryLinks]);
@@ -74,8 +77,9 @@ export default function Nav({
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-black/60",
-        className
+        "sticky top-0 z-50 w-full backdrop-blur",
+        className,
+        colors.nav.background
       )}
     >
       <div className="mx-auto flex h-16 max-w-screen-2xl items-center gap-2 px-3 sm:px-4">
@@ -155,9 +159,16 @@ export default function Nav({
 // Desktop primitives
 // ---------------------------------------------
 function NavItemLink({ item, activePath }: { item: NavLink; activePath: string | null }) {
+  const router = useRouter()
   const isActive = item.href && activePath ? normalizePath(activePath) === normalizePath(item.href) : false;
   return (
-    <Link href={item.href ?? "#"} legacyBehavior passHref>
+    <div className="cursor-pointer" onClick={() => {
+      if (item?.href) {
+        router.push(item.href)
+      } else if (item?.onClick) {
+        item?.onClick()
+      }
+    }}>
       <NavigationMenuLink
         className={cn(
           "rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900",
@@ -173,7 +184,7 @@ function NavItemLink({ item, activePath }: { item: NavLink; activePath: string |
           )}
         </span>
       </NavigationMenuLink>
-    </Link>
+    </div>
   );
 }
 

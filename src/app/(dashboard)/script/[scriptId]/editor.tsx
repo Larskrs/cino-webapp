@@ -10,7 +10,7 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { LINE_TYPES } from "./lineTypes";
+import { LINE_TYPES, type LineTypeKey, type LineTypeData, LINE_STYLES } from "./lineTypes";
 import { LineNode } from "./LineNode";
 import {
   $getSelection,
@@ -26,31 +26,40 @@ import {
   type LexicalEditor,
 } from "lexical";
 import { HeadingNode } from "@lexical/rich-text";
-
-/**********************
- * Line types & styles
- **********************/
-export type LineTypeKey =
-  | "scene"
-  | "action"
-  | "character"
-  | "dialogue"
-  | "parenthetical"
-  | "transition";
+import registerSceneAutoDetect from "./transforms/scene-auto-detect-transform";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/use-theme";
+import { motion } from "framer-motion"
+import AutoScrollPlugin from "./plugins/auto-scroll-plugin";
+import { setLineTypeSafely, getEnclosingLineNode } from "./utils";
+import SceneAutoDetectPlugin from "./plugins/scene-detection-plugin";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { LineContextMenuPlugin } from "./plugins/context-menu-plugin";
+import NextRecommendedTypePlugin from "./plugins/next-type";
+import { SceneSearchPlugin } from "./plugins/scene-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // Simple icon components to avoid extra deps
 const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
   <span style={{ display: "inline-block", width: size, height: size, borderRadius: "50%", background: "currentColor" }} />
 );
 
-export const LINE_STYLES: Record<LineTypeKey, string> = {
-  scene: "line line-scene",
-  action: "line line-action",
-  character: "line line-character",
-  dialogue: "line line-dialogue",
-  parenthetical: "line line-parenthetical",
-  transition: "line line-transition",
-};
+const shortcuts = [
+  {
+    combination: "ctrl + s",
+    description: "Show a menu of all scenes in the script."
+  },
+  {
+    combination: "ctrl + 1-" + Object.entries(LINE_TYPES).length,
+    description: "Switch a line to a different type."
+  },
+  {
+    combination: "tab",
+    description: "Cycle between line-types."
+  }
+]
 
 /**********************
  * Logger utilities
@@ -195,23 +204,6 @@ function DebugSelectionPlugin({ enabled }: { enabled: boolean }) {
   return null;
 }
 
-function setLineTypeSafely(editor: LexicalEditor, lineNode: LineNode, type: LineTypeKey) {
-  lineNode.setLineType(type);
-
-  // Ensure at least one text node exists
-  if (lineNode.getChildren().length === 0) {
-    const textNode = $createTextNode("");
-    lineNode.append(textNode);
-
-    // Move caret into the new text node
-    const selection = $getSelection();
-    if ($isRangeSelection(selection)) {
-      selection.anchor.set(textNode, 0, "text");
-      selection.focus.set(textNode, 0, "text");
-    }
-  }
-}
-
 const TYPE_ORDER = Object.keys(LINE_TYPES) as LineTypeKey[];
 
 function DebugExposeEditorPlugin({ enabled }: { enabled: boolean }) {
@@ -234,7 +226,7 @@ const TYPE_SHORTCUTS: Array<[RegExp, LineTypeKey]> = [
 ];
 
 function cycleType(t: LineTypeKey): LineTypeKey {
-  const order: LineTypeKey[] = ["scene", "action", "character", "dialogue", "parenthetical", "transition"];
+  const order = Object.entries(LINE_TYPES).map(([key]) => key as LineTypeKey);
   const i = order.indexOf(t);
   return order[(i + 1) % order.length] as LineTypeKey;
 }
@@ -257,60 +249,67 @@ function ScreenplayKeybindingsPlugin({ debug }: { debug: boolean }) {
   const { log } = makeLogger(enabledRef);
 
   // Enter-based type switching (post-enter)
-useEffect(() => {
-  return editor.registerCommand(
-    KEY_ENTER_COMMAND,
-    (event) => {
-      event.preventDefault();
-editor.update(() => {
-  const selection = $getSelection();
-  if (!$isRangeSelection(selection)) return;
+  useEffect(() => {
+    return editor.registerCommand(
+      KEY_ENTER_COMMAND,
+      (event) => {
+        event?.preventDefault();
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
 
-  const anchorNode = selection.anchor.getNode();
-  const currentLine = anchorNode.getParentOrThrow();
+          const anchorNode = selection.anchor.getNode();
+          const currentLine = anchorNode.getParentOrThrow();
+          if (!(currentLine instanceof LineNode)) return;
 
-  if (!(currentLine instanceof LineNode)) return;
+          // Determine next line type based on current line
+          const nextType: LineTypeKey = LINE_TYPES[currentLine.getLineType()]?.nextLine || "action";
+          const newLine = LineNode.create(nextType);
+          console.log(currentLine, nextType, newLine)
+          currentLine.insertAfter(newLine);
 
-  const newLine = LineNode.create("action");
-  currentLine.insertAfter(newLine);
+          // Check TYPE_SHORTCUTS for auto type
+          const text = currentLine.getTextContent();
+          for (const [regex, type] of TYPE_SHORTCUTS) {
+            if (regex.test(text)) {
+              setLineTypeSafely(editor, currentLine, type);
+              break;
+            }
+          }
 
-  // Check TYPE_SHORTCUTS for auto type
-  const text = currentLine.getTextContent();
-  for (const [regex, type] of TYPE_SHORTCUTS) {
-    if (regex.test(text)) {
-      setLineTypeSafely(editor, currentLine, type);
-      break;
-    }
-  }
-
-  // Ensure new line has at least one text node
-  setLineTypeSafely(editor, newLine, "character");
-});
-
-      return true;
-    },
-    0
-  );
-}, [editor]);
-
-
+          // Ensure new line has at least one text node
+          if (newLine.getChildrenSize() === 0) {
+            newLine.append($createTextNode(""));
+          }
+        });
+        return true;
+      },
+      0
+    );
+  }, [editor]);
 
   // Tab: cycle line types
 useEffect(() => {
   return editor.registerCommand(
     KEY_TAB_COMMAND,
     (event: KeyboardEvent) => {
-      event.preventDefault();
+      event?.preventDefault();
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
           const node = selection.anchor.getNode();
-          const lineNode = node.getParentOrThrow();
-          if (lineNode instanceof LineNode) {
-            const currentType = lineNode.getLineType();
-            const nextType = cycleType(currentType);
-            setLineTypeSafely(editor, lineNode, nextType);
+          let lineNode = getEnclosingLineNode(node);
+
+          if (!lineNode) {
+            // no LineNode? make a new one
+            lineNode = LineNode.create("action");
+            const root = $getRoot();
+            root.append(lineNode);
           }
+
+          const currentType = lineNode.getLineType();
+          const nextType = cycleType(currentType);
+          setLineTypeSafely(editor, lineNode, nextType);
         }
       });
       return true;
@@ -331,10 +330,16 @@ useEffect(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
           const node = selection.anchor.getNode();
-          const lineNode = node.getParentOrThrow();
-          if (lineNode instanceof LineNode) {
-            setLineTypeSafely(editor, lineNode, targetType);
+          let lineNode = getEnclosingLineNode(node);
+
+          if (!lineNode) {
+            // no LineNode? make a new one
+            lineNode = LineNode.create("action");
+            const root = $getRoot();
+            root.append(lineNode);
           }
+
+          setLineTypeSafely(editor, lineNode, targetType);
         }
       });
       e.preventDefault();
@@ -354,36 +359,37 @@ function ScreenplayInitPlugin({ defaultContent, debug }: { defaultContent?: { li
   enabledRef.current = debug;
   const { log, group } = makeLogger(enabledRef);
 
-  useEffect(() => {
-    const unregister = registerLineNodeTransform(editor);
-    return () => unregister();
-  }, [editor]);
+useEffect(() => {
+  // Keeps ParagraphNode → LineNode
+  const unregisterLineTransform = registerLineNodeTransform(editor);
 
-  useEffect(() => {
-    editor.update(() => {
-      const root = $getRoot();
-      if (root.getFirstChild() != null) return; // already has content
+  // Auto-scene detection
+  const unregisterSceneTransform = registerSceneAutoDetect(editor)
+  return () => {
+    unregisterLineTransform();
+    unregisterSceneTransform();
+  };
+}, [editor]);
+  
+useEffect(() => {
+  editor.update(() => {
+    const root = $getRoot();
+    if (root.getFirstChild() != null) return;
 
-      const seed: Line[] = (defaultContent?.lines as Line[]) ?? [
-        { id: "l1", type: "scene", content: "INT. LIVING ROOM — NIGHT" },
-        { id: "l2", type: "action", content: "A cat jumps onto the table." },
-        { id: "l3", type: "character", content: "ALICE" },
-        { id: "l4", type: "dialogue", content: "We should leave." },
-        { id: "l5", type: "character", content: "BOB" },
-        { id: "l6", type: "dialogue", content: "Now? It’s pouring outside." },
-        { id: "l7", type: "transition", content: "CUT TO:" },
-      ];
+    const seed = defaultContent?.lines ?? [
+      { type: "scene", content: "INT. LIVING ROOM — NIGHT" },
+      { type: "action", content: "A cat jumps onto the table." },
+      { type: "character", content: "ALICE" },
+      { type: "dialogue", content: "We should leave." },
+    ];
 
-      group("Seeding", () => {
-        seed.forEach((line, idx) => {
-          const p = new LineNode(line.type);
-          p.append(...createTextNodesFromContent(line.content));
-          log(`#${idx}`, "append", line.type, JSON.stringify(line.content));
-          root.append(p);
-        });
-      });
+    seed.forEach((line) => {
+      const p = new LineNode(line.type);
+      p.append(...createTextNodesFromContent(line.content));
+      root.append(p);
     });
-  }, [editor, defaultContent]);
+  });
+}, [editor, defaultContent]);
 
   return null;
 }
@@ -400,7 +406,7 @@ function Toolbar({ debug, setDebug }: { debug: boolean; setDebug: (v: boolean) =
     const unregister = editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
         const selection = $getSelection();
-    console.log("Selection after update:", selection ? selection.getTextContent() : "null");
+    // console.log("Selection after update:", selection ? selection.getTextContent() : "null");
         if (!$isRangeSelection(selection)) return;
         const node = selection.anchor.getNode();
         const parent = node.getParent();
@@ -413,43 +419,64 @@ function Toolbar({ debug, setDebug }: { debug: boolean; setDebug: (v: boolean) =
     return () => unregister();
   }, [editor]);
 
-const setType = useCallback(
-  (t: LineTypeKey) => {
-    if (!editor) return;
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        const node = selection.anchor.getNode();
-        const lineNode = node.getParentOrThrow();
-        if (lineNode instanceof LineNode) {
-          lineNode.setLineType(t); // <-- use the argument
+  const setType = useCallback(
+    (t: LineTypeKey) => {
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const node = selection.anchor.getNode();
+          let lineNode = getEnclosingLineNode(node);
+          if (!lineNode) {
+            // no LineNode? make a new one
+            lineNode = LineNode.create("action");
+            const root = $getRoot();
+            root.append(lineNode);
+          }
+
+          setLineTypeSafely(editor, lineNode, t);
         }
-      }
-    });
-  },
-  [editor]
-);
+      });
+    },
+    [editor]
+  );
+
+  const { colors } = useTheme()
 
   return (
-    <div className="fixed top-18 z-10 rounded-2xl px-8 py-4 bg-gray-800/25 backdrop-blur-xl left-0 right-0 mx-auto mb-2 flex flex-col items-center gap-2 text-sm select-none" style={{ width: "var(--page-w)" }}>
-      <div className="flex flex-row gap-2 flex-wrap">
-        {Object.entries(LINE_TYPES).map(([key, data]) => {
+    <div className={cn(colors.editor.toolbar.background, "fixed w-fit rounded-xl top-18 z-10 px-6 py-4 backdrop-blur-xl left-0 right-0 mx-auto mb-2 flex flex-col items-start gap-2 text-sm select-none")}>
+      <div className="flex flex-row gap-4 flex-wrap">
+        {Object.entries(LINE_TYPES).map(([key, data], i) => {
           const typeKey = key as LineTypeKey;
           const isActive = currentLineType === typeKey;
           const Icon = data.icon;
           return (
-            <button
-              key={typeKey}
-              onClick={() => setCurrentLineType(typeKey)}
-              className={`px-2 py-1 rounded-xl border-2 flex items-center gap-1 ${
-                !isActive ? "bg-transparent border-white/5 font-semibold text-neutral-400" : "bg-indigo-600 border-transparent text-white font-semibold"
-              }`}
-            >
-              <Icon size={16} />
-              {data.displayName}
-            </button>
+            <Tooltip key={key}>
+              <TooltipTrigger>
+                <motion.div
+                  // type="button"
+                  tabIndex={-1}
+                  onMouseDown={(e) => e.preventDefault()} // 👈 keeps focus in editor
+                  onClick={() => setType(typeKey)} // uses your setType callback
+                  className={`px-2.5 py-1 text-md cursor-pointer rounded-sm border-2 flex items-center gap-2 ${
+                    isActive
+                    ? colors.editor.toolbar.activeButton
+                    : colors.editor.toolbar.inactiveButton
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  animate={{ scale: isActive ? 1.15 : 1 }}
+                  >
+                  <Icon size={16} />
+                  <span className={cn("text-sm hidden lg:flex", isActive ? "sm:flex" : "")}>{data.displayName}</span>
+                </motion.div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>CTRL + {i+1}</p>
+              </TooltipContent>
+            </Tooltip>
           );
         })}
+                  <Shortcuts />
       </div>
 
       {/* <div className="ml-auto flex items-center gap-3 text-neutral-600">
@@ -472,6 +499,44 @@ function Placeholder() {
       Start writing your screenplay…
     </div>
   );
+}
+
+function Shortcuts () {
+
+  const { colors } = useTheme()
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="bg-transparent cursor-pointer">Shortcuts</Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[70vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Shortcuts</DialogTitle>
+        </DialogHeader>
+
+        <ul className="flex flex-col gap-2">
+          {shortcuts.map((shortcut, i) => (
+            <li key={shortcut.combination} className="flex items-center gap-3">
+              {/* Shortcut key combination badge */}
+              <span
+                className={cn(
+                  "inline-block px-2 py-1 rounded bg-gray-700 text-white text-sm font-mono",
+                  colors.background
+                )}
+              >
+                {shortcut.combination}
+              </span>
+              
+              {/* Description */}
+              <span className="text-sm text-gray-300">{shortcut.description}</span>
+            </li>
+          ))}
+        </ul>
+
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 /**********************
@@ -510,14 +575,18 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
     ["--line-gap" as any]: `calc(8px * var(--scale))`,
   };
 
+  const { colors } = useTheme()
+
   return (
-    <div className="w-full min-h-screen bg-black flex flex-col items-center p-2 md:p-4" ref={containerRef}>
+    <div className={cn("w-full min-h-screen flex flex-col items-center", colors.background)} ref={containerRef}>
       <div className="w-full mt-28 max-w-full" style={styleVars}>
         <LexicalComposer initialConfig={initialConfig}>
           <Toolbar debug={debug} setDebug={setDebug} />
 
           <div
-            className="mx-auto border-1 rounded-xl border-gray-900 bg-gray-900/25 shadow-xl rounded-none relative overflow-auto"
+            className={cn("mx-auto border-1 rounded-sm shadow-xl relative overflow-auto",
+              colors.cardBackground, colors.cardBorder
+            )}
             style={{
               width: "var(--page-w)",
               minHeight: "var(--page-h)",
@@ -533,7 +602,7 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
-                  className="outline-none screenplay-content line"
+                  className={cn("outline-none screenplay-content line", colors.text)}
                   style={{ minHeight: "var(--page-h)" }}
                 />
               }
@@ -542,7 +611,11 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
             />
 
             <HistoryPlugin />
-
+            <AutoScrollPlugin />
+            <SceneAutoDetectPlugin />
+            <NextRecommendedTypePlugin />
+            <SceneSearchPlugin />
+            {/* <LineContextMenuPlugin /> */}
             {/* Log full editor state diffs */}
             <OnChangePlugin
               onChange={(editorState, editor) => {
@@ -556,7 +629,7 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
                     type: c instanceof LineNode ? c.getLineType() : (c as any).constructor?.name,
                     text: (c as any).getTextContent?.(),
                   }));
-                  console.table(snapshot);
+                  // console.table(snapshot);
                 });
               }}
             />
@@ -595,4 +668,113 @@ export function LineNodePlugin() {
   }, [editor]);
 
   return null;
+}
+
+
+function Page({
+  lines,
+  editable,
+  pageWidth,
+  pageHeight,
+}: {
+  lines: LineNode[];
+  editable: boolean;
+  pageWidth: number;
+  pageHeight: number;
+}) {
+    const [debug, setDebug] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("screenplay-debug") === "1";
+  });
+  const {colors} = useTheme()
+
+    const initialConfig = useMemo(() => ({
+    namespace: "screenplay-editor",
+    theme,
+    onError(error: Error) {
+      console.error("[Screenplay] Lexical error:", error);
+    },
+    nodes: [LineNode],
+  }), []);
+
+
+
+  return (
+    <div
+      className="screenplay-page mx-auto border shadow-lg relative overflow-hidden"
+      style={{
+        width: pageWidth,
+        height: pageHeight,
+        padding: "48px",
+        background: "#1f1f1f",
+      }}
+    >
+      {editable ? (
+<LexicalComposer initialConfig={initialConfig}>
+          <Toolbar debug={debug} setDebug={setDebug} />
+
+          <div
+            className={cn("mx-auto border-1 rounded-xl shadow-xl relative overflow-auto",
+              colors.cardBackground, colors.cardBorder
+            )}
+            style={{
+              width: "var(--page-w)",
+              minHeight: "var(--page-h)",
+              padding: "var(--page-padding)",
+              fontSize: "calc(var(--base-font) * var(--scale))",
+              lineHeight: 1.5,
+              outline: "none",
+              color: "white",
+              backgroundSize: `100% var(--page-h)`,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+            }}
+          >
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  className={cn("outline-none screenplay-content line", colors.text)}
+                  style={{ minHeight: "var(--page-h)" }}
+                />
+              }
+              placeholder={<Placeholder />}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+
+            <HistoryPlugin />
+
+            {/* Log full editor state diffs */}
+            <OnChangePlugin
+              onChange={(editorState, editor) => {
+                if (!debug) return;
+                editorState.read(() => {
+                  const root = $getRoot();
+                  const children = root.getChildren();
+                  const snapshot = children.map((c, idx) => ({
+                    idx,
+                    key: (c as any).getKey?.(),
+                    type: c instanceof LineNode ? c.getLineType() : (c as any).constructor?.name,
+                    text: (c as any).getTextContent?.(),
+                  }));
+                  // console.table(snapshot);
+                });
+              }}
+            />
+
+            <ScreenplayKeybindingsPlugin debug={debug} />
+            <ScreenplayInitPlugin debug={debug} />
+            <DebugSelectionPlugin enabled={debug} />
+            <DebugExposeEditorPlugin enabled={debug} />
+          </div>
+        </LexicalComposer>
+      ) : (
+        <div className="read-only-content">
+          {lines.map((line) => (
+            <div key={line.getKey()} className={LINE_STYLES[line.getLineType()]}>
+              {line.getTextContent()}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

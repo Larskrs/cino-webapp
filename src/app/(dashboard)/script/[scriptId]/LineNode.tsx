@@ -1,5 +1,5 @@
 import { ParagraphNode, TextNode, type EditorConfig } from "lexical";
-import { LINE_STYLES, type LineTypeKey } from "./lineTypes";
+import { LINE_STYLES, LINE_TYPES, type LineTypeKey } from "./lineTypes";
 
 export class LineNode extends ParagraphNode {
   __lineType: LineTypeKey;
@@ -46,9 +46,9 @@ export class LineNode extends ParagraphNode {
   // 👇 This hook runs after every update
   // If line has no children, inject an empty text node
   insertNewAfter(_: unknown, restoreSelection: boolean = true): LineNode {
-    const newLine = new LineNode(this.__lineType);
+    const newLine = new LineNode(LINE_TYPES[this?.__lineType].nextLine);
     if (restoreSelection && newLine.getChildren().length === 0) {
-      newLine.append(new TextNode(""));
+      newLine.append(newLine);
     }
     this.insertAfter(newLine);
     return newLine;

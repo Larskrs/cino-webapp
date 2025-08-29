@@ -15,11 +15,6 @@ export type LineTypeData = {
 };
 
 export const LINE_TYPES: Record<LineTypeKey, LineTypeData> = {
-  scene: {
-    displayName: "Scene Header",
-    icon: FileText,
-    nextLine: "action",
-  },
   action: {
     displayName: "Action",
     icon: PersonStanding,
@@ -33,7 +28,12 @@ export const LINE_TYPES: Record<LineTypeKey, LineTypeData> = {
   dialogue: {
     displayName: "Dialogue",
     icon: MessageCircle,
-    nextLine: "dialogue",
+    nextLine: "character",
+  },
+  scene: {
+    displayName: "Scene Header",
+    icon: FileText,
+    nextLine: "action",
   },
   parenthetical: {
     displayName: "Parenthetical",

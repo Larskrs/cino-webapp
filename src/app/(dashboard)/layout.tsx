@@ -4,18 +4,20 @@ import Nav, { type NavLink } from "../_components/nav";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Clapperboard } from "lucide-react";
-import { EditorToolboxProvider } from "./script/[scriptId]/_hooks/useToolbox";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
 
+  const { theme, setTheme } = useTheme()
 
 
   const links: NavLink[] = [
     { label: "Home", href: "/" },
     { label: "Projects", href: "/project/"},
     { label: "Support", href: "/support" }, // will go into More
+    { label: "Theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark")}
   ];
 
   return (
@@ -26,9 +28,7 @@ export default function Layout({
           rightSlot={<Button asChild><Link href="/api/auth/signin">Sign in</Link></Button>}
           maxPrimaryLinks={6}
         />
-        <EditorToolboxProvider>
           {children}
-        </EditorToolboxProvider>
     </>
   );
 }
