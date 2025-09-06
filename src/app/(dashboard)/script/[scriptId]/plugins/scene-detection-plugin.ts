@@ -33,6 +33,26 @@ function SceneAutoDetectPlugin() {
       }
     });
   }, [editor]);
+  useEffect(() => {
+    return editor.registerNodeTransform(TextNode, (node) => {
+      // Only check if node is selected
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
+
+      const anchorNode = selection.anchor.getNode();
+      if (anchorNode.getKey() !== node.getKey()) return;
+
+      const text = node.getTextContent().trim().toUpperCase();
+
+      if (text.startsWith("(") && text.endsWith(")")) {
+        const parent = node.getParent();
+        if (parent instanceof LineNode) {
+          node.setTextContent(text.replace(/^.(.*).$/, "$1"))
+          setLineTypeSafely(editor, parent, "parenthetical"); 
+        }
+      }
+    });
+  }, [editor]);
 
   return null;
 }

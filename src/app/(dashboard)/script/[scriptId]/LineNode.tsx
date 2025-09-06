@@ -25,6 +25,21 @@ export class LineNode extends ParagraphNode {
     const writable = this.getWritable();
     (writable as LineNode).__lineType = type;
   }
+  setTextContent(text: string) {
+    const writable = this.getWritable();
+  
+    // Clear all existing children
+    writable.getChildren().forEach((child) => child.remove());
+  
+    // Add a single text node
+    writable.append(new TextNode(text));
+  }
+  
+  getTextContent(): string {
+    return this.getChildren()
+      .map((child) => (child instanceof TextNode ? child.getTextContent() : ""))
+      .join("");
+  }
 
   /** 🔑 Make sure a line always has a text node */
   createDOM(config: EditorConfig): HTMLElement {

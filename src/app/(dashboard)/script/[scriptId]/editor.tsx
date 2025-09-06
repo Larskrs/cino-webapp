@@ -9,6 +9,7 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { LINE_TYPES, type LineTypeKey, type LineTypeData, LINE_STYLES } from "./lineTypes";
 import { LineNode } from "./LineNode";
@@ -26,21 +27,25 @@ import {
   type LexicalEditor,
 } from "lexical";
 import { HeadingNode } from "@lexical/rich-text";
-import registerSceneAutoDetect from "./transforms/scene-auto-detect-transform";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { motion } from "framer-motion"
-import AutoScrollPlugin from "./plugins/auto-scroll-plugin";
 import { setLineTypeSafely, getEnclosingLineNode } from "./utils";
 import SceneAutoDetectPlugin from "./plugins/scene-detection-plugin";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { LineDropdownPlugin } from "./plugins/context-menu-plugin";
-import NextRecommendedTypePlugin from "./plugins/next-type";
-import { SceneSearchPlugin } from "./plugins/scene-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import TransitionAutoDetectPlugin from "./plugins/transition-detection-plugin";
+import * as Y from "yjs";
+// --------------
+//    PLUGINS
+// --------------
+import AutoScrollPlugin from "./plugins/auto-scroll-plugin";
+import { LineSwitchPlugin } from "./plugins/line-switch";
+import { CharacterQuickSwitch } from "./plugins/character-switch";
+import NextRecommendedTypePlugin from "./plugins/next-type";
+import { SceneSearchPlugin } from "./plugins/scene-menu";
+import {ExportPDFButton} from "./plugins/export-pdf";
 
 // Simple icon components to avoid extra deps
 const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
@@ -266,7 +271,7 @@ function ScreenplayKeybindingsPlugin({ debug }: { debug: boolean }) {
           // Determine next line type based on current line
           const nextType: LineTypeKey = LINE_TYPES[currentLine.getLineType()]?.nextLine || "action";
           const newLine = LineNode.create(nextType);
-          console.log(currentLine, nextType, newLine)
+          // console.log(currentLine, nextType, newLine)
           currentLine.insertAfter(newLine);
 
           // Check TYPE_SHORTCUTS for auto type
@@ -364,11 +369,8 @@ useEffect(() => {
   // Keeps ParagraphNode → LineNode
   const unregisterLineTransform = registerLineNodeTransform(editor);
 
-  // Auto-scene detection
-  const unregisterSceneTransform = registerSceneAutoDetect(editor)
   return () => {
     unregisterLineTransform();
-    unregisterSceneTransform();
   };
 }, [editor]);
   
@@ -398,7 +400,7 @@ useEffect(() => {
 /**********************
  * Toolbar
  **********************/
-function Toolbar({ debug, setDebug }: { debug: boolean; setDebug: (v: boolean) => void }) {
+function Toolbar({ debug, setDebug, containerRef }: { debug: boolean; setDebug: (v: boolean) => void, containerRef: RefObject<HTMLDivElement | null>}) {
   const [editor] = useLexicalComposerContext();
   const [currentLineType, setCurrentLineType] = useState<LineTypeKey>("action");
 
@@ -478,6 +480,7 @@ function Toolbar({ debug, setDebug }: { debug: boolean; setDebug: (v: boolean) =
           );
         })}
                   <Shortcuts />
+                  <ExportPDFButton containerRef={containerRef}/>
       </div>
 
       {/* <div className="ml-auto flex items-center gap-3 text-neutral-600">
@@ -543,6 +546,7 @@ function Shortcuts () {
 /**********************
  * Main Editor (exported)
  **********************/
+
 export default function ScreenplayEditor({ defaultContent }: { defaultContent?: { lines?: Line[] } }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { pageWidth, pageHeight, scale } = usePageMetrics(containerRef as RefObject<HTMLDivElement>);
@@ -577,12 +581,15 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
   };
 
   const { colors } = useTheme()
+  
+  const ydoc = useMemo(() => new Y.Doc(), []);
+
 
   return (
     <div className={cn("w-full min-h-screen flex flex-col items-center", colors.background)} ref={containerRef}>
       <div className="w-full mt-28 max-w-full" style={styleVars}>
         <LexicalComposer initialConfig={initialConfig}>
-          <Toolbar debug={debug} setDebug={setDebug} />
+          <Toolbar containerRef={containerRef} debug={debug} setDebug={setDebug} />
 
           <div
             className={cn("mx-auto border-1 rounded-sm shadow-xl relative overflow-auto",
@@ -610,14 +617,17 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
               placeholder={<Placeholder />}
               ErrorBoundary={LexicalErrorBoundary}
             />
-
+            {/* <LexicalYjsPlugin
+              doc={ydoc}
+              room="room1"
+              wsUrl="ws://localhost:1234"
+            /> */}
             <HistoryPlugin />
             <AutoScrollPlugin />
             <SceneAutoDetectPlugin />
             <TransitionAutoDetectPlugin />
             <NextRecommendedTypePlugin />
             <SceneSearchPlugin />
-            <LineDropdownPlugin />
             {/* Log full editor state diffs */}
             <OnChangePlugin
               onChange={(editorState, editor) => {
@@ -640,6 +650,8 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
             <ScreenplayInitPlugin defaultContent={defaultContent} debug={debug} />
             <DebugSelectionPlugin enabled={debug} />
             <DebugExposeEditorPlugin enabled={debug} />
+            <LineSwitchPlugin />
+            <CharacterQuickSwitch />
           </div>
         </LexicalComposer>
 
@@ -653,7 +665,6 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
     </div>
   );
 }
-
 
 export function LineNodePlugin() {
   const [editor] = useLexicalComposerContext();
@@ -670,113 +681,4 @@ export function LineNodePlugin() {
   }, [editor]);
 
   return null;
-}
-
-
-function Page({
-  lines,
-  editable,
-  pageWidth,
-  pageHeight,
-}: {
-  lines: LineNode[];
-  editable: boolean;
-  pageWidth: number;
-  pageHeight: number;
-}) {
-    const [debug, setDebug] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("screenplay-debug") === "1";
-  });
-  const {colors} = useTheme()
-
-    const initialConfig = useMemo(() => ({
-    namespace: "screenplay-editor",
-    theme,
-    onError(error: Error) {
-      console.error("[Screenplay] Lexical error:", error);
-    },
-    nodes: [LineNode],
-  }), []);
-
-
-
-  return (
-    <div
-      className="screenplay-page mx-auto border shadow-lg relative overflow-hidden"
-      style={{
-        width: pageWidth,
-        height: pageHeight,
-        padding: "48px",
-        background: "#1f1f1f",
-      }}
-    >
-      {editable ? (
-<LexicalComposer initialConfig={initialConfig}>
-          <Toolbar debug={debug} setDebug={setDebug} />
-
-          <div
-            className={cn("mx-auto border-1 rounded-xl shadow-xl relative overflow-auto",
-              colors.cardBackground, colors.cardBorder
-            )}
-            style={{
-              width: "var(--page-w)",
-              minHeight: "var(--page-h)",
-              padding: "var(--page-padding)",
-              fontSize: "calc(var(--base-font) * var(--scale))",
-              lineHeight: 1.5,
-              outline: "none",
-              color: "white",
-              backgroundSize: `100% var(--page-h)`,
-              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-            }}
-          >
-            <RichTextPlugin
-              contentEditable={
-                <ContentEditable
-                  className={cn("outline-none screenplay-content line", colors.text)}
-                  style={{ minHeight: "var(--page-h)" }}
-                />
-              }
-              placeholder={<Placeholder />}
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-
-            <HistoryPlugin />
-
-            {/* Log full editor state diffs */}
-            <OnChangePlugin
-              onChange={(editorState, editor) => {
-                if (!debug) return;
-                editorState.read(() => {
-                  const root = $getRoot();
-                  const children = root.getChildren();
-                  const snapshot = children.map((c, idx) => ({
-                    idx,
-                    key: (c as any).getKey?.(),
-                    type: c instanceof LineNode ? c.getLineType() : (c as any).constructor?.name,
-                    text: (c as any).getTextContent?.(),
-                  }));
-                  // console.table(snapshot);
-                });
-              }}
-            />
-
-            <ScreenplayKeybindingsPlugin debug={debug} />
-            <ScreenplayInitPlugin debug={debug} />
-            <DebugSelectionPlugin enabled={debug} />
-            <DebugExposeEditorPlugin enabled={debug} />
-          </div>
-        </LexicalComposer>
-      ) : (
-        <div className="read-only-content">
-          {lines.map((line) => (
-            <div key={line.getKey()} className={LINE_STYLES[line.getLineType()]}>
-              {line.getTextContent()}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }

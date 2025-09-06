@@ -168,10 +168,11 @@
   text-transform: none;
 }
 .line-character {
+  margin-top: .75em;
   margin-inline: auto;
   text-align: center;
-  font-weight: bold;
-  text-transform: capitalize;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 .line-dialogue {
   margin-left: 10px;
@@ -185,5 +186,23 @@
   font-weight: bold;
 }
 * {
-  --base-font: 18px;
+  --base-font: 12pt;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .a4-print,
+  .a4-print * {
+    visibility: visible;
+  }
+
+  .a4-print {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    page-break-after: always;
+  }
 }
