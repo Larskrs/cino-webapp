@@ -58,7 +58,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     editor: {
       toolbar: {
         background: "supports-[backdrop-filter]:bg-white/50",
-        activeButton: "text-white border-transparent bg-indigo-400",
+        activeButton: "text-white border-transparent bg-indigo-500",
         inactiveButton: "text-zinc-600 bg-transparent border-transparent",
       },
     },
@@ -92,7 +92,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     editor: {
       toolbar: {
         background: "bg-black/25 border-1 border-white/10",
-        activeButton: "text-white border-transparent bg-indigo-800",
+        activeButton: "text-white border-transparent bg-indigo-600",
         inactiveButton: "border-transparent",
       },
     },

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { LineNode } from "../LineNode";
 import { LINE_STYLES } from "../lineTypes";
 import { getScenesWithIndex } from "../utils";
+import { File, LucidePartyPopper, SendHorizonal } from "lucide-react";
 
 type ScriptMetadata = {
   title: string;
@@ -160,5 +161,5 @@ export function ExportPDFButton({ containerRef }: ExportPDFButtonProps) {
   };
 
 
-  return <Button onClick={() => exportPDF({ title: "Manus Anus", author: "Eg/Meg" })}>Export PDF</Button>;
+  return <Button onClick={() => exportPDF({ title: "Manus Anus", author: "Eg/Meg" })}><File/></Button>;
 }

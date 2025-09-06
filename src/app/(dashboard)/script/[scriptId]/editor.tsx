@@ -26,7 +26,6 @@ import {
   type LexicalNode,
   type LexicalEditor,
 } from "lexical";
-import { HeadingNode } from "@lexical/rich-text";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { motion } from "framer-motion"
@@ -36,7 +35,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import TransitionAutoDetectPlugin from "./plugins/transition-detection-plugin";
-import * as Y from "yjs";
 // --------------
 //    PLUGINS
 // --------------
@@ -46,6 +44,7 @@ import { CharacterQuickSwitch } from "./plugins/character-switch";
 import NextRecommendedTypePlugin from "./plugins/next-type";
 import { SceneSearchPlugin } from "./plugins/scene-menu";
 import {ExportPDFButton} from "./plugins/export-pdf";
+import { CommandIcon } from "lucide-react";
 
 // Simple icon components to avoid extra deps
 const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
@@ -460,16 +459,17 @@ function Toolbar({ debug, setDebug, containerRef }: { debug: boolean; setDebug: 
                   tabIndex={-1}
                   onMouseDown={(e) => e.preventDefault()} // 👈 keeps focus in editor
                   onClick={() => setType(typeKey)} // uses your setType callback
-                  className={`px-2.5 py-1 text-md cursor-pointer rounded-sm border-2 flex items-center gap-2 ${
+                  className={cn(
+                    "px-2.5 py-1 border-1 text-md cursor-pointer rounded-sm flex items-center gap-2",
                     isActive
-                    ? colors.editor.toolbar.activeButton
-                    : colors.editor.toolbar.inactiveButton
-                  }`}
+                      ? cn(colors.editor.toolbar.activeButton, "border-transparent hover:border-transparent")
+                      : cn(colors.editor.toolbar.inactiveButton, "border-white/5 hover:border-white/50")
+                  )}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  animate={{ scale: isActive ? 1.15 : 1 }}
+                  animate={{ scale: isActive ? 1.10 : 1 }}
                   >
-                  <Icon size={16} />
+                  <Icon size={24} />
                   <span className={cn("text-sm hidden lg:flex", isActive ? "sm:flex" : "")}>{data.displayName}</span>
                 </motion.div>
               </TooltipTrigger>
@@ -512,11 +512,11 @@ function Shortcuts () {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-transparent cursor-pointer">Shortcuts</Button>
+        <Button variant="outline" className="bg-transparent cursor-pointer"><CommandIcon /></Button>
       </DialogTrigger>
       <DialogContent className="max-h-[70vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Shortcuts</DialogTitle>
+          <DialogTitle className="flex gap-2 items-center"><CommandIcon />Shortcuts</DialogTitle>
         </DialogHeader>
 
         <ul className="flex flex-col gap-2">
@@ -581,9 +581,6 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
   };
 
   const { colors } = useTheme()
-  
-  const ydoc = useMemo(() => new Y.Doc(), []);
-
 
   return (
     <div className={cn("w-full min-h-screen flex flex-col items-center", colors.background)} ref={containerRef}>
