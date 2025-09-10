@@ -91,7 +91,7 @@ export function LineSwitchPlugin() {
         >
           {React.createElement(
             LINE_TYPES[currentLineType as LineTypeKey]?.icon,
-            { size: 16 }
+            { size: 20 }
           )}
         </motion.button>
       )}
@@ -111,7 +111,7 @@ export function LineSwitchPlugin() {
               <motion.button
                 key={key}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-1 text-xs text-left rounded",
+                  "flex items-center gap-2 px-3 py-1 text-sm text-left rounded",
                   "cursor-pointer",
                   colors.components.dropdown.button,
                 )}
@@ -132,7 +132,7 @@ export function LineSwitchPlugin() {
                   setShowTypeDropdown(false);
                 }}
               >
-                {React.createElement(def.icon, { size: 14 })}
+                {React.createElement(def.icon, { size: 16 })}
                 <span className="capitalize">{def.displayName ?? key}</span>
               </motion.button>
             ))}

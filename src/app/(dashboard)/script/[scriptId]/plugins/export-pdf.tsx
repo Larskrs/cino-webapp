@@ -104,7 +104,7 @@ export function ExportPDFButton({ containerRef }: ExportPDFButtonProps) {
       switch (type) {
         case "scene":
           sceneCounter += 1;
-          content = `SCENE ${sceneCounter}: ${content.toUpperCase()}`;
+          content = `${sceneCounter}. ${content.toUpperCase()}`;
           fontStyle = "bold";
           break;
         case "character":
@@ -127,7 +127,6 @@ export function ExportPDFButton({ containerRef }: ExportPDFButtonProps) {
           x = pageWidth - margin;
           break;
       }
-    
       pdf.setFont("courier", fontStyle);
       pdf.setFontSize(12); // <-- ensure each line has consistent font size
     

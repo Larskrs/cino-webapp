@@ -45,6 +45,7 @@ import NextRecommendedTypePlugin from "./plugins/next-type";
 import { SceneSearchPlugin } from "./plugins/scene-menu";
 import {ExportPDFButton} from "./plugins/export-pdf";
 import { CommandIcon } from "lucide-react";
+import ScreenplayPersistencePlugin from "./plugins/persistance-plugin";
 
 // Simple icon components to avoid extra deps
 const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
@@ -462,8 +463,8 @@ function Toolbar({ debug, setDebug, containerRef }: { debug: boolean; setDebug: 
                   className={cn(
                     "px-2.5 py-1 border-1 text-md cursor-pointer rounded-sm flex items-center gap-2",
                     isActive
-                      ? cn(colors.editor.toolbar.activeButton, "border-transparent hover:border-transparent")
-                      : cn(colors.editor.toolbar.inactiveButton, "border-white/5 hover:border-white/50")
+                      ? cn(colors.editor.toolbar.activeButton)
+                      : cn(colors.editor.toolbar.inactiveButton)
                   )}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -547,7 +548,7 @@ function Shortcuts () {
  * Main Editor (exported)
  **********************/
 
-export default function ScreenplayEditor({ defaultContent }: { defaultContent?: { lines?: Line[] } }) {
+export default function ScreenplayEditor({ defaultContent, scriptId = "no-storage-id" }: { scriptId: string, defaultContent?: { lines?: Line[] } }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { pageWidth, pageHeight, scale } = usePageMetrics(containerRef as RefObject<HTMLDivElement>);
   const [debug, setDebug] = useState<boolean>(() => {
@@ -625,6 +626,7 @@ export default function ScreenplayEditor({ defaultContent }: { defaultContent?: 
             <TransitionAutoDetectPlugin />
             <NextRecommendedTypePlugin />
             <SceneSearchPlugin />
+            <ScreenplayPersistencePlugin storageKey={scriptId} />
             {/* Log full editor state diffs */}
             <OnChangePlugin
               onChange={(editorState, editor) => {

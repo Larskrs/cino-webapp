@@ -161,9 +161,9 @@
 }
 .line-scene {
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0.5px;
-  margin-bottom: 0em;
+  margin-block: 1em;
 }
 .line-action {
   text-transform: none;

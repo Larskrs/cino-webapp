@@ -13,7 +13,7 @@ export default async function ProjectPage({ params }: PageProps) {
   return (
     <div className="">
       {/* <ScreenplayEditor scriptId={scriptId} /> */}
-      <MyEditor />
+      <MyEditor scriptId={scriptId} />
     </div>
   );
 }

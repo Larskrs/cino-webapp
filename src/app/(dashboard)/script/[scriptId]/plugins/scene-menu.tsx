@@ -72,7 +72,7 @@ export function SceneSearchPlugin() {
     if (!open) return;
 
     const handleNumberKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.altKey || e.metaKey) return; // ignore modifier combos
+      //if (e.ctrlKey || e.altKey || e.metaKey) return; // ignore modifier combos
       const n = parseInt(e.key);
       if (isNaN(n)) return;
       const scene = scenes.find((s) => s.index === n);

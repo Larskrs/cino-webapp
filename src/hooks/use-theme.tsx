@@ -1,7 +1,7 @@
 "use client";
-import React, { createContext, useContext, useState, type ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type ThemeKey = "light" | "dark";
+export type ThemeKey = "light" | "dark" | "funky";
 
 interface ThemeColors {
   background: string;
@@ -74,6 +74,40 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
       },
     }
   },
+  funky: {
+    background: "bg-sky-500",
+    cardBackground: "bg-[url('https://i.redd.it/dc8pzfnvq6wb1.png')]",
+    cardBorder: "border-violet-600",
+    buttonBackground: "bg-stone-800",
+    buttonText: "text-neutral-900",
+    text: "text-black",
+    textMuted: "text-fuchsia-700",
+    nav: {
+      background: "supports-[backdrop-filter]:bg-white/50",
+      link: {
+        hover: "",
+        normal: ""
+      }
+    },
+    editor: {
+      toolbar: {
+        background: "supports-[backdrop-filter]:bg-white/50",
+        activeButton: "text-white border-transparent bg-indigo-900",
+        inactiveButton: "text-zinc-600 bg-transparent border-transparent",
+      },
+    },
+    components: {
+      tooltip: "bg-gray-500 fill-gray-500",
+      dropdown: {
+        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/75 text-zinc-700",
+        button: "text-zinc-600 bg-transparent border-transparent",
+      },
+      dialog: {
+        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/75 text-zinc-700",
+        title: "text-zinc-900"
+      },
+    }
+  },
   dark: {
     background: "bg-zinc-950",
     cardBackground: "bg-zinc-900/75",
@@ -92,8 +126,8 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     editor: {
       toolbar: {
         background: "bg-black/25 border-1 border-white/10",
-        activeButton: "text-white border-transparent bg-indigo-600",
-        inactiveButton: "border-transparent",
+        activeButton: "text-white bg-indigo-600 border-transparent hover:border-transparent transition-none",
+        inactiveButton: "border-white/5 hover:border-white/50",
       },
     },
     components: {
@@ -125,7 +159,7 @@ function addTransitionColors(obj: any): any {
 }
 
 // Apply transition-colors to all theme classes
-const THEMES: Record<ThemeKey, ThemeColors> = addTransitionColors(RAW_THEMES);
+const THEMES: Record<ThemeKey, ThemeColors> =  addTransitionColors(RAW_THEMES);
 
 interface ThemeContextValue {
   theme: ThemeKey;
@@ -135,11 +169,46 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeKey>("dark");
+function getSystemTheme(): ThemeKey {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+  return null;
+}
+
+function setCookie(name: string, value: string, days = 365) {
+  if (typeof document === "undefined") return;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+export function ThemeProvider({ children, initialTheme }: { children: ReactNode; initialTheme?: ThemeKey }) {
+  const [theme, setThemeState] = useState<ThemeKey>(initialTheme ?? getSystemTheme());
+
+  useEffect(() => {
+    // On mount, check cookie or fallback to system theme
+    const saved = getCookie("theme") as ThemeKey | null;
+    setThemeState(saved || "dark")
+  }, []);
+
+  const setTheme = (newTheme: ThemeKey) => {
+    setThemeState(newTheme);
+    setCookie("theme", newTheme);
+  };
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme, colors: THEMES[theme] }}>
-      <div className={`${THEMES[theme].background} ${THEMES[theme].text} min-h-screen`}>
+      <div
+        className={`${THEMES[theme].background} ${THEMES[theme].text} min-h-screen`}
+      >
         {children}
       </div>
     </ThemeContext.Provider>

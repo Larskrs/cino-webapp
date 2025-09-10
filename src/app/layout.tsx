@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/hooks/use-theme";
  import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Cino.no",
@@ -25,15 +26,21 @@ const courier = Courier_Prime({
   weight: ["400", "700"]
 });
 
-export default function RootLayout({
+
+
+export default async function RootLayout({
   children,
   session,
 }: Readonly<{ children: React.ReactNode, session: Session }>) {
+
+  const cookieStore = await cookies();
+  const savedTheme = cookieStore.get("theme")?.value as "light" | "dark" | undefined;
+
   return (
     <html lang="en" className={cn(geist.variable, courier.variable)}>
       <body className="bg-white">
         <SessionProvider session={session}>
-          <ThemeProvider>
+          <ThemeProvider initialTheme={savedTheme}>
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </ThemeProvider>
         </SessionProvider>
