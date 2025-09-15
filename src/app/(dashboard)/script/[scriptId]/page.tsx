@@ -1,7 +1,5 @@
 // app/project/[id]/page.tsx
-import ScreenplayEditor from "./_components/ScreenplayEditor";
-import MyEditor from "./editor";
-import RichTextEditor from "./editor";
+import MyEditor from "@/components/editor";
 
 interface PageProps {
   params: Promise<{ scriptId: string }>;

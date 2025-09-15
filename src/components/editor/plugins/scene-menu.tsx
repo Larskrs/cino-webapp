@@ -32,7 +32,7 @@ export function SceneSearchPlugin() {
     const updateScenes = () => {
       editor.update(() => {
         setScenes(getScenesWithIndex(editor));
-      });
+      }, {discrete: true});
     };
     updateScenes();
 
@@ -101,7 +101,7 @@ export function SceneSearchPlugin() {
       <DialogTrigger asChild>
         <Button variant="outline" className="hidden">Search Scenes</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[70vh] overflow-y-auto">
+      <DialogContent className="max-h-[70vh] overflow-y-auto w-full flex flex-col items-center sm:items-start">
         <DialogHeader>
           <DialogTitle>Scenes</DialogTitle>
         </DialogHeader>
@@ -119,7 +119,7 @@ export function SceneSearchPlugin() {
           )}
         />
 
-        <ul className="space-y-2 mt-2">
+        <ul className="space-y-2 mt-2 w-full">
           {filteredScenes.length === 0 && <li className="text-neutral-500">No scenes found</li>}
           {filteredScenes.map((scene) => {
             const isInterior = /^INT\./i.test(scene.text);
@@ -129,17 +129,21 @@ export function SceneSearchPlugin() {
             const Icon = isInterior ? House : isExterior ? Trees : null;
 
             return (
-              <li key={scene.index}>
+              <li key={scene.index} className="flex flex-col w-full" >
                 <Button
                   variant="ghost"
-                  className="w-full cursor-pointer justify-start text-left"
+                  className="w-full cursor-pointer p-0 px-0 justify-start text-left gap-2"
                   onClick={() => goToScene(scene.node)}
                 >
-                  <span className="flex items-center justify-center bg-gray-700/50 size-6 rounded-full text-white text-center">
-                    {scene.index}
-                  </span>
-                  {Icon && <Icon className={cn("ml-2 mr-1 size-6", colors.textMuted)} />}
-                  <span className="text-md">{displayText}</span>
+                  {/* INT/EXT icon – hide on extra small viewports */}
+                  {Icon && (
+                    <Icon
+                      className={cn("flex-shrink-0 size-5 hidden md:flex", colors.textMuted)}
+                    />
+                  )}
+
+                  {/* text with ellipsis */}
+                  <span className="text-md w-auto truncate">{displayText}</span>
                 </Button>
               </li>
             );

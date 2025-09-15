@@ -22,7 +22,7 @@ type ExportPDFButtonProps = {
   containerRef: React.RefObject<HTMLDivElement | null>;
 };
 
-export function ExportPDFButton({ containerRef }: ExportPDFButtonProps) {
+export default function ExportPDFButton({ containerRef }: ExportPDFButtonProps) {
   const [editor] = useLexicalComposerContext();
   const [scenes, setScenes] = useState<{ index: number; text: string; node: LineNode; }[]>()
 
@@ -30,7 +30,7 @@ export function ExportPDFButton({ containerRef }: ExportPDFButtonProps) {
     const updateScenes = () => {
       editor.update(() => {
         setScenes(getScenesWithIndex(editor));
-      });
+      }, {discrete: true});
     };
     updateScenes();
 

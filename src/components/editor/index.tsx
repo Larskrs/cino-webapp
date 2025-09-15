@@ -43,10 +43,10 @@ import { LineSwitchPlugin } from "./plugins/line-switch";
 import { CharacterQuickSwitch } from "./plugins/character-switch";
 import NextRecommendedTypePlugin from "./plugins/next-type";
 import { SceneSearchPlugin } from "./plugins/scene-menu";
-import {ExportPDFButton} from "./plugins/export-pdf";
 import { CommandIcon } from "lucide-react";
 import ScreenplayPersistencePlugin from "./plugins/persistance-plugin";
-
+import dynamic from "next/dynamic";
+const ExportPDFButton = dynamic(()=>import('./plugins/export-pdf'))
 // Simple icon components to avoid extra deps
 const Dot: React.FC<{ size?: number }> = ({ size = 12 }) => (
   <span style={{ display: "inline-block", width: size, height: size, borderRadius: "50%", background: "currentColor" }} />
@@ -317,7 +317,7 @@ useEffect(() => {
           const nextType = cycleType(currentType);
           setLineTypeSafely(editor, lineNode, nextType);
         }
-      });
+      }, {discrete: true});
       return true;
     },
     0
@@ -347,7 +347,7 @@ useEffect(() => {
 
           setLineTypeSafely(editor, lineNode, targetType);
         }
-      });
+      }, {discrete: true});
       e.preventDefault();
     };
 
@@ -373,26 +373,6 @@ useEffect(() => {
     unregisterLineTransform();
   };
 }, [editor]);
-  
-useEffect(() => {
-  editor.update(() => {
-    const root = $getRoot();
-    if (root.getFirstChild() != null) return;
-
-    const seed = defaultContent?.lines ?? [
-      { type: "scene", content: "INT. LIVING ROOM — NIGHT" },
-      { type: "action", content: "A cat jumps onto the table." },
-      { type: "character", content: "ALICE" },
-      { type: "dialogue", content: "We should leave." },
-    ];
-
-    seed.forEach((line) => {
-      const p = new LineNode(line.type);
-      p.append(...createTextNodesFromContent(line.content));
-      root.append(p);
-    });
-  });
-}, [editor, defaultContent]);
 
   return null;
 }
@@ -526,15 +506,15 @@ function Shortcuts () {
               {/* Shortcut key combination badge */}
               <span
                 className={cn(
-                  "inline-block px-2 py-1 rounded bg-gray-700 text-white text-sm font-mono",
-                  colors.background
+                  "inline-block px-2 py-1 rounded bg-gray-900 text-white text-sm font-mono",
+                  colors.components.dialog.button
                 )}
               >
                 {shortcut.combination}
               </span>
               
               {/* Description */}
-              <span className="text-sm text-gray-300">{shortcut.description}</span>
+              <span className={colors.textMuted}>{shortcut.description}</span>
             </li>
           ))}
         </ul>

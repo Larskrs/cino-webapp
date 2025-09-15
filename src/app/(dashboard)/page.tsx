@@ -5,7 +5,6 @@ import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 import { ProjectList } from "../_components/projects/list-projects";
 import { CreateProjectDialog } from "../_components/projects/create-project";
-import ScreenplayMarkdownEditor from "./script/[scriptId]/editor";
 
 export default async function Home() {
 

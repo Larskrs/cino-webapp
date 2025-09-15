@@ -33,7 +33,8 @@ interface ThemeColors {
     }
     dialog: {
       container: string,
-      title: string
+      title: string,
+      button: string,
     }
   }
 }
@@ -65,12 +66,13 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     components: {
       tooltip: "bg-gray-500 fill-gray-500",
       dropdown: {
-        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/75 text-zinc-700",
+        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/25 text-zinc-400",
         button: "text-zinc-600 bg-transparent border-transparent",
       },
       dialog: {
-        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/75 text-zinc-700",
-        title: "text-zinc-900"
+        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/100 text-zinc-700",
+        title: "text-zinc-900",
+        button: "bg-gray-900 text-white"
       },
     }
   },
@@ -103,8 +105,9 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         button: "text-zinc-600 bg-transparent border-transparent",
       },
       dialog: {
-        container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/75 text-zinc-700",
-        title: "text-zinc-900"
+        container: "border-1 border-zinc-800 backdrop-blur-lg supports-[backdrop-filter]:bg-zinc-700/10 text-zinc-300",
+        title: "text-zinc-900",
+        button: "bg-zinc-100 text-zinc-900"
       },
     }
   },
@@ -138,7 +141,8 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
       },
       dialog: {
         container: "border-1 border-zinc-800 backdrop-blur-lg supports-[backdrop-filter]:bg-zinc-700/10 text-zinc-300",
-        title: "text-zinc-200"
+        title: "text-zinc-200",
+        button: "bg-zinc-100 text-zinc-900"
       },
     }
   },
