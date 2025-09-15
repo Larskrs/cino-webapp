@@ -571,7 +571,7 @@ export default function ScreenplayEditor({ defaultContent, scriptId = "no-storag
 
           <div
             className={cn("mx-auto border-1 rounded-sm shadow-xl relative overflow-auto",
-              colors.cardBackground, colors.cardBorder
+              colors.editor.background, colors.cardBorder
             )}
             style={{
               width: "var(--page-w)",

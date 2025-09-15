@@ -19,6 +19,7 @@ interface ThemeColors {
     }
   },
   editor: {
+    background: string,
     toolbar: {
       background: string
       activeButton: string
@@ -42,7 +43,7 @@ interface ThemeColors {
 // Original themes
 const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
   light: {
-    background: "bg-gray-200",
+    background: "bg-white",
     cardBackground: "bg-white",
     cardBorder: "border-gray-300",
     buttonBackground: "bg-white",
@@ -57,6 +58,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
       }
     },
     editor: {
+      background: "bg-white",
       toolbar: {
         background: "supports-[backdrop-filter]:bg-white/50",
         activeButton: "text-white border-transparent bg-indigo-500",
@@ -92,6 +94,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
       }
     },
     editor: {
+      background: "bg-[url('https://i.redd.it/dc8pzfnvq6wb1.png')]",
       toolbar: {
         background: "supports-[backdrop-filter]:bg-white/50",
         activeButton: "text-white border-transparent bg-indigo-900",
@@ -127,6 +130,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
       }
     },
     editor: {
+      background: "bg-zinc-900/75",
       toolbar: {
         background: "bg-black/25 border-1 border-white/10",
         activeButton: "text-white bg-indigo-600 border-transparent hover:border-transparent transition-none",

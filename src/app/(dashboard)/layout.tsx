@@ -10,7 +10,7 @@ export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
 
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, colors } = useTheme()
 
 
   const links: NavLink[] = [
@@ -21,7 +21,7 @@ export default function Layout({
   ];
 
   return (
-    <>
+    <div className={colors.background}>
         <Nav
           logo={<Link href="/" className="font-bold flex flex-row gap-2"><Clapperboard /> Cino.no</Link>}
           links={links}
@@ -29,6 +29,6 @@ export default function Layout({
           maxPrimaryLinks={6}
         />
           {children}
-    </>
+    </div>
   );
 }

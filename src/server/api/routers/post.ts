@@ -16,14 +16,25 @@ export const postRouter = createTRPCRouter({
     }),
 
   create: protectedProcedure
-    .input(z.object({ name: z.string().min(1) }))
+    .input(
+      z.object({
+        body: z.string()
+          .min(1, "Project name is required")
+          .max(125, "Post content exceeds maximum length"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.post.create({
+      const userId = ctx.session.user.id;
+      const { body } = input
+
+      const post = await ctx.db.post.create({
         data: {
-          name: input.name,
-          createdBy: { connect: { id: ctx.session.user.id } },
+          body,
+          createdBy: { connect: { id: userId } },
         },
       });
+
+      return post;
     }),
 
   getLatest: protectedProcedure.query(async ({ ctx }) => {
@@ -33,6 +44,19 @@ export const postRouter = createTRPCRouter({
     });
 
     return post ?? null;
+  }),
+
+  list: protectedProcedure.query(async ({ ctx }) => {
+    // const userId = ctx.session.user.id;
+
+    const posts = await ctx.db.post.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        createdBy: true,
+      }
+    });
+
+    return posts;
   }),
 
   getSecretMessage: protectedProcedure.query(() => {
