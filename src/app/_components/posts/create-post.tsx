@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "@/trpc/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { PlusSquare } from "lucide-react";
@@ -48,12 +49,12 @@ export function CreatePostDialog({ className }: { className?: string }) {
           }}
           className="w-full max-w-md flex flex-col gap-3"
         >
-          <Input
-            type="text"
+          <Textarea
             placeholder="Post content..."
             value={body}
             onChange={(e) => setBody(e.target.value)}
             required
+            maxLength={125}
           />
 
           {errorMsg && (

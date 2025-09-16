@@ -64,7 +64,7 @@ model Post {
   createdById String
   
   body        String
-  attachments String[] // Links of attachments
+  attachments Json?    // Links of attachments
 
 
   @@index([id])

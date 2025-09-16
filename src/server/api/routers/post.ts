@@ -6,6 +6,35 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 
+async function detectAttachmentType(url: string): Promise<"image" | "video" | null> {
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+
+    const contentType = res.headers.get("content-type") || "";
+
+    if (contentType.startsWith("image/")) {
+      return "image";
+    }
+
+    if (contentType.startsWith("video/")) {
+      return "video";
+    }
+
+    return null;
+  } catch (err) {
+    console.error("HEAD request failed for", url, err);
+    return null;
+  }
+}
+
+function extractUrls(text: string): string[] {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.match(urlRegex) || [];
+}
+function stripUrls(text: string): string {
+  return text.replace(/https?:\/\/[^\s]+/g, "").trim();
+}
+
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
@@ -15,21 +44,40 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  create: protectedProcedure
+    create: protectedProcedure
     .input(
       z.object({
-        body: z.string()
-          .min(1, "Project name is required")
+        body: z
+          .string()
+          .min(1, "Post content is required")
           .max(125, "Post content exceeds maximum length"),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { body } = input
+      const { body } = input;
+
+      // Extract URLs from body
+      const urls = extractUrls(body);
+
+      // HEAD request each to check media type
+      const attachmentResults = await Promise.all(
+        urls.map(async (u) => {
+          const type = await detectAttachmentType(u);
+          if (type) {
+            return { url: u, type };
+          }
+          return null;
+        })
+      );
+
+      const attachments = attachmentResults.filter(Boolean) as { url: string; type: string }[];
 
       const post = await ctx.db.post.create({
         data: {
-          body,
+          body: stripUrls(body),
+          // store as JSON (needs Prisma update)
+          attachments,
           createdBy: { connect: { id: userId } },
         },
       });

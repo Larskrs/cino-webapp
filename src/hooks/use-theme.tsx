@@ -214,11 +214,11 @@ export function ThemeProvider({ children, initialTheme }: { children: ReactNode;
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, colors: THEMES[theme] }}>
-      <div
+      <body
         className={`${THEMES[theme].background} ${THEMES[theme].text} min-h-screen`}
       >
         {children}
-      </div>
+      </body>
     </ThemeContext.Provider>
   );
 }
