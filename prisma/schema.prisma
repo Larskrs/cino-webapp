@@ -45,6 +45,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
+  files         File[]
   memberships   ProjectMember[]
 }
 
@@ -112,6 +113,8 @@ model File {
   isDirectory Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  storage     String    
+
 
   // Hierarchy
   parentId    String?
@@ -119,8 +122,12 @@ model File {
   children    File[]    @relation("FileHierarchy")
 
   // Project association
-  projectId   String
-  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Creator
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   // Labels
   labels      FileLabel[]

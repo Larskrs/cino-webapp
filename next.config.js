@@ -4,13 +4,20 @@
  */
 import "./src/env.js";
 
-/** @type {import("next").NextConfig} */
-const config = {
-    images: {
-        remotePatterns: [
-            new URL('https://cdn.discordapp.com/avatars/**')
-        ]
-    }
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
+  },
 };
 
-export default config;
+export default nextConfig;

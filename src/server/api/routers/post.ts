@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { octetInputParser } from '@trpc/server/http';
 
 import {
   createTRPCRouter,
@@ -35,6 +36,11 @@ function stripUrls(text: string): string {
   return text.replace(/https?:\/\/[^\s]+/g, "").trim();
 }
 
+const attachmentSchema = z.object({
+  url: z.string().url(),
+  type: z.enum(["image", "video"]),
+});
+
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
@@ -51,33 +57,31 @@ export const postRouter = createTRPCRouter({
           .string()
           .min(1, "Post content is required")
           .max(125, "Post content exceeds maximum length"),
+        attachments: z
+          .array(attachmentSchema).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { body } = input;
+      const { body, attachments = [] } = input;
 
-      // Extract URLs from body
+      // Extract URLs from text body (still works)
       const urls = extractUrls(body);
-
-      // HEAD request each to check media type
       const attachmentResults = await Promise.all(
         urls.map(async (u) => {
           const type = await detectAttachmentType(u);
-          if (type) {
-            return { url: u, type };
-          }
-          return null;
+          return type ? { url: u, type } : null;
         })
       );
-
-      const attachments = attachmentResults.filter(Boolean) as { url: string; type: string }[];
+      const linkAttachments = attachmentResults.filter(Boolean) as {
+        url: string;
+        type: "image" | "video";
+      }[];
 
       const post = await ctx.db.post.create({
         data: {
           body: stripUrls(body),
-          // store as JSON (needs Prisma update)
-          attachments,
+          attachments: [...attachments, ...linkAttachments], // ✅ combine uploads + links
           createdBy: { connect: { id: userId } },
         },
       });

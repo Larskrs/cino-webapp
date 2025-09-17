@@ -144,9 +144,9 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         button: "",
       },
       dialog: {
-        container: "border-1 border-zinc-800 backdrop-blur-lg supports-[backdrop-filter]:bg-zinc-700/10 text-zinc-300",
+        container: "border-1 border-zinc-800 backdrop-blur-lg supports-[backdrop-filter]:bg-zinc-950/75 text-zinc-300",
         title: "text-zinc-200",
-        button: "bg-zinc-100 text-zinc-900"
+        button: "bg-zinc-100 hover:bg-zinc-200 text-zinc-900"
       },
     }
   },

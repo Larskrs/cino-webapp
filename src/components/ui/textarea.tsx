@@ -21,7 +21,7 @@ function Textarea({
     maxLength && maxLength > 0 ? Math.min((value.length / maxLength) * 100, 100) : 0
 
   return (
-    <div className="w-full space-y-1">
+    <div className="w-full space-y-1 relative">
       <textarea
         {...props}
         data-slot="textarea"
@@ -29,7 +29,7 @@ function Textarea({
         onChange={handleChange}
         maxLength={maxLength}
         className={cn(
-          "border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          "border-input pl-4 pr-8 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
           className
         )}
       />
@@ -42,7 +42,7 @@ function Textarea({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.2 }}
-            className="space-y-1 flex gap-4 items-center"
+            className="space-y-1 absolute top-2 right-2 flex gap-4 items-center"
           >
             {/* Remaining text */}
             <div
@@ -53,7 +53,7 @@ function Textarea({
                   : ""
               )}
             >
-              {remaining} characters left
+              {remaining}
             </div>
           </motion.div>
         )}

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTheme } from "@/hooks/use-theme";// adjust import path if needed
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function PostList() {
   const [posts] = api.post.list.useSuspenseQuery();
@@ -62,21 +63,22 @@ export function PostList() {
                   </p>
 
                   {Array.isArray(p.attachments) && p.attachments.length > 0 && (
-                    <div className="mt-3 flex flex-col gap-3">
+                    <div className={cn("mt-3 flex flex-col gap-3 max-h-160 relative overflow-hidden rounded-xl", colors.cardBorder)}>
                       {p.attachments.map((att: any, i: number) => (
                         att.type === "image" ? (
-                          <img
-                            alt={att.title}
+                          <Image
+                            width={720}
+                            height={720}
+                            alt={att.alt}
                             src={att.url}
                             key={i}
-                            className="w-full h-auto bg-center bg-cover rounded-xl shadow-sm"
-                            
+                            className={cn("abslute max-h-160 inset-0")}
                           />
                         ) : att.type === "video" ? (
                           <video
                             key={i}
                             controls
-                            className="w-full max-h-80 rounded-xl shadow-sm border"
+                            className={cn("w-full max-h-160 rounded-xl shadow-sm border", colors.cardBorder)}
                             src={att.url}
                           />
                         ) : null

@@ -40,12 +40,16 @@
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@trpc/server": "^11.0.0",
+    "@types/formidable": "^3.4.5",
     "@types/ws": "^8.18.1",
     "@y/websocket-server": "^0.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "draft-js": "^0.11.7",
+    "file-type": "^20.5.0",
+    "formidable": "^3.5.4",
     "framer-motion": "^12.23.12",
+    "fs": "^0.0.1-security",
     "html2canvas": "^1.4.1",
     "html2pdf-ts": "^1.2.23",
     "html2pdf.js": "^0.11.3",
@@ -66,7 +70,8 @@
     "y-redis": "^1.0.3",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.27",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "zod-form-data": "^3.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

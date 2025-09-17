@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "public"."ProjectRole" AS ENUM ('admin', 'manager', 'member', 'guest', 'banned');
+
 -- CreateTable
 CREATE TABLE "public"."Account" (
     "id" TEXT NOT NULL,
@@ -48,10 +51,11 @@ CREATE TABLE "public"."VerificationToken" (
 -- CreateTable
 CREATE TABLE "public"."Post" (
     "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdById" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "attachments" JSONB,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
@@ -70,7 +74,7 @@ CREATE TABLE "public"."Project" (
 -- CreateTable
 CREATE TABLE "public"."ProjectMember" (
     "id" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
+    "role" "public"."ProjectRole" NOT NULL DEFAULT 'banned',
     "userId" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
 
@@ -84,8 +88,10 @@ CREATE TABLE "public"."File" (
     "isDirectory" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "storage" TEXT NOT NULL,
     "parentId" TEXT,
-    "projectId" TEXT NOT NULL,
+    "projectId" TEXT,
+    "createdById" TEXT NOT NULL,
 
     CONSTRAINT "File_pkey" PRIMARY KEY ("id")
 );
@@ -95,6 +101,7 @@ CREATE TABLE "public"."Script" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
+    "archived" BOOLEAN NOT NULL,
 
     CONSTRAINT "Script_pkey" PRIMARY KEY ("id")
 );
@@ -108,6 +115,32 @@ CREATE TABLE "public"."ScriptVersion" (
     "scriptId" TEXT NOT NULL,
 
     CONSTRAINT "ScriptVersion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Scene" (
+    "id" TEXT NOT NULL,
+    "versionId" TEXT,
+    "sceneNumber" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
+    "orderIndex" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Scene_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Line" (
+    "id" TEXT NOT NULL,
+    "sceneId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "orderIndex" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Line_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -152,7 +185,7 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "public"."VerificationToken
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "public"."VerificationToken"("identifier", "token");
 
 -- CreateIndex
-CREATE INDEX "Post_name_idx" ON "public"."Post"("name");
+CREATE INDEX "Post_id_idx" ON "public"."Post"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProjectMember_userId_projectId_key" ON "public"."ProjectMember"("userId", "projectId");
@@ -182,10 +215,19 @@ ALTER TABLE "public"."File" ADD CONSTRAINT "File_parentId_fkey" FOREIGN KEY ("pa
 ALTER TABLE "public"."File" ADD CONSTRAINT "File_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "public"."Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "public"."File" ADD CONSTRAINT "File_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."Script" ADD CONSTRAINT "Script_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "public"."Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."ScriptVersion" ADD CONSTRAINT "ScriptVersion_scriptId_fkey" FOREIGN KEY ("scriptId") REFERENCES "public"."Script"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Scene" ADD CONSTRAINT "Scene_versionId_fkey" FOREIGN KEY ("versionId") REFERENCES "public"."ScriptVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Line" ADD CONSTRAINT "Line_sceneId_fkey" FOREIGN KEY ("sceneId") REFERENCES "public"."Scene"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Label" ADD CONSTRAINT "Label_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "public"."Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
