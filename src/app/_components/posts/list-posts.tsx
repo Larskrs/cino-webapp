@@ -24,7 +24,7 @@ export function PostList() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl gap-0 flex flex-col divide-y">
+    <div className="mx-auto w-full max-w-3xl gap-0 flex flex-col divide-y">
       {posts.map((p) => {
 
         return (

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Image, PlusSquare, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "@/hooks/use-theme";
+import Video from "../video";
 
 export default function CreatePostDialog({ className }: { className?: string }) {
   const utils = api.useUtils();
@@ -147,7 +148,7 @@ export default function CreatePostDialog({ className }: { className?: string }) 
             <div className="relative w-full max-w-md">
               <div className="relative rounded-md overflow-hidden bg-gray-100">
                 {isVideo ? (
-                  <video
+                  <Video
                     src={previewUrl}
                     controls
                     className="w-full max-h-96 object-contain"
@@ -160,7 +161,7 @@ export default function CreatePostDialog({ className }: { className?: string }) 
                 <div className="absolute top-2 right-2 flex gap-1">
                   <div
                     onClick={() => setFile(null)}
-                    className={cn("cursor-pointer bg-black/50 px-3 text-sm py-1 rounded-full flex items-center justify-center")}
+                    className={cn("cursor-pointer bg-black/50 text-white px-3 text-sm py-1 rounded-full flex items-center justify-center")}
                     aria-label="Remove media"
                     >
                     {file?.name}
@@ -168,7 +169,7 @@ export default function CreatePostDialog({ className }: { className?: string }) 
                   <button
                     type="button"
                     onClick={() => setFile(null)}
-                    className={cn("relative cursor-pointer w-8 h-8 bg-black/50 rounded-full flex items-center justify-center")}
+                    className={cn("relative cursor-pointer text-white w-8 h-8 bg-black/50 rounded-full flex items-center justify-center")}
                     aria-label="Remove media"
                     >
                     <X className="w-4 h-4" />
