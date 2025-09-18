@@ -1,14 +1,14 @@
 import "@/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Courier_Prime, Cutive, Geist } from "next/font/google";
+import { Courier_Prime, Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/hooks/use-theme";
- import { SessionProvider } from "next-auth/react";
-import type { Session } from "next-auth";
+import { SessionProvider } from "next-auth/react";
 import { cookies } from "next/headers";
+import { auth } from "@/server/auth";
 
 export const metadata: Metadata = {
   title: "Cino.no",
@@ -23,26 +23,32 @@ const geist = Geist({
 const courier = Courier_Prime({
   subsets: ["latin"],
   variable: "--font-courier",
-  weight: ["400", "700"]
+  weight: ["400", "700"],
 });
-
-
 
 export default async function RootLayout({
   children,
-  session,
-}: Readonly<{ children: React.ReactNode, session: Session }>) {
-
+}: {
+  children: React.ReactNode;
+}) {
   const cookieStore = await cookies();
-  const savedTheme = cookieStore.get("theme")?.value as "light" | "dark" | undefined;
+  const savedTheme = cookieStore.get("theme")?.value as
+    | "light"
+    | "dark"
+    | undefined;
+
+  // fetch session on the server
+  const session = await auth();
 
   return (
     <html lang="en" className={cn(geist.variable, courier.variable)}>
-      <ThemeProvider initialTheme={savedTheme}>
+      <body>
+        <ThemeProvider initialTheme={savedTheme}>
           <SessionProvider session={session}>
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </SessionProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
