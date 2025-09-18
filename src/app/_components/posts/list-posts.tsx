@@ -7,6 +7,7 @@ import { useTheme } from "@/hooks/use-theme";// adjust import path if needed
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import Video from "../video";
 
 export function PostList() {
   const [posts] = api.post.list.useSuspenseQuery();
@@ -75,7 +76,9 @@ export function PostList() {
                             className={cn("abslute max-h-160 inset-0")}
                           />
                         ) : att.type === "video" ? (
-                          <video
+                          <Video
+                            autoPlayOnView
+                            loop
                             key={i}
                             controls
                             className={cn("w-full max-h-160 rounded-xl shadow-sm border", colors.cardBorder)}
