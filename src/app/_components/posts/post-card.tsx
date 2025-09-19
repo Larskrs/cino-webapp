@@ -8,12 +8,16 @@ import Image from "next/image";
 import Video from "../video";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@/server/api/root";
+import { useState } from "react";
+import { PostBody } from "./post-body";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
 
 export function PostCard({ post }: { post: Post}) {
   const { colors } = useTheme();
+
+  const [showMore, setShowMore] = useState(false)
 
   return (
     <Card
@@ -43,12 +47,7 @@ export function PostCard({ post }: { post: Post}) {
               </span>
             </div>
 
-            {/* Body text */}
-            <p
-              className={`mt-1 text-lg leading-snug whitespace-pre-line break-words ${colors.text}`}
-            >
-              {post.body}
-            </p>
+            <PostBody post={post} colors={colors} />
 
             {Array.isArray(post.attachments) && post.attachments.length > 0 && (
               <div

@@ -56,7 +56,7 @@ export const postRouter = createTRPCRouter({
         body: z
           .string()
           .min(1, "Post content is required")
-          .max(125, "Post content exceeds maximum length"),
+          .max(512, "Post content exceeds maximum length"),
         attachments: z
           .array(attachmentSchema).optional(),
       })

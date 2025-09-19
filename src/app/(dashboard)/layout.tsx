@@ -7,6 +7,7 @@ import { Clapperboard, Moon, Sun } from "lucide-react";
 import { useTheme, type ThemeColors, type ThemeKey } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function ThemeSwitcher({
   theme,
@@ -55,7 +56,12 @@ export default function Layout({
   return (
     <div className={colors.background}>
         <Nav
-          logo={<Link href="/" className="font-bold flex flex-row gap-2"><Clapperboard /> Cino.no</Link>}
+          logo={<React.Fragment>
+              {theme == "dark"
+                ? <Link href="/" className="font-bold flex flex-row gap-2"><Image className="h-10 w-fit" alt="cino.no logo" src={"/svg/logo/CINO-WHITE.svg"} width={720} height={200} /></Link>
+                : <Link href="/" className="invert font-bold flex flex-row gap-2"><Image className="h-10 w-fit" alt="cino.no logo" src={"/svg/logo/CINO-WHITE.svg"} width={720} height={200} /></Link>
+              }
+            </React.Fragment>}
           links={links}
           rightSlot={<Button asChild><Link href="/api/auth/signin">Sign in</Link></Button>}
           maxPrimaryLinks={6}
