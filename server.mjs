@@ -1,98 +1,64 @@
-// // server.js
-// import WebSocket, { WebSocketServer } from "ws";
-// import * as Y from "yjs";
-// import IORedis from "ioredis";
+// server.mjs
+import dotenv from "dotenv";
+dotenv.config();
 
-// const PORT = 1234;
+import { createServer } from "http";
+import { parse } from "url";
+import next from "next";
+import logger from "./logger.mjs";
 
-// // KeyDB connection
-// const redisPub = new IORedis({
-//   host: "localhost",
-//   port: 6379,
-//   password: "mysecurepass",
-// });
-// const redisSub = new IORedis({
-//   host: "localhost",
-//   port: 6379,
-//   password: "mysecurepass",
-// });
+const port = parseInt(process.env.PORT ?? "3000", 10);
+const dev = process.env.NODE_ENV !== "production";
+const app = next({ dev, turbo: dev });
+const handle = app.getRequestHandler();
 
-// const docs = new Map(); // In-memory Yjs docs
-// const wss = new WebSocketServer({ port: PORT });
+logger.info(`Starting up Next.js server at port: ${port}...`);
 
-// wss.on("connection", (ws) => {
-//   console.log("[WS] Client connected");
-//   const subscribedDocs = new Set();
+app
+  .prepare()
+  .then(() => {
+    const server = createServer(async (req, res) => {
+      try {
+        const parsedUrl = parse(req?.url || "no-url", true);
 
-//   const subHandler = (channel, message) => {
-//     if (ws.readyState === WebSocket.OPEN) {
-//       try {
-//         ws.send(JSON.stringify({ type: "sync", doc: channel, update: message }));
-//         console.log(`[WS] Sent update to client for doc ${channel}`);
-//       } catch (err) {
-//         console.error("[WS] Failed to send update", err);
-//       }
-//     }
-//   };
+        // Log all requests
+        logger.info(`Incoming request: ${req.method} ${req.url}`);
 
-//   ws.on("message", async (message) => {
-//     console.log("[WS] Received message:", message.toString());
-//     try {
-//       const data = JSON.parse(message.toString());
-//       const docName = data.doc || data.room; // fallback
-//       if (!docName) {
-//         console.warn("[WS] No doc specified in message");
-//         return;
-//       }
+        await handle(req, res, parsedUrl);
+      } catch (err) {
+        logger.error("Error while handling request", { err });
+        res.statusCode = 500;
+        res.end("Internal Server Error");
+      }
+    });
 
-//       if (!docs.has(docName)) {
-//         docs.set(docName, new Y.Doc());
-//         console.log(`[Yjs] Created new doc: ${docName}`);
-//       }
+    server.listen(port, () => {
+      logger.info(
+        `> Server listening at http://localhost:${port} as ${
+          dev ? "development" : process.env.NODE_ENV
+        }`
+      );
+      logger.info("Server started");
+      logger.info("Using Database:", { url: process.env.DATABASE_URL });
+    });
 
-//       const doc = docs.get(docName);
+    // Catch server-level errors
+    server.on("error", (err) => {
+      logger.error("Server error", { error: err.stack });
+    });
+  })
+  .catch((err) => {
+    logger.error("Failed to prepare Next.js app", { error: err.stack });
+    process.exit(1);
+  });
 
-//       // Subscribe to Redis channel if not already
-//       if (!subscribedDocs.has(docName)) {
-//         await redisSub.subscribe(docName);
-//         subscribedDocs.add(docName);
-//         console.log(`[Redis] Subscribed to channel: ${docName}`);
-//       }
+// Catch unhandled promise rejections
+process.on("unhandledRejection", (reason) => {
+  logger.error("Unhandled Rejection", { reason });
+});
 
-//       if (data.type === "sync" && data.update) {
-//         const update = Buffer.from(data.update, "base64");
-//         Y.applyUpdate(doc, update);
-//         console.log(`[Yjs] Applied update to doc: ${docName}`);
-
-//         // Publish to other subscribers
-//         await redisPub.publish(docName, data.update);
-//         console.log(`[Redis] Published update to channel: ${docName}`);
-//       }
-//     } catch (err) {
-//       console.error("[WS] Failed to process message", err);
-//     }
-//   });
-
-//   redisSub.on("message", subHandler);
-
-//   ws.on("close", () => {
-//     console.log("[WS] Client disconnected");
-//     // Unsubscribe from all docs
-//     subscribedDocs.forEach((docName) => {
-//       redisSub.unsubscribe(docName);
-//       console.log(`[Redis] Unsubscribed from channel: ${docName}`);
-//     });
-//   });
-
-//   ws.on("error", (err) => {
-//     console.error("[WS] Connection error:", err);
-//   });
-// });
-
-// wss.on("listening", () => {
-//   console.log(`[WS] Yjs KeyDB WS server running on ws://localhost:${PORT}`);
-// });
-
-// wss.on("error", (err) => {
-//   console.error("[WS] Server error:", err);
-// });
+// Catch uncaught exceptions
+process.on("uncaughtException", (err) => {
+  logger.error("Uncaught Exception", { error: err.stack });
+  process.exit(1); // optional, depending if you want to crash
+});
