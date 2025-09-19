@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 
 export type ThemeKey = "light" | "dark" | "funky";
 
-interface ThemeColors {
+export interface ThemeColors {
   background: string;
   cardBackground: string;
   cardBorder: string;
@@ -43,9 +43,9 @@ interface ThemeColors {
 // Original themes
 const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
   light: {
-    background: "bg-white",
+    background: "bg-zinc-100",
     cardBackground: "bg-white",
-    cardBorder: "border-gray-300",
+    cardBorder: "border-2 border-zinc-200",
     buttonBackground: "bg-white",
     buttonText: "text-zinc-800",
     text: "text-black",
@@ -117,7 +117,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
   dark: {
     background: "bg-zinc-950",
     cardBackground: "bg-zinc-900/75",
-    cardBorder: "border-zinc-800",
+    cardBorder: "border-2 border-zinc-700",
     buttonBackground: "bg-gray-900/75",
     buttonText: "text-white",
     text: "text-white",

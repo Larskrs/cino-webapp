@@ -24,16 +24,15 @@ export function PostList() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl gap-0 flex flex-col divide-y">
+    <div className="mx-auto w-full max-w-3xl gap-2 flex flex-col divide-y">
       {posts.map((p) => {
 
         return (
           <Card
             key={p.id}
             className={cn(
-              "flex items-start border-collapse border-b-0 gap-3 px-4 pt-3 pb-4 rounded-none",
-              colors.background,
-              colors.cardBorder
+              "flex items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
+              colors.cardBackground,
             )}
           >
             {/* Content */}
@@ -64,7 +63,7 @@ export function PostList() {
                   </p>
 
                   {Array.isArray(p.attachments) && p.attachments.length > 0 && (
-                    <div className={cn("mt-3 flex flex-col gap-3 max-h-160 relative overflow-hidden rounded-xl", colors.cardBorder)}>
+                    <div className={cn("mt-3 flex flex-col gap-3 max-h-160 relative overflow-hidden rounded-xl")}>
                       {p.attachments.map((att: any, i: number) => (
                         att.type === "image" ? (
                           <Image
@@ -73,7 +72,7 @@ export function PostList() {
                             alt={att.alt}
                             src={att.url}
                             key={i}
-                            className={cn("abslute max-h-160 inset-0")}
+                            className={cn("abslute inset-0")}
                           />
                         ) : att.type === "video" ? (
                           <Video
@@ -81,7 +80,7 @@ export function PostList() {
                             loop
                             key={i}
                             controls
-                            className={cn("w-full max-h-160 rounded-xl shadow-sm border", colors.cardBorder)}
+                            className={cn("w-full rounded-xl")}
                             src={att.url}
                           />
                         ) : null

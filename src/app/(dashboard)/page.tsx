@@ -16,8 +16,6 @@ export default function Home() {
       <main className={cn("flex min-h-screen flex-col items-center justify-start")}>
         <div className="max-w-3xl flex flex-col items-center justify-start gap-4 px-4 pt-4">
           <div className="max-w-3xl flex flex-col gap-2">
-
-            {session?.data?.user && <div className="mx-auto flex flex-row items-start w-full max-w-5xl"><CreateProjectDialog /></div>}
             {session?.data?.user && <ProjectList />}
             {session?.data?.user && <div className="mx-auto flex flex-row items-start w-full max-w-5xl"><CreatePostDialog /></div>}
             <PostList />

@@ -42,13 +42,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={cn(geist.variable, courier.variable)}>
-      <body>
-        <ThemeProvider initialTheme={savedTheme}>
-          <SessionProvider session={session}>
-            <TRPCReactProvider>{children}</TRPCReactProvider>
-          </SessionProvider>
-        </ThemeProvider>
-      </body>
+      <ThemeProvider initialTheme={savedTheme}>
+        <SessionProvider session={session}>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </SessionProvider>
+      </ThemeProvider>
     </html>
   );
 }

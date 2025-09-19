@@ -32,7 +32,7 @@ export default async function ProjectPage({ params }: PageProps) {
 
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-start bg-gray-200 text-black">
+      <main className="flex min-h-screen flex-col items-center justify-start">
         
         <div className="flex flex-row flex-wrap gap-2 items-center justify-start w-full max-w-5xl px-4 mb-4 mt-4">
             <h1 className="text-2xl font-bold">{project.name}</h1>

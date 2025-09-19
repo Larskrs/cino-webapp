@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { cn } from "@/lib/utils";
 import { PlusSquare } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { useTheme } from "@/hooks/use-theme";
 
 export function CreateScriptDialog({
   projectId,
@@ -33,10 +34,12 @@ export function CreateScriptDialog({
     },
   });
 
+  const { colors } = useTheme()
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild className={cn("cursor-pointer", className)}>
-        <Button>
+        <Button className={colors.components.dialog.button}>
           <PlusSquare />
           New Script
         </Button>

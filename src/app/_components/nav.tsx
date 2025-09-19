@@ -39,7 +39,8 @@ import { useTheme } from "@/hooks/use-theme";
 // Types
 // ---------------------------------------------
 export type NavLink = {
-  label: string;
+  label: string | React.ReactNode;
+  key: string,
   href?: string;
   onClick?: () => void,
   badge?: string;
@@ -114,7 +115,7 @@ export default function Nav({
           <NavigationMenu className="max-w-full">
             <NavigationMenuList className="flex max-w-[70vw] flex-1 items-center gap-1">
               {primary.map((item) => (
-                <NavigationMenuItem key={item.label}>
+                <NavigationMenuItem key={item.key}>
                   {item.children && item.children.length > 0 ? (
                     <NestedDropdown item={item} activePath={pathname} />
                   ) : (
@@ -137,7 +138,7 @@ export default function Nav({
                       <DropdownMenuSeparator />
                       <DropdownMenuGroup>
                         {overflow.map((item) => (
-                          <OverflowItem key={item.label} item={item} activePath={pathname} />
+                          <OverflowItem key={item.key} item={item} activePath={pathname} />
                         ))}
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
@@ -221,7 +222,7 @@ function DropdownGroups({ items, activePath }: { items: NavLink[]; activePath: s
       {items.map((child) => {
         if (child.children && child.children.length > 0) {
           return (
-            <DropdownMenuSub key={child.label}>
+            <DropdownMenuSub key={child.key}>
               <DropdownMenuSubTrigger>
                 <span className="flex items-center justify-between gap-2">
                   {child.label}
@@ -235,7 +236,7 @@ function DropdownGroups({ items, activePath }: { items: NavLink[]; activePath: s
           );
         }
         return (
-          <DropdownMenuItem key={child.label} asChild>
+          <DropdownMenuItem key={child.key} asChild>
             <Link
               href={child.href ?? "#"}
               className={cn(
@@ -292,7 +293,7 @@ function MobileList({ links, onNavigate }: { links: NavLink[]; onNavigate?: () =
     <nav className="px-2 pb-6">
       <ul className="flex flex-col gap-1">
         {links.map((item) => (
-          <MobileNode key={item.label} item={item} depth={0} onNavigate={onNavigate} />
+          <MobileNode key={item.key} item={item} depth={0} onNavigate={onNavigate} />
         ))}
       </ul>
     </nav>
@@ -335,7 +336,7 @@ function MobileNode({ item, depth, onNavigate }: { item: NavLink; depth: number;
       {hasChildren && open && (
         <ul className="mt-1 flex flex-col gap-1 border-l pl-3">
           {item.children!.map((child) => (
-            <MobileNode key={child.label} item={child} depth={depth + 1} onNavigate={onNavigate} />
+            <MobileNode key={child.key} item={child} depth={depth + 1} onNavigate={onNavigate} />
           ))}
         </ul>
       )}

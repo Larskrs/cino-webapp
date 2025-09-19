@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { api } from "@/trpc/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { cn } from "@/lib/utils";
 import { PlusSquare } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { useTheme } from "@/hooks/use-theme";
 
-export function CreateProjectDialog({ className }: { className?: string }) {
+export function CreateProjectDialog({ className, children }: { className?: string, children: ReactNode }) {
   const utils = api.useUtils();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -29,13 +30,12 @@ export function CreateProjectDialog({ className }: { className?: string }) {
     },
   });
 
+  const { colors } = useTheme()
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild className={cn("cursor-pointer", className)}>
-        <Button>
-          <PlusSquare />
-          New Project
-        </Button>
+        {children}
       </DialogTrigger>
 
       <DialogContent>

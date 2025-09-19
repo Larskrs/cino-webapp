@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ProjectRole } from "@prisma/client";
 import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/use-theme";
 
 interface AddMemberDialogProps {
   projectId: string;
@@ -26,11 +28,12 @@ export default function AddMemberDialog({ projectId }: AddMemberDialogProps) {
     },
   });
 
+  const { colors } = useTheme()
+
   return (
     <Dialog>
-      <DialogTrigger className="cursor-pointer" asChild>
-        <Button>
-            <User />
+      <DialogTrigger asChild className={"cursor-pointer"}>
+        <Button className={colors.components.dialog.button}>
             Invite
         </Button>
       </DialogTrigger>

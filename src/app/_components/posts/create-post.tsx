@@ -92,7 +92,7 @@ export default function CreatePostDialog({ className }: { className?: string }) 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild className={cn("cursor-pointer", className)}>
-        <Button>
+        <Button className={colors.components.dialog.button}>
           <PlusSquare />
           Write Post
         </Button>
