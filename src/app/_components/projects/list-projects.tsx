@@ -13,11 +13,8 @@ const MAX_PROJECTS = 3; // 👈 set the limit
 export function ProjectList() {
   const [projects] = api.projects.list.useSuspenseQuery();
 
-  if (!projects.length) {
-    return <p>You don’t have access to any projects yet.</p>;
-  }
-
-  const fillerCount = Math.max(0, MAX_PROJECTS - projects.length);
+  let fillerCount = Math.max(0, MAX_PROJECTS - projects.length);
+  if (projects.length == 0) fillerCount = 3
 
   const { colors } = useTheme()
 
@@ -55,7 +52,7 @@ export function ProjectList() {
         >
           <Card
             className={cn(
-              "rounded-lg p-4 bg-transparent cursor-pointer border-dashed opacity-75 text-center text-sm justify-center scale-100 hover:scale-102 hover:opacity-100 duration-200 transition-all",
+              "min-h-25 rounded-lg p-4 bg-transparent cursor-pointer border-dashed opacity-75 text-center text-sm justify-center scale-100 hover:scale-102 hover:opacity-100 duration-200 transition-all",
               colors.cardBorder, "duration-100 transition-all"
             )}
             >
