@@ -3,7 +3,7 @@ import React from "react";
 import Nav, { type NavLink } from "../_components/nav";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Clapperboard, Moon, Sun } from "lucide-react";
+import { Blocks, Clapperboard, Home, Info, Moon, SquareActivity, Sun } from "lucide-react";
 import { useTheme, type ThemeColors, type ThemeKey } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -47,9 +47,9 @@ export default function Layout({
 
 
   const links: NavLink[] = [
-    { label: "Home", href: "/", key: "home" },
-    { label: "Projects", href: "/project/", key: "projects"},
-    { label: "Support", href: "/support", key: "support" }, // will go into More
+    { icon: Home, label: "Home", href: "/", key: "home" },
+    { icon: Blocks, label: "Projects", badge: "beta", href: "/project/", key: "projects"},
+    { icon: Info,label: "Support", href: "/support", key: "support" }, // will go into More
     { label: (<ThemeSwitcher theme={theme} colors={colors}/>), key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark")}
   ];
 

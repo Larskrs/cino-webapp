@@ -14,7 +14,7 @@ export interface ThemeColors {
   nav: {
     background: string,
     link: {
-      hover: string,
+      active: string,
       normal: string
     }
   },
@@ -53,8 +53,8 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     nav: {
       background: "supports-[backdrop-filter]:bg-white/50",
       link: {
-        hover: "",
-        normal: ""
+        active: "bg-indigo-600 hover:bg-indigo-500 hover:text-white text-white",
+        normal: "text-zinc-800 hover:bg-zinc-200 hover:text-zinc-900"
       }
     },
     editor: {
@@ -89,7 +89,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     nav: {
       background: "supports-[backdrop-filter]:bg-white/50",
       link: {
-        hover: "",
+        active: "",
         normal: ""
       }
     },
@@ -125,8 +125,8 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     nav: {
       background: "supports-[backdrop-filter]:black/25",
       link: {
-        hover: "",
-        normal: ""
+        active: "bg-indigo-600 hover:bg-indigo-500 hover:text-white text-white",
+        normal: "text-white stroke-white hover:bg-zinc-950 hover:text-white"
       }
     },
     editor: {

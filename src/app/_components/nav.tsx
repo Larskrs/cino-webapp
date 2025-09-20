@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, ChevronDown, ChevronRight } from "lucide-react";
+import { Menu, ChevronDown, ChevronRight, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -40,6 +40,7 @@ import { useTheme } from "@/hooks/use-theme";
 // ---------------------------------------------
 export type NavLink = {
   label: string | React.ReactNode;
+  icon?: LucideIcon,
   key: string,
   href?: string;
   onClick?: () => void,
@@ -160,26 +161,37 @@ export default function Nav({
 // Desktop primitives
 // ---------------------------------------------
 function NavItemLink({ item, activePath }: { item: NavLink; activePath: string | null }) {
-  const router = useRouter()
-  const isActive = item.href && activePath ? normalizePath(activePath) === normalizePath(item.href) : false;
+  const { colors } = useTheme();
+  const router = useRouter();
+
+  const Icon = item.icon; // ✅ this is a component
+  const isActive = item.href && activePath
+    ? normalizePath(activePath) === normalizePath(item.href)
+    : false;
+
   return (
-    <div className="cursor-pointer" onClick={() => {
-      if (item?.href) {
-        router.push(item.href)
-      } else if (item?.onClick) {
-        item?.onClick()
-      }
-    }}>
+    <div
+      className="cursor-pointer"
+      onClick={() => {
+        if (item?.href) {
+          router.push(item.href);
+        } else if (item?.onClick) {
+          item?.onClick();
+        }
+      }}
+    >
       <NavigationMenuLink
         className={cn(
-          "rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900",
-          isActive && "bg-slate-100 text-slate-900",
+          "flex flex-row items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900",
+          isActive ? colors.nav.link.active : colors.nav.link.normal
         )}
       >
-        <span className="flex items-center gap-2">
+        {/* ✅ only render if provided */}
+        {Icon && <Icon size={8} className={cn("size-6 text-inherit")} />}
+        <span>
           {item.label}
           {item.badge && (
-            <span className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
+            <span className="ml-1 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
               {item.badge}
             </span>
           )}

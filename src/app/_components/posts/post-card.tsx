@@ -23,21 +23,21 @@ export function PostCard({ post }: { post: Post}) {
     <Card
       key={post.id}
       className={cn(
-        "flex items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
+        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
         colors.cardBackground,
       )}
     >
       <div className="flex flex-col flex-1 w-full">
         {/* Top row: author + timestamp */}
         <div className="flex flex-row gap-4">
-          <Avatar
-            className="size-12 mt-1.5 shrink-0 rounded-full"
-            src={post.createdBy.image}
-          />
           <div className="flex flex-col w-full">
             <div
               className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
             >
+              <Avatar
+                className="size-6 mt-1.5 shrink-0 rounded-full"
+                src={post.createdBy.image}
+              />
               <span className={`font-semibold ${colors.text}`}>
                 {post.createdBy.name}
               </span>

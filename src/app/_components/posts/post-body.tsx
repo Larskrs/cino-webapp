@@ -30,7 +30,7 @@ export function PostBody({ post, colors }: { post: any; colors: any }) {
 
       {isOverflowing && (
         <p
-          className="cursor-pointer mt-2"
+          className={cn("cursor-pointer mt-2", colors.text)}
           onClick={() => setShowMore((s) => !s)}
         >
           Show {showMore ? "less" : "more"}...
