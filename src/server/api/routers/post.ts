@@ -37,7 +37,7 @@ function stripUrls(text: string): string {
 }
 
 const attachmentSchema = z.object({
-  url: z.string().url(),
+  url: z.string().max(64),
   type: z.enum(["image", "video"]),
 });
 

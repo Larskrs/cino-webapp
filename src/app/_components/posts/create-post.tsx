@@ -84,7 +84,7 @@ export default function CreatePostDialog({ className, session }: { className?: s
       if (json.url) {
         // keep existing behavior (localhost prefix)
         attachments.push({
-          url: "/" + json.url,
+          url: json.url,
           alt: file.name,
           type: file.type.startsWith("video/") ? "video" : "image",
         });
