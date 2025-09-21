@@ -1,0 +1,80 @@
+import { z } from "zod";
+
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
+
+export const userRouter = createTRPCRouter({
+
+  get: protectedProcedure
+    .input(z.object({ id: z.string()}))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.user.findUnique({
+        where: {
+          id: input.id
+        },
+        include: {
+            _count: {
+                select: {
+                    followers: true,
+                    following: true
+                }
+            }
+        }
+      });
+    }),
+  follow: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+
+      if (currentUserId === input.userId) {
+        throw new Error("Du kan ikke følge deg selv");
+      }
+
+      // Create follow relationship (or do nothing if it already exists)
+      return await ctx.db.follower.upsert({
+        where: {
+          userId_followerId: {
+            userId: input.userId,
+            followerId: currentUserId,
+          },
+        },
+        update: {}, // no-op if exists
+        create: {
+          userId: input.userId,
+          followerId: currentUserId,
+        },
+      });
+    }),
+  unfollow: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+  
+      return await ctx.db.follower.deleteMany({
+        where: {
+          userId: input.userId,
+          followerId: currentUserId,
+        },
+      });
+    }),
+  isFollowing: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+  
+      const follow = await ctx.db.follower.findUnique({
+        where: {
+          userId_followerId: {
+            userId: input.userId,
+            followerId: currentUserId,
+          },
+        },
+      });
+  
+      return !!follow;
+    }),
+});

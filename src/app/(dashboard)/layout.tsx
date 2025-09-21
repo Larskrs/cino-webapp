@@ -20,20 +20,20 @@ export function ThemeSwitcher({
     <div
       className={cn(
         "relative flex h-7 w-16 px-0 items-center rounded-full",
-        colors.components.dropdown.container
+        colors.components.switch.container
       )}
     >
       <motion.div
-        animate={{ x: theme === "dark" ? 38 : 8 }}
+        animate={{ x: theme === "dark" ? 38 : 4 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
         className={cn(
-          "flex h-4 w-4 items-center justify-center rounded-full",
-          colors.text
+          "flex h-5 w-5 text-white items-center justify-center rounded-full",
+          colors.text, colors.buttonBackground
         )}
       >
         {theme === "dark" ? <Moon
-          size={10} />
-        : <Sun size={10} />}
+          size={16} />
+        : <Sun size={16} />}
       </motion.div>
     </div>
   );

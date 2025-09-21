@@ -37,6 +37,9 @@ export interface ThemeColors {
       title: string,
       button: string,
     }
+    switch: {
+      container: string,
+    }
   }
 }
 
@@ -76,6 +79,9 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         title: "text-zinc-900",
         button: "bg-gray-900 text-white"
       },
+      switch: {
+        container: "border-1 bg-zinc-100/25 border-zinc-400"
+      }
     }
   },
   funky: {
@@ -112,6 +118,9 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         title: "text-zinc-900",
         button: "bg-zinc-100 text-zinc-900"
       },
+      switch: {
+        container: "bg-zinc-200 border-zinc-300"
+      }
     }
   },
   dark: {
@@ -148,6 +157,9 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         title: "text-zinc-200",
         button: "bg-zinc-100 hover:bg-zinc-200 text-zinc-900"
       },
+      switch: {
+        container: "border-1 bg-zinc-900 border-zinc-800"
+      }
     }
   },
 };
@@ -198,13 +210,43 @@ function setCookie(name: string, value: string, days = 365) {
   document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
 }
 
-export function ThemeProvider({ children, initialTheme }: { children: ReactNode; initialTheme?: ThemeKey }) {
-  const [theme, setThemeState] = useState<ThemeKey>(initialTheme ?? getSystemTheme());
+function resolveThemeClasses(input: string, map: Record<string, string>): string {
+  return input
+    .split(/\s+/)
+    .map(token => (map[token] ? map[token] : token))
+    .join(" ");
+}
+
+function flattenTheme(obj: any, prefix: string[] = []): Record<string, string> {
+  let out: Record<string, string> = {};
+  for (const key in obj) {
+    const value = obj[key];
+    const path = [...prefix, key];
+    if (typeof value === "string") {
+      const alias = `t-${path.join("-")}`;
+      out[alias] = value;
+    } else if (typeof value === "object" && value !== null) {
+      Object.assign(out, flattenTheme(value, path));
+    }
+  }
+  return out;
+}
+
+
+export function ThemeProvider({
+  children,
+  initialTheme,
+}: {
+  children: ReactNode;
+  initialTheme?: ThemeKey;
+}) {
+  const [theme, setThemeState] = useState<ThemeKey>(
+    initialTheme ?? getSystemTheme()
+  );
 
   useEffect(() => {
-    // On mount, check cookie or fallback to system theme
     const saved = getCookie("theme") as ThemeKey | null;
-    setThemeState(saved || "dark")
+    setThemeState(saved || "dark");
   }, []);
 
   const setTheme = (newTheme: ThemeKey) => {
@@ -212,16 +254,23 @@ export function ThemeProvider({ children, initialTheme }: { children: ReactNode;
     setCookie("theme", newTheme);
   };
 
+  const colors = THEMES[theme];
+  const aliasMap = flattenTheme(colors);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, colors: THEMES[theme] }}>
+    <ThemeContext.Provider value={{ theme, setTheme, colors }}>
       <body
-        className={`${THEMES[theme].background} ${THEMES[theme].text} min-h-screen`}
+        className={resolveThemeClasses(
+          "t-background t-text min-h-screen",
+          aliasMap
+        )}
       >
         {children}
       </body>
     </ThemeContext.Provider>
   );
 }
+
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);

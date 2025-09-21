@@ -10,6 +10,7 @@ import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@/server/api/root";
 import { useState } from "react";
 import { PostBody } from "./post-body";
+import Link from "next/link";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
@@ -34,13 +35,15 @@ export function PostCard({ post }: { post: Post}) {
             <div
               className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
             >
-              <Avatar
-                className="size-6 mt-1.5 shrink-0 rounded-full"
-                src={post.createdBy.image}
-              />
-              <span className={`font-semibold ${colors.text}`}>
-                {post.createdBy.name}
-              </span>
+              <Link href={`/user/${post.createdBy.id}`} className="hover:underline cursor-pointer flex items-center justify-center gap-3">
+                <Avatar
+                  className="size-6 shrink-0 rounded-full"
+                  src={post.createdBy.image}
+                  />
+                <span className={`font-semibold ${colors.text}`}>
+                  {post.createdBy.name}
+                </span>
+              </Link>
               <span>·</span>
               <span>
                 {new Date(post.createdAt).toLocaleDateString()}
