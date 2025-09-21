@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/hooks/use-theme";
+import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { useState } from "react";
 
@@ -41,11 +43,17 @@ export default function FollowButton({ userId }: { userId: string }) {
   };
 
   const isMutating = followMutation.isPending || unfollowMutation.isPending;
+  const { colors } = useTheme()
 
   return (
     <div className="flex flex-col gap-2">
       <Button
-        className="text-lg bg-indigo-500"
+        className={cn(
+            "cursor-pointer",
+            isFollowing || isChecking || isMutating
+                ? "bg-zinc-500"
+                : "bg-indigo-600"
+        )}
         onClick={handleClick}
         disabled={isMutating || isChecking}
       >
