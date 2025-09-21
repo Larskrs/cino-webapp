@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import Logo from "@/../public/svg/logo/cino.svg"
+import Logo from "public/lucide/logo";
 import { useTheme } from "@/hooks/use-theme";
 import { signIn, useSession } from "next-auth/react";
 import Avatar from "./users/avatar";
