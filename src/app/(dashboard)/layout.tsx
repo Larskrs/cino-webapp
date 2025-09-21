@@ -1,13 +1,14 @@
 "use client"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ResponsiveNav, type NavLink } from "../_components/nav";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Blocks, Clapperboard, Home, Info, Moon, SquareActivity, Sun } from "lucide-react";
+import { Blocks, Home, Info, Moon, Sun } from "lucide-react";
 import { useTheme, type ThemeColors, type ThemeKey } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Logo from "public/lucide/logo";
 
 export function ThemeSwitcher({
   theme,
@@ -28,12 +29,11 @@ export function ThemeSwitcher({
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
         className={cn(
           "flex h-5 w-5 text-white items-center justify-center rounded-full",
-          colors.text, colors.buttonBackground
+          colors.text,
+          colors.buttonBackground
         )}
       >
-        {theme === "dark" ? <Moon
-          size={16} />
-        : <Sun size={16} />}
+        {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
       </motion.div>
     </div>
   );
@@ -42,34 +42,49 @@ export function ThemeSwitcher({
 export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { theme, setTheme, colors } = useTheme();
+  const [loading, setLoading] = useState(true);
 
-  const { theme, setTheme, colors } = useTheme()
-
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2500); // show loader for 1.5s
+    return () => clearTimeout(timer);
+  }, []);
 
   const links: NavLink[] = [
     { icon: Home, label: "Home", href: "/", key: "home" },
-    { icon: Blocks, label: "Projects", badge: "beta", href: "/project/", key: "projects"},
-    { icon: Info,label: "Support", href: "/support", key: "support" }, // will go into More
-    { label: (<ThemeSwitcher theme={theme} colors={colors}/>), key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark")}
+    { icon: Blocks, label: "Projects", badge: "beta", href: "/project/", key: "projects" },
+    { icon: Info, label: "Support", href: "/support", key: "support" },
+    { label: <ThemeSwitcher theme={theme} colors={colors} />, key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark") }
   ];
 
   return (
     <div className={colors.background}>
-        {/* <ResponsiveNav
-          logo={<React.Fragment>
-              {theme == "dark"
-                ? <Link href="/" className="font-bold flex flex-row gap-2"><Image className="h-10 w-fit" alt="cino.no logo" src={"/svg/logo/CINO-WHITE.svg"} width={720} height={200} /></Link>
-                : <Link href="/" className="invert font-bold flex flex-row gap-2"><Image className="h-10 w-fit" alt="cino.no logo" src={"/svg/logo/CINO-WHITE.svg"} width={720} height={200} /></Link>
-              }
-            </React.Fragment>}
-          links={links}
-          rightSlot={<Button asChild><Link href="/api/auth/signin">Sign in</Link></Button>}
-          maxPrimaryLinks={6}
-        /> */}
-        <ResponsiveNav
-          links={links}
-        />
-          {children}
+      <ResponsiveNav links={links} />
+
+      {/* Loading animation */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            key="loader"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut"}}
+            className={cn("fixed inset-0 z-50 flex flex-col items-center justify-center", colors.components.dialog.container, colors.text)}
+          >
+            <motion.div
+              className="mb-4"
+              initial={{ scale: 2, opacity: 0}}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 2, ease: "anticipate" }}
+            >
+              <Logo className="size-full" /> {/* Replace <Home /> with your desired Lucide icon */}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {children}
     </div>
   );
 }
