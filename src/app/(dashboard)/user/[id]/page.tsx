@@ -8,6 +8,7 @@ import { Dot } from "lucide-react";
 import Image from "next/image";
 import FollowButton from "../_components/follow-button";
 import { useSession } from "next-auth/react";
+import { PostList } from "@/app/_components/posts/list-posts";
 
 export default function UserPage() {
   const params = useParams<{ id: string }>();
@@ -43,13 +44,15 @@ export default function UserPage() {
             <Dot />
             <p>Følger: {user._count?.following}</p>
           </div>
-          {session?.user?.id !== id && (
+          {session?.user && session?.user?.id !== id && (
             <div className="mt-4">
               <FollowButton userId={id} />
             </div>
           )}
         </div>
       </div>
+
+      <PostList userId={id} />
     </div>
   );
 }

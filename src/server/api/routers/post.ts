@@ -98,20 +98,21 @@ export const postRouter = createTRPCRouter({
     return post ?? null;
   }),
 
-  list: publicProcedure.query(async ({ ctx }) => {
-    // const userId = ctx.session.user.id;
+  list: publicProcedure
+    .input(
+      z.object({
+        userId: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const posts = await ctx.db.post.findMany({
+        where: input.userId ? { createdById: input.userId } : undefined,
+        orderBy: { createdAt: "desc" },
+        include: {
+          createdBy: true,
+        },
+      });
 
-    const posts = await ctx.db.post.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        createdBy: true,
-      }
-    });
-
-    return posts;
-  }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
+      return posts;
+    }),
 });

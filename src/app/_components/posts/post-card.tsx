@@ -18,8 +18,6 @@ type Post = RouterOutputs["post"]["list"][number];
 export function PostCard({ post }: { post: Post}) {
   const { colors } = useTheme();
 
-  const [showMore, setShowMore] = useState(false)
-
   return (
     <Card
       key={post.id}

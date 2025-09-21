@@ -4,14 +4,18 @@ import { api } from "@/trpc/react";
 import { useTheme } from "@/hooks/use-theme";
 import { PostCard } from "./post-card";
 
-export function PostList() {
-  const [posts] = api.post.list.useSuspenseQuery();
+type PageProps = {
+  userId?: string
+}
+
+export function PostList({userId}:PageProps) {
+  const [posts] = api.post.list.useSuspenseQuery({userId});
   const { colors } = useTheme();
 
   if (!posts.length) {
     return (
       <div className={`flex w-full justify-center py-10 ${colors.textMuted}`}>
-        Welp, no posts found...
+        Kunne ikke finne noen innlegg
       </div>
     );
   }
