@@ -139,10 +139,10 @@ export function ResponsiveNav({ links }: Props) {
         </div>
         
         {session?.status === "authenticated"
-          ? <div className="ml-auto size-10 aspect-square relative cursor-pointer opacity-90 hover:opacity-100">
+          ? <Link href={`/user/${session?.data?.user?.id}`} className="ml-auto size-10 aspect-square relative cursor-pointer opacity-90 hover:opacity-100">
               <Avatar className="size-10 bg-zinc-300" src={session?.data?.user?.image || "/svg/user/placeholder-avatar.svg"} />
               <ChevronDown className={cn("size-4 absolute bottom-0 right-0 rounded-full", colors.background)} />
-            </div>
+            </Link>
           : <Button className="ml-auto" onClick={() => {signIn()}}>Sign in</Button>
         }
       </div>
