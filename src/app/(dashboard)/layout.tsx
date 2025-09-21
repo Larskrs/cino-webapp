@@ -1,6 +1,6 @@
 "use client"
 import React from "react";
-import Nav, { type NavLink } from "../_components/nav";
+import { ResponsiveNav, type NavLink } from "../_components/nav";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Blocks, Clapperboard, Home, Info, Moon, SquareActivity, Sun } from "lucide-react";
@@ -55,7 +55,7 @@ export default function Layout({
 
   return (
     <div className={colors.background}>
-        <Nav
+        {/* <ResponsiveNav
           logo={<React.Fragment>
               {theme == "dark"
                 ? <Link href="/" className="font-bold flex flex-row gap-2"><Image className="h-10 w-fit" alt="cino.no logo" src={"/svg/logo/CINO-WHITE.svg"} width={720} height={200} /></Link>
@@ -65,6 +65,9 @@ export default function Layout({
           links={links}
           rightSlot={<Button asChild><Link href="/api/auth/signin">Sign in</Link></Button>}
           maxPrimaryLinks={6}
+        /> */}
+        <ResponsiveNav
+          links={links}
         />
           {children}
     </div>

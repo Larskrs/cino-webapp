@@ -51,10 +51,10 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     text: "text-black",
     textMuted: "text-gray-500",
     nav: {
-      background: "supports-[backdrop-filter]:bg-white/50",
+      background: "supports-[backdrop-filter]:bg-white/75 backdrop-blur-xl",
       link: {
         active: "bg-indigo-600 hover:bg-indigo-500 hover:text-white text-white",
-        normal: "text-zinc-800 hover:bg-zinc-200 hover:text-zinc-900"
+        normal: "text-zinc-900 hover:bg-zinc-200 hover:text-zinc-900"
       }
     },
     editor: {
@@ -123,10 +123,10 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     text: "text-white",
     textMuted: "text-gray-400",
     nav: {
-      background: "supports-[backdrop-filter]:black/25",
+      background: "supports-[backdrop-filter]:bg-zinc-950/75 backdrop-blur-xl",
       link: {
         active: "bg-indigo-600 hover:bg-indigo-500 hover:text-white text-white",
-        normal: "text-white stroke-white hover:bg-zinc-950 hover:text-white"
+        normal: "text-white hover:bg-zinc-800/75 hover:text-white"
       }
     },
     editor: {
