@@ -8,34 +8,41 @@ import Image from "next/image";
 import Video from "../video";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@/server/api/root";
-import React, { useState } from "react";
+import React from "react";
 import { PostBody } from "./post-body";
 import Link from "next/link";
 import CreatePostDialog from "./create-post";
 import { useSession } from "next-auth/react";
-import { MessageCircle, Reply, Speech } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
 
-export function PostCard({ post, className, onClick}: { post: {
-  id: number,
-  createdAt: Date,
-  attachments: {}
-  parentId?: number,
-  _count?: {
-    replies?: number
+export function PostCard({
+  post,
+  className,
+  onClick,
+}: {
+  post: {
+    id: number;
+    createdAt: Date;
+    attachments: {};
+    parentId?: number;
+    _count?: {
+      replies?: number;
+    };
+    createdBy: { id: number; image: string; name: string };
   }
-  createdBy: { id: number, image: string, name: string }
-}} & React.HTMLAttributes<HTMLDivElement>) {
+}& React.HTMLAttributes<HTMLDivElement>) {
   const { colors } = useTheme();
-  const session = useSession()
+  const session = useSession();
 
   return (
     <Card
       key={post.id}
+      onClick={onClick}
       className={cn(
-        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-x w-900",
+        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-x cursor-pointer w-full",
         colors.cardBackground,
         className
       )}
@@ -47,28 +54,32 @@ export function PostCard({ post, className, onClick}: { post: {
             <div
               className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
             >
-              <Link href={`/user/${post.createdBy.id}`} className="hover:underline cursor-pointer flex items-center justify-center gap-3">
+              {/* Prevent link click from bubbling to card */}
+              <Link
+                href={`/user/${post.createdBy.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="hover:underline cursor-pointer flex items-center justify-center gap-3"
+              >
                 <Avatar
                   className="size-6 shrink-0 rounded-full"
                   src={post.createdBy.image}
-                  />
+                />
                 <span className={`font-semibold ${colors.text}`}>
                   {post.createdBy.name}
                 </span>
               </Link>
               <span>·</span>
-              <span>
-                {new Date(post.createdAt).toLocaleDateString()}
-              </span>
+              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
             </div>
 
-            <PostBody onClick={onClick} post={post} colors={colors} />
+            <PostBody post={post} colors={colors} />
 
             {Array.isArray(post.attachments) && post.attachments.length > 0 && (
               <div
                 className={cn(
                   "mt-3 flex flex-col gap-3 max-h-160 w-auto relative overflow-hidden rounded-xl"
                 )}
+                onClick={(e) => e.stopPropagation()}
               >
                 {post.attachments.map((att: any, i: number) =>
                   att.type === "image" ? (
@@ -78,7 +89,9 @@ export function PostCard({ post, className, onClick}: { post: {
                       alt={att.alt}
                       src={att.url}
                       key={i}
-                      className={cn("max-h-160 w-auto object-contain rounded-xl inset-0")}
+                      className={cn(
+                        "max-h-160 w-auto object-contain rounded-xl inset-0"
+                      )}
                     />
                   ) : att.type === "video" ? (
                     <Video
@@ -86,7 +99,9 @@ export function PostCard({ post, className, onClick}: { post: {
                       loop
                       key={i}
                       controls
-                      className={cn("max-h-160 w-auto object-contain rounded-xl inset-0")}
+                      className={cn(
+                        "max-h-160 w-auto object-contain rounded-xl inset-0"
+                      )}
                       src={att.url}
                     />
                   ) : null
@@ -94,14 +109,36 @@ export function PostCard({ post, className, onClick}: { post: {
               </div>
             )}
 
-            {!post.parentId && <CreatePostDialog session={session.data} parentId={post.id}>
-              <div className={cn("mt-2 flex gap-2 p-0 text-sm items-center", colors.text)}>
-                <MessageCircle strokeWidth={2} size={16} />
-                <p className={"text-md"}>{post?._count?.replies && post?._count?.replies > 0 && post?._count?.replies}</p>
+            {!post.parentId && (
+              <CreatePostDialog
+                session={session.data}
+                parentId={post.id}
+                // stop click bubbling so it doesn’t open post
+                onClick={(e: any) => e.stopPropagation() }
+              >
+                <div
+                  className={cn(
+                    "mt-2 flex gap-2 p-0 text-sm items-center",
+                    colors.text
+                  )}
+                >
+                  <MessageCircle strokeWidth={2} size={16} />
+                  <p className="text-md">
+                    {post?._count?.replies &&
+                      post?._count?.replies > 0 &&
+                      post?._count?.replies}
+                  </p>
                 </div>
-            </CreatePostDialog>}
+              </CreatePostDialog>
+            )}
 
-            <CreatePostDialog session={session.data} parentId={post.id}></CreatePostDialog>
+            {/* Dialog button itself shouldn’t open post */}
+            <div onClick={(e) => e.stopPropagation()}>
+              <CreatePostDialog
+                session={session.data}
+                parentId={post.id}
+              ></CreatePostDialog>
+            </div>
           </div>
         </div>
       </div>
