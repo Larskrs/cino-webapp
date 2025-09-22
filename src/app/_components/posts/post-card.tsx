@@ -53,7 +53,7 @@ export function PostCard({ post }: { post: Post}) {
             {Array.isArray(post.attachments) && post.attachments.length > 0 && (
               <div
                 className={cn(
-                  "mt-3 flex flex-col gap-3 max-h-160 relative overflow-hidden rounded-xl"
+                  "mt-3 flex flex-col gap-3 max-h-160 w-auto relative overflow-hidden rounded-xl"
                 )}
               >
                 {post.attachments.map((att: any, i: number) =>
@@ -64,7 +64,7 @@ export function PostCard({ post }: { post: Post}) {
                       alt={att.alt}
                       src={att.url}
                       key={i}
-                      className={cn("abslute inset-0")}
+                      className={cn("max-h-160 w-auto object-contain rounded-xl inset-0")}
                     />
                   ) : att.type === "video" ? (
                     <Video
@@ -72,7 +72,7 @@ export function PostCard({ post }: { post: Post}) {
                       loop
                       key={i}
                       controls
-                      className={cn("w-full rounded-xl")}
+                      className={cn("max-h-160 w-auto object-contain rounded-xl inset-0")}
                       src={att.url}
                     />
                   ) : null
