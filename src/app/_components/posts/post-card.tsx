@@ -8,22 +8,27 @@ import Image from "next/image";
 import Video from "../video";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@/server/api/root";
-import { useState } from "react";
+import React, { useState } from "react";
 import { PostBody } from "./post-body";
 import Link from "next/link";
+import CreatePostDialog from "./create-post";
+import { useSession } from "next-auth/react";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
 
-export function PostCard({ post }: { post: Post}) {
+export function PostCard({ post, className, onClick}: { post: Post} & React.HTMLAttributes<HTMLDivElement>) {
   const { colors } = useTheme();
+  const session = useSession()
 
   return (
     <Card
+      onClick={onClick}
       key={post.id}
       className={cn(
         "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
         colors.cardBackground,
+        className
       )}
     >
       <div className="flex flex-col flex-1 w-full">
@@ -79,6 +84,8 @@ export function PostCard({ post }: { post: Post}) {
                 )}
               </div>
             )}
+
+            <CreatePostDialog session={session.data} parentId={post.id}></CreatePostDialog>
           </div>
         </div>
       </div>

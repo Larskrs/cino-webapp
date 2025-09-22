@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import Avatar from "../users/avatar";
 import type { Session } from "next-auth";
 
-export default function CreatePostDialog({ className, session }: { className?: string , session: Session}) {
+export default function CreatePostDialog({ className, session, parentId, children }: { session: Session | null, parentId?: number} & React.HTMLAttributes<HTMLDivElement>) {
   const utils = api.useUtils();
   const [body, setBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -56,6 +56,7 @@ export default function CreatePostDialog({ className, session }: { className?: s
   const createPost = api.post.create.useMutation({
     onSuccess: async () => {
       await utils.post.list.invalidate();
+      await utils.post.replies.invalidate()
       setBody("");
       setFile(null);
       setErrorMsg("");
@@ -91,7 +92,7 @@ export default function CreatePostDialog({ className, session }: { className?: s
       }
     }
 
-    createPost.mutate({ body, attachments });
+    createPost.mutate({ body, attachments, parentId });
   };
 
   const { colors } = useTheme()
@@ -105,49 +106,28 @@ export default function CreatePostDialog({ className, session }: { className?: s
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild className={cn("cursor-pointer", className)}>
-        <Card
-          className={cn(
-            "flex items-start gap-3 mb-8 mt-4 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
-            colors.cardBackground,
-          )}
-
-        >
-          <div className="flex flex-col flex-1 w-full">
-            {/* Top row: author + timestamp */}
-            <div className="flex flex-row gap-4">
-              <Avatar
-                className="size-12 mt-1.5 shrink-0 rounded-full"
-                src={session?.user?.image || ""}
-              />
-              <div className="flex flex-col w-full">
-                          <div
-                            className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
-                          >
-                            <span className={`font-semibold ${colors.text}`}>
-                              {session.user.name}
-                            </span>
-                          </div>
-              
-                          {/* Body text */}
-                          <p
-                            className={cn("mt-1 px-4 py-3 text-lg leading-snug whitespace-pre-line break-words cursor-pointer rounded-md", colors.textMuted, colors.buttonBackground, colors.cardBorder)}
-                          >
-                            Hva vil du dele i dag?
-                          </p>
-                </div>
-            </div>
-        </div>
-        </Card>
+        {children}
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nytt Innlegg</DialogTitle>
+          <DialogTitle>
+            {parentId !== undefined ? "Svar på innlegg" : "Nytt innlegg"}
+          </DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col gap-1">
+        
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-md flex flex-col gap-1"
+        >
+          {parentId && (
+            <div className="text-sm text-muted-foreground mb-2">
+              Du svarer på et innlegg
+            </div>
+          )}
+      
           <Textarea
-            placeholder="Hva vil du dele i dag?"
+            placeholder={parentId ? "Skriv et svar…" : "Hva vil du dele i dag?"}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             required

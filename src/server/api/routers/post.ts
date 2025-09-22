@@ -59,6 +59,7 @@ export const postRouter = createTRPCRouter({
           .max(512, "Post content exceeds maximum length"),
         attachments: z
           .array(attachmentSchema).optional(),
+        parentId: z.number().optional()
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -83,6 +84,9 @@ export const postRouter = createTRPCRouter({
           body: stripUrls(body),
           attachments: [...attachments, ...linkAttachments], // ✅ combine uploads + links
           createdBy: { connect: { id: userId } },
+          parent: {connect: {
+            id: input.parentId
+          }}
         },
       });
 
@@ -106,7 +110,10 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const posts = await ctx.db.post.findMany({
-        where: input.userId ? { createdById: input.userId } : undefined,
+        where: {
+          ...(input.userId ? { createdById: input.userId } : {}),
+          parentId: null, // only top-level posts
+        },
         orderBy: { createdAt: "desc" },
         include: {
           createdBy: true,
@@ -114,5 +121,27 @@ export const postRouter = createTRPCRouter({
       });
 
       return posts;
+    }),
+  byId: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.post.findUnique({
+        where: { id: input.id },
+        include: {
+          createdBy: true,
+        },
+      });
+    }),
+
+  replies: publicProcedure
+    .input(z.object({ postId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.post.findMany({
+        where: { parentId: input.postId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          createdBy: true,
+        },
+      });
     }),
 });
