@@ -18,7 +18,16 @@ import { MessageCircle, Reply, Speech } from "lucide-react";
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
 
-export function PostCard({ post, className, onClick}: { post: Post} & React.HTMLAttributes<HTMLDivElement>) {
+export function PostCard({ post, className, onClick}: { post: {
+  id: number,
+  createdAt: Date,
+  attachments: {}
+  parentId?: number,
+  _count?: {
+    replies?: number
+  }
+  createdBy: { id: number, image: string, name: string }
+}} & React.HTMLAttributes<HTMLDivElement>) {
   const { colors } = useTheme();
   const session = useSession()
 
@@ -88,7 +97,7 @@ export function PostCard({ post, className, onClick}: { post: Post} & React.HTML
             {!post.parentId && <CreatePostDialog session={session.data} parentId={post.id}>
               <div className={cn("mt-2 flex gap-2 p-0 text-sm items-center", colors.text)}>
                 <MessageCircle strokeWidth={2} size={16} />
-                <p className={"text-md"}>{post?._count?.replies > 0 && post?._count?.replies}</p>
+                <p className={"text-md"}>{post?._count?.replies && post?._count?.replies > 0 && post?._count?.replies}</p>
                 </div>
             </CreatePostDialog>}
 

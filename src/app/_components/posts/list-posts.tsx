@@ -34,11 +34,11 @@ export function PostList({ userId }: PageProps) {
   if (postId && singlePost) {
     return (
       <div className="mx-auto w-full max-w-3xl flex flex-col gap-2">
-        <PostCard key={singlePost.id} post={singlePost} />
+        <PostCard key={singlePost.id} post={singlePost as any} />
         {/* <CreatePost parentId={singlePost.id}  /> */}
         <div className="pl-6 border-l space-y-2">
           {replies.map((r) => (
-            <PostCard key={r.id} post={r} />
+            <PostCard key={r.id} post={{...r as any}} />
           ))}
         </div>
       </div>
@@ -60,7 +60,7 @@ export function PostList({ userId }: PageProps) {
       {posts.map((p) => (
         <PostCard
           key={p.id}
-          post={p}
+          post={p as any}
           onClick={() => router.push(`?p=${p.id}`)} // 👈 navigate into single view
         />
       ))}
