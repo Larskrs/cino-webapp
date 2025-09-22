@@ -5,6 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
+import { getLocalFileURL } from "@/lib/utils";
 
 export const userRouter = createTRPCRouter({
 
@@ -77,17 +78,32 @@ export const userRouter = createTRPCRouter({
   
       return !!follow;
     }),
-  changeBanner: protectedProcedure
-    .input(z.object({ fileId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      // Update the user's banner in the database
-      const updatedUser = await ctx.db.user.update({
-        where: { id: userId },
-        data: { banner: input.fileId },
-      });
-
-      return updatedUser;
-    }),
-});
+    changeBanner: protectedProcedure
+      .input(z.object({ fileId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const userId = ctx.session.user.id;
+  
+        // Update the user's banner in the database
+        const updatedUser = await ctx.db.user.update({
+          where: { id: userId },
+          data: { banner: input.fileId },
+        });
+  
+        return updatedUser;
+      }),
+    changeAvatar: protectedProcedure
+      .input(z.object({ fileId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const userId = ctx.session.user.id;
+  
+        const file = await ctx.db.file.findUnique({where: { id: input.fileId }})
+        if (!file) "" // Throw file not found error }
+        // Update the user's banner in the database
+        const updatedUser = await ctx.db.user.update({
+          where: { id: userId },
+          data: { image: getLocalFileURL(input.fileId) },
+        });
+  
+        return updatedUser;
+      }),
+  });

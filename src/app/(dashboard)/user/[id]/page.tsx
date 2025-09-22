@@ -10,7 +10,8 @@ import FollowButton from "../_components/follow-button";
 import { useSession } from "next-auth/react";
 import { PostList } from "@/app/_components/posts/list-posts";
 import { Button } from "@/components/ui/button";
-import ChangeBannerDialog from "@/app/_components/users/change-banner-dialog";
+import ChangeBannerDialog from "@/app/(dashboard)/user/_components/change-banner-dialog";
+import ChangeImageDialog from "../_components/change-image-dialog";
 
 export default function UserPage() {
   const params = useParams<{ id: string }>();
@@ -35,8 +36,8 @@ export default function UserPage() {
         />
       <div className="p-4 pb-0 relative w-full aspect-[5/3] sm:aspect-[3/1]">
         {session?.user?.id === id && <div className="z-1 absolute left-6 top-6">
-            <ChangeBannerDialog className="">
-                <Button><ImageIcon size={8} />Rediger bilde</Button>
+            <ChangeBannerDialog className="z-10">
+                <Button><ImageIcon size={8} />Endre bilde</Button>
             </ChangeBannerDialog>
         </div>} 
         <Image
@@ -50,10 +51,12 @@ export default function UserPage() {
       </div>
       <div className="flex gap-4 p-4 pt-2.5 sm:p-6 sm:pt-5 items-center">
         <div className="relative ml-8 h-0 w-32 sm:w-48">
+          <ChangeImageDialog>
             <Avatar
-              className={cn("absolute size-32 -translate-y-24 sm:size-42 sm:-translate-y-36")}
+              className={cn("hover:scale-105 duration-150 cursor-pointer absolute size-32 -translate-y-24 sm:size-42 sm:-translate-y-36")}
               src={user.image || ""}
-              />
+            />
+          </ChangeImageDialog>  
         </div>
         <div>
           <h1 className="text-2xl font-semibold sm:text-3xl">{user.name}</h1>
