@@ -35,7 +35,7 @@ export function PostList({ userId }: PageProps) {
     return (
       <div className="mx-auto w-full max-w-3xl flex flex-col gap-2">
         <PostCard key={singlePost.id} post={singlePost} />
-        <CreatePost parentId={singlePost.id}  />
+        {/* <CreatePost parentId={singlePost.id}  /> */}
         <div className="pl-6 border-l space-y-2">
           {replies.map((r) => (
             <PostCard key={r.id} post={r} />

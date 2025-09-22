@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export function PostBody({ post, colors }: { post: any; colors: any }) {
+export function PostBody({ post, colors, onClick }: { post: any; colors: any } & React.HTMLAttributes<HTMLDivElement>) {
   const [showMore, setShowMore] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef<HTMLParagraphElement>(null);
@@ -16,7 +16,7 @@ export function PostBody({ post, colors }: { post: any; colors: any }) {
   }, [post.body]);
 
   return (
-    <div>
+    <div onClick={onClick}>
       {/* Body text */}
       <p
         ref={textRef}

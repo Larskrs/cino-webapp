@@ -13,6 +13,7 @@ import { PostBody } from "./post-body";
 import Link from "next/link";
 import CreatePostDialog from "./create-post";
 import { useSession } from "next-auth/react";
+import { MessageCircle, Reply, Speech } from "lucide-react";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
@@ -23,15 +24,14 @@ export function PostCard({ post, className, onClick}: { post: Post} & React.HTML
 
   return (
     <Card
-      onClick={onClick}
       key={post.id}
       className={cn(
-        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
+        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-x w-900",
         colors.cardBackground,
         className
       )}
     >
-      <div className="flex flex-col flex-1 w-full">
+      <div className="flex flex-col flex-1 w-full min-w-full">
         {/* Top row: author + timestamp */}
         <div className="flex flex-row gap-4">
           <div className="flex flex-col w-full">
@@ -53,7 +53,7 @@ export function PostCard({ post, className, onClick}: { post: Post} & React.HTML
               </span>
             </div>
 
-            <PostBody post={post} colors={colors} />
+            <PostBody onClick={onClick} post={post} colors={colors} />
 
             {Array.isArray(post.attachments) && post.attachments.length > 0 && (
               <div
@@ -84,6 +84,13 @@ export function PostCard({ post, className, onClick}: { post: Post} & React.HTML
                 )}
               </div>
             )}
+
+            {!post.parentId && <CreatePostDialog session={session.data} parentId={post.id}>
+              <div className={cn("mt-2 flex gap-2 p-0 text-sm items-center", colors.text)}>
+                <MessageCircle strokeWidth={2} size={16} />
+                <p className={"text-md"}>{post?._count?.replies > 0 && post?._count?.replies}</p>
+                </div>
+            </CreatePostDialog>}
 
             <CreatePostDialog session={session.data} parentId={post.id}></CreatePostDialog>
           </div>

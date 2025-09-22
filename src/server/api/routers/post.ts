@@ -117,6 +117,11 @@ export const postRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
         include: {
           createdBy: true,
+          _count: {
+            select: {
+              replies: true
+            }
+          }
         },
       });
 
