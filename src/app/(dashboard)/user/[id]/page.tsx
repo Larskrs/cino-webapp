@@ -24,10 +24,10 @@ export default function UserPage() {
   if (!user) return <p>Fant ikke bruker</p>;
 
   return (
-    <div className="max-w-7xl mx-auto w-full">
+    <div className="max-w-7xl mx-auto w-screen">
         <Image
           src={getLocalFileURL(user.banner || "") || user.image || ""}
-          className="w-screen inset-0 blur-2xl z-0 scale-200 opacity-25 absolute aspect-[5/3] sm:aspect-[3/1] object-cover"
+          className="w-screen blur-2xl inset-0 scale-200 opacity-25 absolute aspect-[5/3] sm:aspect-[3/1] object-cover"
           width={720}
           height={320}
           quality={10}
