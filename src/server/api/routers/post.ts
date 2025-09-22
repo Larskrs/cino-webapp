@@ -134,6 +134,11 @@ export const postRouter = createTRPCRouter({
         where: { id: input.id },
         include: {
           createdBy: true,
+          _count: {
+            select: {
+              replies: true
+            }
+          }
         },
       });
     }),
