@@ -84,9 +84,9 @@ export const postRouter = createTRPCRouter({
           body: stripUrls(body),
           attachments: [...attachments, ...linkAttachments], // ✅ combine uploads + links
           createdBy: { connect: { id: userId } },
-          parent: {connect: {
+          ...(input.parentId !== undefined && {parent: {connect: {
             id: input.parentId
-          }}
+          }}})
         },
       });
 
