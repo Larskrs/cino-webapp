@@ -2,13 +2,15 @@
 
 import { useParams } from "next/navigation";
 import Avatar from "@/app/_components/users/avatar";
-import { cn } from "@/lib/utils";
+import { cn, getLocalFileURL } from "@/lib/utils";
 import { api } from "@/trpc/react"; // <-- client hooks
-import { Dot } from "lucide-react";
+import { Dot, Heart, ImageIcon, User } from "lucide-react";
 import Image from "next/image";
 import FollowButton from "../_components/follow-button";
 import { useSession } from "next-auth/react";
 import { PostList } from "@/app/_components/posts/list-posts";
+import { Button } from "@/components/ui/button";
+import ChangeBannerDialog from "@/app/_components/users/change-banner-dialog";
 
 export default function UserPage() {
   const params = useParams<{ id: string }>();
@@ -22,27 +24,47 @@ export default function UserPage() {
   if (!user) return <p>Fant ikke bruker</p>;
 
   return (
-    <div className="max-w-7xl mx-auto w-full p-4">
-      <div>
+    <div className="max-w-7xl mx-auto w-full">
         <Image
-          src={user.image || ""}
-          className="w-full aspect-[3/1] object-cover rounded-2xl"
+          src={getLocalFileURL(user.banner || "") || user.image || ""}
+          className="w-screen inset-0 blur-2xl z-0 scale-200 opacity-25 absolute aspect-[5/3] sm:aspect-[3/1] object-cover"
           width={720}
-          height={240}
+          height={320}
+          quality={10}
+          alt="banner"
+        />
+      <div className="p-4 pb-0 relative w-full aspect-[5/3] sm:aspect-[3/1]">
+        {session?.user?.id === id && <div className="z-1 absolute left-6 top-6">
+            <ChangeBannerDialog className="">
+                <Button><ImageIcon size={8} />Rediger bilde</Button>
+            </ChangeBannerDialog>
+        </div>} 
+        <Image
+          src={getLocalFileURL(user.banner || "") || user.image || ""}
+          className="w-full aspect-[5/3] sm:aspect-[3/1] object-cover rounded-lg"
+          width={1920}
+          height={640}
+          quality={100}
           alt="banner"
         />
       </div>
-      <div className="flex gap-4 p-6">
-        <Avatar
-          className={cn("size-48 -translate-y-20 border-4")}
-          src={user.image || ""}
-        />
+      <div className="flex gap-4 p-4 pt-2.5 sm:p-6 sm:pt-5 items-center">
+        <div className="relative ml-8 h-0 w-32 sm:w-48">
+            <Avatar
+              className={cn("absolute size-32 -translate-y-24 sm:size-42 sm:-translate-y-36")}
+              src={user.image || ""}
+              />
+        </div>
         <div>
           <h1 className="text-2xl font-semibold sm:text-3xl">{user.name}</h1>
-          <div className="flex gap-4 opacity-75">
-            <p>Følgere: {user._count?.followers}</p>
-            <Dot />
-            <p>Følger: {user._count?.following}</p>
+          <div className="flex gap-8 opacity-75">
+            <div className="flex items-center gap-2">
+                <User size={16} />
+                <p><span className="font-bold">{user._count?.followers}</span> følger{user._count?.followers <= 1 ? "" : "e"}</p>
+            </div>
+            <div className="flex items-center gap-2">
+                <p>Følger{user._count?.following <= 1 ? "" : "e"} <span className="font-bold">{user._count?.following}</span></p>
+            </div>
           </div>
           {session?.user && session?.user?.id !== id && (
             <div className="mt-4">
@@ -51,8 +73,9 @@ export default function UserPage() {
           )}
         </div>
       </div>
-
-      <PostList userId={id} />
+      <div className="z-10 mx-auto">
+        <PostList userId={id} />
+      </div>
     </div>
   );
 }

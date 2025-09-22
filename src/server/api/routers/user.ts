@@ -77,4 +77,17 @@ export const userRouter = createTRPCRouter({
   
       return !!follow;
     }),
+  changeBanner: protectedProcedure
+    .input(z.object({ fileId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Update the user's banner in the database
+      const updatedUser = await ctx.db.user.update({
+        where: { id: userId },
+        data: { banner: input.fileId },
+      });
+
+      return updatedUser;
+    }),
 });
