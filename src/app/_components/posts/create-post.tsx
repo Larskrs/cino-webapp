@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import Avatar from "../users/avatar";
 import type { Session } from "next-auth";
 
-export default function CreatePostDialog({ className, session, parentId, children, ...props}: { session: Session | null, parentId?: number} & React.HTMLAttributes<HTMLDivElement>) {
+export default function CreatePostDialog({ className, session, parentId, children, onClick}: { session: Session | null, parentId?: number} & React.HTMLAttributes<HTMLDivElement>) {
   const utils = api.useUtils();
   const [body, setBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -105,8 +105,8 @@ export default function CreatePostDialog({ className, session, parentId, childre
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger {...props} asChild className={cn("cursor-pointer", className)}>
-        {children}
+      <DialogTrigger asChild className={cn("cursor-pointer", className)}>
+       <div onClick={onClick}>{children}</div>
       </DialogTrigger>
 
       <DialogContent>
