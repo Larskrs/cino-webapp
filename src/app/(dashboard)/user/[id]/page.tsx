@@ -27,7 +27,7 @@ export default function UserPage() {
     <div className="max-w-7xl mx-auto w-screen">
         <Image
           src={getLocalFileURL(user.banner || "") || user.image || ""}
-          className="w-screen blur-2xl inset-0 scale-200 opacity-25 absolute aspect-[5/3] sm:aspect-[3/1] object-cover"
+          className="w-screen blur-2xl inset-0 max-h-125 mx-auto max-w-360 scale-100 opacity-25 absolute aspect-[5/3] sm:aspect-[3/1] object-cover"
           width={720}
           height={320}
           quality={10}

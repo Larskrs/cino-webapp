@@ -71,6 +71,11 @@ model Post {
   body        String
   attachments Json?    // Links of attachments
 
+  // Self-relation for replies
+  parentId    Int?      // The post this is replying to
+  parent      Post?     @relation("PostReplies", fields: [parentId], references: [id])
+  replies     Post[]    @relation("PostReplies") // Replies to this post
+
 
   @@index([id])
 }
