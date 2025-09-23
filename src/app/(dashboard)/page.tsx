@@ -23,12 +23,12 @@ export default function Home() {
           <div className="max-w-3xl flex flex-col gap-2">
             {/* {session?.data?.user && <ProjectList />} */}
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle className="text-xl flex items-center gap-2"><Smile />Lykke til på eksamen 1. Klasse TV-Skolen</CardTitle>
                 <CardDescription className="text-md">Ekstra lykke til på eksamen i TEK103!</CardDescription>
               </CardHeader>
-            </Card>
+            </Card> */}
 
             <PostList />
 
