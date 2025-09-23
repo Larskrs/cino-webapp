@@ -43,6 +43,8 @@ model User {
   emailVerified DateTime?
   image         String?
   banner        String?
+  status        String?
+  location      String?
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
