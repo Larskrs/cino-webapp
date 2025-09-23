@@ -1,6 +1,7 @@
 import Avatar from "@/app/_components/users/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { api } from "@/trpc/react"
+import Link from "next/link"
 import type { ReactNode } from "react"
 
 type PageProps = {
@@ -18,15 +19,18 @@ export default function FollowersDialog ({userId, children}:PageProps) {
 
     return (
         <Dialog>
-            <DialogTrigger>{children}</DialogTrigger>
+            <DialogTrigger className="cursor-pointer">{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Følgere</DialogTitle>
                 </DialogHeader>
-                <div className="flex h-16 w-full flex-row gap-2 overflow-x-scroll">
+                <div className="flex w-full flex-row gap-2 overflow-y-auto">
                     {followers?.map((f,i) => {
                         return (
-                            <Avatar src={f.user.image}  />
+                            <Link href={`/user/${f.user.id}`} className="flex gap-4 items-center">
+                                <Avatar className="size-12" src={f.user.image} />
+                                <p className="text-xl font-semibold">{f.user.name}</p>
+                            </Link>
                         )
                     })}
                 </div>
