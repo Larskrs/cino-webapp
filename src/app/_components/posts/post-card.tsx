@@ -23,17 +23,8 @@ export function PostCard({
   className,
   onClick,
 }: {
-  post: {
-    id: number;
-    createdAt: Date;
-    attachments: {};
-    parentId?: number;
-    _count?: {
-      replies?: number;
-    };
-    createdBy: { id: number; image: string; name: string };
-  }
-}& React.HTMLAttributes<HTMLDivElement>) {
+  post: Post;
+} & React.HTMLAttributes<HTMLDivElement>) {
   const { colors } = useTheme();
   const session = useSession();
 
@@ -42,7 +33,7 @@ export function PostCard({
       key={post.id}
       onClick={onClick}
       className={cn(
-        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-x cursor-pointer w-full",
+        "flex max-w-2xl items-start gap-3 px-4 pt-3 pb-4 shadow-none border-none rounded-xl cursor-pointer w-full",
         colors.cardBackground,
         className
       )}
@@ -54,7 +45,7 @@ export function PostCard({
             <div
               className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
             >
-              {/* Prevent link click from bubbling to card */}
+              {/* Author profile link */}
               <Link
                 href={`/user/${post.createdBy.id}`}
                 onClick={(e) => e.stopPropagation()}
@@ -72,49 +63,58 @@ export function PostCard({
               <span>{timeAgo(new Date(post.createdAt), "no")}</span>
             </div>
 
-            <PostBody post={post} colors={colors} />
+            {/* Clicking post body should open post */}
+            <Link
+              href={`/?p=${post.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="block"
+            >
+              <PostBody post={post} colors={colors} />
+            </Link>
 
-            {Array.isArray(post.attachments) && post.attachments.length > 0 && (
-              <div
-                className={cn(
-                  "mt-3 flex flex-col gap-3 max-h-160 w-auto relative overflow-hidden rounded-xl"
-                )}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {post.attachments.map((att: any, i: number) =>
-                  att.type === "image" ? (
-                    <Image
-                      width={720}
-                      height={720}
-                      alt={att.alt}
-                      src={att.url}
-                      key={i}
-                      className={cn(
-                        "max-h-160 w-auto object-contain rounded-xl inset-0"
-                      )}
-                    />
-                  ) : att.type === "video" ? (
-                    <Video
-                      autoPlayOnView
-                      loop
-                      key={i}
-                      controls
-                      className={cn(
-                        "max-h-160 w-auto object-contain rounded-xl inset-0"
-                      )}
-                      src={att.url}
-                    />
-                  ) : null
-                )}
-              </div>
-            )}
+            {/* Attachments */}
+            {Array.isArray(post.attachments) &&
+              post.attachments.length > 0 && (
+                <div
+                  className={cn(
+                    "mt-3 flex flex-col gap-3 max-h-160 w-auto relative overflow-hidden rounded-xl"
+                  )}
+                  onClick={(e) => e.stopPropagation()} // prevent attachment clicks from bubbling
+                >
+                  {post.attachments.map((att: any, i: number) =>
+                    att.type === "image" ? (
+                      <Image
+                        width={720}
+                        height={720}
+                        alt={att.alt}
+                        src={att.url}
+                        key={i}
+                        className={cn(
+                          "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
+                        )}
+                      />
+                    ) : att.type === "video" ? (
+                      <Video
+                        autoPlayOnView
+                        loop
+                        key={i}
+                        controls
+                        className={cn(
+                          "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
+                        )}
+                        src={att.url}
+                      />
+                    ) : null
+                  )}
+                </div>
+              )}
 
+            {/* Reply button */}
             {!post.parentId && (
               <CreatePostDialog
                 session={session.data}
                 parentId={post.id}
-                // stop click bubbling so it doesn’t open post
-                onClick={(e: any) => e.stopPropagation() }
+                onClick={(e: any) => e.stopPropagation()}
               >
                 <div
                   className={cn(
@@ -124,20 +124,17 @@ export function PostCard({
                 >
                   <MessageCircle strokeWidth={2} size={16} />
                   <p className="text-md">
-                    {post?._count?.replies &&
-                      post?._count?.replies > 0 &&
-                      post?._count?.replies}
+                    {post?._count?.replies && post._count.replies > 0
+                      ? post._count.replies
+                      : ""}
                   </p>
                 </div>
               </CreatePostDialog>
             )}
 
-            {/* Dialog button itself shouldn’t open post */}
+            {/* Extra dialog trigger */}
             <div onClick={(e) => e.stopPropagation()}>
-              <CreatePostDialog
-                session={session.data}
-                parentId={post.id}
-              ></CreatePostDialog>
+              <CreatePostDialog session={session.data} parentId={post.id} />
             </div>
           </div>
         </div>
