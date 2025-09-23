@@ -78,6 +78,21 @@ export const userRouter = createTRPCRouter({
   
       return !!follow;
     }),
+  getFollowers: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+  
+      const followers = await ctx.db.follower.findMany({
+        where: {
+          followerId: input.userId
+        },
+        include: {
+          user: true
+        },
+      });
+  
+      return followers;
+    }),
     changeBanner: protectedProcedure
       .input(z.object({ fileId: z.string() }))
       .mutation(async ({ ctx, input }) => {

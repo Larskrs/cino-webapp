@@ -12,6 +12,7 @@ import { PostList } from "@/app/_components/posts/list-posts";
 import { Button } from "@/components/ui/button";
 import ChangeBannerDialog from "@/app/(dashboard)/user/_components/change-banner-dialog";
 import ChangeImageDialog from "../_components/change-image-dialog";
+import FollowersDialog from "../_components/followers-dialog";
 
 export default function UserPage() {
   const params = useParams<{ id: string }>();
@@ -61,12 +62,14 @@ export default function UserPage() {
         <div>
           <h1 className="text-2xl font-semibold sm:text-3xl">{user.name}</h1>
           <div className="flex gap-8 opacity-75">
-            <div className="flex items-center gap-2">
+            <FollowersDialog userId={user.id}>
+              <div className="flex items-center gap-2">
                 <User size={16} />
-                <p><span className="font-bold">{user._count?.followers}</span> følger{user._count?.followers <= 1 ? "" : "e"}</p>
-            </div>
+                <p><span className="font-bold">{user._count?.followers}</span> følger{user._count?.followers == 1 ? "" : "e"}</p>
+              </div>
+            </FollowersDialog>
             <div className="flex items-center gap-2">
-                <p>Følger{user._count?.following <= 1 ? "" : "e"} <span className="font-bold">{user._count?.following}</span></p>
+                <p>Følger <span className="font-bold">{user._count?.following}</span></p>
             </div>
           </div>
           {session?.user && session?.user?.id !== id && (
@@ -76,7 +79,7 @@ export default function UserPage() {
           )}
         </div>
       </div>
-      <div className="z-10 mx-auto">
+      <div className="z-10 mx-auto max-w-2xl">
         <PostList userId={id} />
       </div>
     </div>

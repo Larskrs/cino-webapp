@@ -33,10 +33,10 @@ export function PostList({ userId }: PageProps) {
 
   if (postId && singlePost) {
     return (
-      <div className="mx-auto w-full max-w-3xl flex flex-col gap-2">
+      <div className="mx-auto w-full mt-2 max-w-3xl flex flex-col gap-2">
         <PostCard key={singlePost.id} post={singlePost as any} />
         {/* <CreatePost parentId={singlePost.id}  /> */}
-        <div className="pl-6 border-l space-y-2">
+        <div className="border-none">
           {replies.map((r) => (
             <PostCard key={r.id} post={{...r as any}} />
           ))}
@@ -45,19 +45,11 @@ export function PostList({ userId }: PageProps) {
     );
   }
 
-  if (!posts.length) {
-    return (
-      <div className={`flex w-full justify-center py-10 ${colors.textMuted}`}>
-        Kunne ikke finne noen innlegg
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto w-full max-w-3xl gap-2 flex flex-col divide-y">
+    <div className="mx-auto gap-2 flex flex-col">
       <CreatePost />
 
-      {posts.map((p) => (
+      {posts?.map((p) => (
         <PostCard
           key={p.id}
           post={p as any}
