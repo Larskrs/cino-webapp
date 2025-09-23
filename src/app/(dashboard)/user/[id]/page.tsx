@@ -93,7 +93,7 @@ export default function UserPage() {
 
       <div className="mt-2 flex items-center gap-2 opacity-50">
         <Pin size={20} />
-        Lillehammer, Birkebeinervegen
+        Norge/Noreg (endre snart)
       </div>
 
       {/* Follow button (if not self) */}
