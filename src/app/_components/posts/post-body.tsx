@@ -16,9 +16,10 @@ export function PostBody({ post, colors, onClick }: { post: any; colors: any } &
   }, [post.body]);
 
   return (
-    <div onClick={onClick}>
+    <div>
       {/* Body text */}
       <p
+        onClick={onClick}
         ref={textRef}
         className={cn(
           `mt-1 text-lg leading-snug whitespace-pre-line break-all ${colors.text}`,
@@ -31,7 +32,10 @@ export function PostBody({ post, colors, onClick }: { post: any; colors: any } &
       {isOverflowing && (
         <p
           className={cn("cursor-pointer mt-2", colors.text)}
-          onClick={() => setShowMore((s) => !s)}
+          onClick={(e) => {
+            e.stopPropagation(); // <-- prevent opening post
+            setShowMore((s) => !s);
+          }}
         >
           Show {showMore ? "less" : "more"}...
         </p>

@@ -64,13 +64,7 @@ export function PostCard({
             </div>
 
             {/* Clicking post body should open post */}
-            <Link
-              href={`/?p=${post.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="block"
-            >
-              <PostBody post={post} colors={colors} />
-            </Link>
+            <PostBody onClick={onClick} post={post} colors={colors} />
 
             {/* Attachments */}
             {Array.isArray(post.attachments) &&
