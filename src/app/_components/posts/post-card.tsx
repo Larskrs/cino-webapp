@@ -2,7 +2,7 @@
 
 import Avatar from "../users/avatar";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import Image from "next/image";
 import Video from "../video";
@@ -69,7 +69,7 @@ export function PostCard({
                 </span>
               </Link>
               <span>·</span>
-              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+              <span>{timeAgo(new Date(post.createdAt), "no")}</span>
             </div>
 
             <PostBody post={post} colors={colors} />
