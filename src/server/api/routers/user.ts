@@ -78,7 +78,7 @@ export const userRouter = createTRPCRouter({
   
       return !!follow;
     }),
-  getFollowers: publicProcedure
+  getFollowing: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
   
@@ -88,6 +88,21 @@ export const userRouter = createTRPCRouter({
         },
         include: {
           user: true
+        },
+      });
+  
+      return followers;
+    }),
+  getFollowers: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+  
+      const followers = await ctx.db.follower.findMany({
+        where: {
+          userId: input.userId
+        },
+        include: {
+          follower: true
         },
       });
   

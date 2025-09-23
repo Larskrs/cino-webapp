@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import ChangeBannerDialog from "@/app/(dashboard)/user/_components/change-banner-dialog";
 import ChangeImageDialog from "../_components/change-image-dialog";
 import FollowersDialog from "../_components/followers-dialog";
+import FollowingDialog from "../_components/following-dialog";
 
 export default function UserPage() {
   const params = useParams<{ id: string }>();
@@ -68,9 +69,11 @@ export default function UserPage() {
                 <p><span className="font-bold">{user._count?.followers}</span> følger{user._count?.followers == 1 ? "" : "e"}</p>
               </div>
             </FollowersDialog>
-            <div className="flex items-center gap-2">
-                <p>Følger <span className="font-bold">{user._count?.following}</span></p>
-            </div>
+            <FollowingDialog userId={user.id}>
+              <div className="flex items-center gap-2">
+                  <p>Følger <span className="font-bold">{user._count?.following}</span></p>
+              </div>
+            </FollowingDialog>
           </div>
           {session?.user && session?.user?.id !== id && (
             <div className="mt-4">

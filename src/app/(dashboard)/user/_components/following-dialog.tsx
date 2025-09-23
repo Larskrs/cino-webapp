@@ -9,9 +9,9 @@ type PageProps = {
     children: ReactNode
 }
 
-export default function FollowersDialog ({userId, children}:PageProps) {
+export default function FollowingDialog ({userId, children}:PageProps) {
 
-      const { data: followers, isLoading, error } = api.users.getFollowers.useQuery({ userId });
+      const { data: followers, isLoading, error } = api.users.getFollowing.useQuery({ userId });
     
       if (isLoading) return <p>Laster...</p>;
       if (error) return <p>Noe gikk galt</p>;
@@ -22,14 +22,14 @@ export default function FollowersDialog ({userId, children}:PageProps) {
             <DialogTrigger className="cursor-pointer">{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Følgere</DialogTitle>
+                    <DialogTitle>Følger</DialogTitle>
                 </DialogHeader>
                 <div className="flex w-full flex-col gap-2 overflow-y-auto">
                     {followers?.map((f,i) => {
                         return (
-                            <Link href={`/user/${f.follower.id}`} className="flex gap-4 items-center">
-                                <Avatar className="size-12" src={f.follower.image} />
-                                <p className="text-xl font-semibold">{f.follower.name}</p>
+                            <Link href={`/user/${f.user.id}`} className="flex gap-4 items-center">
+                                <Avatar className="size-12" src={f.user.image} />
+                                <p className="text-xl font-semibold">{f.user.name}</p>
                             </Link>
                         )
                     })}
