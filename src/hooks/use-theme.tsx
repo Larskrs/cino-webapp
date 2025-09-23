@@ -5,6 +5,7 @@ export type ThemeKey = "light" | "dark" | "funky";
 
 export interface ThemeColors {
   background: string;
+  backgroundBorder: string;
   cardBackground: string;
   cardBorder: string;
   buttonBackground: string;
@@ -47,6 +48,7 @@ export interface ThemeColors {
 const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
   light: {
     background: "bg-zinc-100",
+    backgroundBorder: "border-zinc-100",
     cardBackground: "bg-white",
     cardBorder: "border-2 border-zinc-200",
     buttonBackground: "bg-zinc-200 hover:bg-zinc-300",
@@ -86,6 +88,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
   },
   funky: {
     background: "bg-sky-500",
+    backgroundBorder: "border-zinc-100",
     cardBackground: "bg-[url('https://i.redd.it/dc8pzfnvq6wb1.png')]",
     cardBorder: "border-violet-600",
     buttonBackground: "bg-stone-800",
@@ -125,6 +128,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
   },
   dark: {
     background: "bg-zinc-950",
+    backgroundBorder: "border-zinc-950",
     cardBackground: "bg-zinc-900/75",
     cardBorder: "border-2 border-zinc-700",
     buttonBackground: "bg-zinc-800 hover:bg-zinc-700",

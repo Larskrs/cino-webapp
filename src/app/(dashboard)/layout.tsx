@@ -46,7 +46,7 @@ export default function Layout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2500); // show loader for 1.5s
+    const timer = setTimeout(() => setLoading(false), 100); // show loader for 1.5s
     return () => clearTimeout(timer);
   }, []);
 
@@ -70,12 +70,12 @@ export default function Layout({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut"}}
-            className={cn("fixed inset-0 z-50 flex flex-col items-center justify-center", colors.components.dialog.container, colors.text)}
+            className={cn("fixed inset-0 z-50 flex flex-col items-center justify-center", colors.background, colors.text)}
           >
             <motion.div
               className="mb-4"
-              initial={{ scale: 2, opacity: 0}}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ scale: 3, opacity: 0}}
+              animate={{ scale: 1, opacity: [0, 0, 1] }}
               transition={{ duration: 2, ease: "anticipate" }}
             >
               <Logo className="size-full" /> {/* Replace <Home /> with your desired Lucide icon */}
@@ -84,7 +84,7 @@ export default function Layout({
         )}
       </AnimatePresence>
 
-      {children}
+      {!loading && children}
     </div>
   );
 }
