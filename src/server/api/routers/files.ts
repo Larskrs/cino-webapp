@@ -6,7 +6,7 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 
-export const postRouter = createTRPCRouter({
+export const fileRouter = createTRPCRouter({
 
   list: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;

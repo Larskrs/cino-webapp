@@ -53,6 +53,25 @@ export default function CreatePostDialog({ className, session, parentId, childre
     };
   }, [file]);
 
+  // inside your component:
+  const [currentTag, setCurrentTag] = useState<string | null>(null);
+
+  // watch body input for hashtags being typed
+  useEffect(() => {
+    const match = body?.match(/#(\w+)$/);
+    if (match && match?.[1]) {
+      setCurrentTag(match[1].toLowerCase());
+    } else {
+      setCurrentTag(null);
+    }
+  }, [body]);
+
+  // query search API when hashtag is being typed
+  const { data: searchResults } = api.hashtags.search.useQuery(
+    { query: currentTag ?? "", take: 5 },
+    { enabled: !!currentTag }
+  );
+
   const createPost = api.post.create.useMutation({
     onSuccess: async () => {
       await utils.post.list.invalidate();

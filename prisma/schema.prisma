@@ -72,6 +72,7 @@ model Post {
   
   body        String
   attachments Json?    // Links of attachments
+  hashtags  PostHashtag[]
 
   // Self-relation for replies
   parentId    Int?      // The post this is replying to
@@ -80,6 +81,26 @@ model Post {
 
 
   @@index([id])
+}
+
+model Hashtag {
+  tag       String      @id              // lowercase hashtag text
+  createdAt DateTime  @default(now())
+
+  posts     PostHashtag[]
+}
+
+model PostHashtag {
+  postId    Int
+  tag       String
+  createdAt DateTime  @default(now())  // store when the hashtag was used
+
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashtag   Hashtag   @relation(fields: [tag], references: [tag], onDelete: Cascade)
+
+  @@id([postId, tag]) 
+  @@index([tag, createdAt])   // fast trending queries by day
+  @@index([postId])
 }
 
 model Follower {

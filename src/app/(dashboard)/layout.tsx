@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Logo from "public/lucide/logo";
+import TrendingTags from "../_components/posts/trending-tags";
 
 export function ThemeSwitcher({
   theme,
@@ -84,7 +85,9 @@ export default function Layout({
         )}
       </AnimatePresence>
 
+      <main>
       {!loading && children}
+      </main>
     </div>
   );
 }

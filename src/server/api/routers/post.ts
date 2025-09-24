@@ -35,7 +35,11 @@ function extractUrls(text: string): string[] {
 function stripUrls(text: string): string {
   return text.replace(/https?:\/\/[^\s]+/g, "").trim();
 }
-
+function getPostHashtagsFromBody(body: string): string[] {
+  const hashtagRegex = /#(\w+)/g; // matches #tag (letters, numbers, underscore)
+  const matches = body.match(hashtagRegex) || [];
+  return matches.map((tag) => tag.slice(1).toLowerCase()); // remove "#" + normalize lowercase
+}
 const attachmentSchema = z.object({
   url: z.string().max(64),
   type: z.enum(["image", "video"]),
@@ -79,14 +83,29 @@ export const postRouter = createTRPCRouter({
         type: "image" | "video";
       }[];
 
+      const tags = getPostHashtagsFromBody(input.body)
+
       const post = await ctx.db.post.create({
         data: {
           body: stripUrls(body),
-          attachments: [...attachments, ...linkAttachments], // ✅ combine uploads + links
+          attachments: [...attachments, ...linkAttachments],
           createdBy: { connect: { id: userId } },
-          ...(input.parentId !== undefined && {parent: {connect: {
-            id: input.parentId
-          }}})
+          ...(input.parentId !== undefined && {
+            parent: { connect: { id: input.parentId } },
+          }),
+          hashtags: {
+            create: tags.map((t) => ({
+              hashtag: {
+                connectOrCreate: {
+                  where: { tag: t },
+                  create: { tag: t },
+                },
+              },
+            })),
+          },
+        },
+        include: {
+          hashtags: { include: { hashtag: true } }, // return tags too
         },
       });
 
@@ -120,6 +139,11 @@ export const postRouter = createTRPCRouter({
           _count: {
             select: {
               replies: true
+            }
+          },
+          hashtags: {
+            include: {
+              hashtag: true
             }
           }
         },
