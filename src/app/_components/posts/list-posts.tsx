@@ -39,7 +39,7 @@ export function PostList({ userId }: PageProps) {
     return (
       <div className="mx-auto w-full mt-2 max-w-3xl flex flex-col gap-2">
         <PostCard key={singlePost.id} post={singlePost as any} />
-        <div className="border-none flex flex-col gap-2">
+        <div className="border-none flex flex-col gap-2 w-full">
           {replies.map((r) => (
             <PostCard key={r.id} post={{...r as any}} />
           ))}
@@ -49,7 +49,7 @@ export function PostList({ userId }: PageProps) {
   }
 
   return (
-    <div className="mx-auto gap-2 flex flex-col">
+    <div className="mx-auto gap-2 w-full flex flex-col">
       <CreatePost />
 
       {posts?.map((p) => (

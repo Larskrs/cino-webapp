@@ -10,6 +10,7 @@ export interface ThemeColors {
   cardBorder: string;
   buttonBackground: string;
   buttonText: string;
+  link: string;
   text: string;
   textMuted: string;
   nav: {
@@ -53,6 +54,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     cardBorder: "border-2 border-zinc-200",
     buttonBackground: "bg-zinc-200 hover:bg-zinc-300",
     buttonText: "text-zinc-800",
+    link: "text-indigo-500",
     text: "text-black",
     textMuted: "text-gray-500",
     nav: {
@@ -93,6 +95,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     cardBorder: "border-violet-600",
     buttonBackground: "bg-stone-800",
     buttonText: "text-neutral-900",
+    link: "text-indigo-500",
     text: "text-black",
     textMuted: "text-fuchsia-700",
     nav: {
@@ -133,6 +136,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
     cardBorder: "border-2 border-zinc-700",
     buttonBackground: "bg-zinc-800 hover:bg-zinc-700",
     buttonText: "text-white",
+    link: "text-indigo-500",
     text: "text-white",
     textMuted: "text-gray-400",
     nav: {
