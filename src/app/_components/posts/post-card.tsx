@@ -73,7 +73,7 @@ export function PostCard({
                   className={cn(
                     "mt-3 flex flex-col gap-3 max-h-160 w-auto relative overflow-hidden rounded-xl"
                   )}
-                  onClick={(e) => e.stopPropagation()} // prevent attachment clicks from bubbling
+                   // prevent attachment clicks from bubbling
                 >
                   {post.attachments.map((att: any, i: number) =>
                     att.type === "image" ? (
@@ -83,6 +83,7 @@ export function PostCard({
                         alt={att.alt}
                         src={att.url}
                         key={i}
+                        onClick={(e) => e.stopPropagation()}
                         className={cn(
                           "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
                         )}
@@ -93,6 +94,7 @@ export function PostCard({
                         loop
                         key={i}
                         controls
+                        onClick={(e) => e.stopPropagation()}
                         className={cn(
                           "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
                         )}
