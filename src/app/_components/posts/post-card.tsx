@@ -83,7 +83,7 @@ export function PostCard({
                         alt={att.alt}
                         src={att.url}
                         key={i}
-                        onClick={(e) => e.stopPropagation()}
+                        // onClick={(e) => e.stopPropagation()}
                         className={cn(
                           "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
                         )}
@@ -94,7 +94,6 @@ export function PostCard({
                         loop
                         key={i}
                         controls
-                        onClick={(e) => e.stopPropagation()}
                         className={cn(
                           "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
                         )}

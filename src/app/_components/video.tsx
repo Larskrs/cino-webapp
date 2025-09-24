@@ -296,7 +296,7 @@ export default function Video({
         muted={muted ?? true}
         playsInline
         preload="metadata"
-        onClick={()=>{togglePlay()}}
+        onClick={(e)=>{e.stopPropagation(); togglePlay()}}
         // intentionally do not set 'controls' so built-in chrome UI doesn't collide
         {...props}
       />
