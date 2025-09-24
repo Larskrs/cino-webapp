@@ -5,6 +5,8 @@ import { api } from "@/trpc/react";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function TrendingTags() {
   const { data, isLoading } = api.hashtags.trending.useQuery({ days: 1 });
@@ -20,11 +22,12 @@ export default function TrendingTags() {
       {/* Responsive grid: 3 columns on medium+, 1 column on small */}
       <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
         {data.map((tag) => (
-          <Card
+          <Link
             key={`${tag.tag}-${tag.day}`}
+            href={`?h=${tag.tag}`}
             className={cn(
               "border-none p-2 px-4 rounded-sm flex flex-row justify-between items-center",
-              colors.cardBackground,
+              colors.buttonBackground,
               colors.text
             )}
           >
@@ -32,7 +35,7 @@ export default function TrendingTags() {
             <CardDescription className="text-sm">
               {tag.usage_count} innlegg
             </CardDescription>
-          </Card>
+          </Link>
         ))}
       </div>
     </div>

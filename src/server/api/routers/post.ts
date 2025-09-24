@@ -125,12 +125,22 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string().optional(),
+        hashtags: z.array(z.string()).optional()
       })
     )
     .query(async ({ ctx, input }) => {
       const posts = await ctx.db.post.findMany({
         where: {
+          
           ...(input.userId ? { createdById: input.userId } : {}),
+          ...(input.hashtags ? { hashtags: {
+            some: {
+              hashtag: {
+                tag: { in: input.hashtags.map((t) => t.toLowerCase()) }
+              }
+            }
+          }
+          }: {}),
           parentId: null, // only top-level posts
         },
         orderBy: { createdAt: "desc" },

@@ -19,9 +19,13 @@ export function PostList({ userId }: PageProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const postId = searchParams.get("p");
+  const hashtag = searchParams.get("h"); // single hashtag filter
+
+  // Build hashtags array if query param exists
+  const hashtagsArray = hashtag ? [hashtag.toLowerCase()] : undefined;
 
   // Normal feed
-  const [posts] = api.post.list.useSuspenseQuery({ userId });
+  const [posts] = api.post.list.useSuspenseQuery({ userId, hashtags: hashtagsArray });
 
   // If deep-linked to one post → fetch it and its replies
   const [singlePost] = api.post.byId.useSuspenseQuery(
@@ -35,7 +39,6 @@ export function PostList({ userId }: PageProps) {
     return (
       <div className="mx-auto w-full mt-2 max-w-3xl flex flex-col gap-2">
         <PostCard key={singlePost.id} post={singlePost as any} />
-        {/* <CreatePost parentId={singlePost.id}  /> */}
         <div className="border-none flex flex-col gap-2">
           {replies.map((r) => (
             <PostCard key={r.id} post={{...r as any}} />
@@ -53,7 +56,7 @@ export function PostList({ userId }: PageProps) {
         <PostCard
           key={p.id}
           post={p as any}
-          onClick={() => router.push(`?p=${p.id}`)} // 👈 navigate into single view
+          onClick={() => router.push(`?p=${p.id}`)} // navigate into single view
         />
       ))}
     </div>
@@ -61,7 +64,6 @@ export function PostList({ userId }: PageProps) {
 }
 
 function CreatePost ({parentId}:{parentId?: number | undefined}) {
-
   const session = useSession()
   const {colors} = useTheme()
 
@@ -72,32 +74,31 @@ function CreatePost ({parentId}:{parentId?: number | undefined}) {
           "flex items-start gap-3 mb-8 mt-4 px-4 pt-3 pb-4 shadow-none border-none rounded-xl",
           colors.cardBackground,
         )}
-      
       >
         <div className="flex flex-col flex-1 w-full">
-          {/* Top row: author + timestamp */}
           <div className="flex flex-row gap-4">
             <Avatar
               className="size-12 mt-1.5 shrink-0 rounded-full"
               src={session?.data?.user?.image || ""}
             />
             <div className="flex flex-col w-full">
-                        <div
-                          className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
-                        >
-                          <span className={`font-semibold ${colors.text}`}>
-                            {session?.data?.user.name}
-                          </span>
-                        </div>
-            
-                        {/* Body text */}
-                        <p
-                          className={cn("mt-1 px-4 py-3 text-lg leading-snug whitespace-pre-line break-words cursor-pointer rounded-md", colors.textMuted, colors.buttonBackground, colors.cardBorder)}
-                        >
-                          Hva vil du dele i dag?
-                        </p>
-                </div>  
-            </div>
+              <div className={`flex items-center gap-2 text-lg ${colors.textMuted}`}>
+                <span className={`font-semibold ${colors.text}`}>
+                  {session?.data?.user.name}
+                </span>
+              </div>
+              <p
+                className={cn(
+                  "mt-1 px-4 py-3 text-lg leading-snug whitespace-pre-line break-words cursor-pointer rounded-md",
+                  colors.textMuted,
+                  colors.buttonBackground,
+                  colors.cardBorder
+                )}
+              >
+                Hva vil du dele i dag?
+              </p>
+            </div>  
+          </div>
         </div>
       </Card>
     </CreatePostDialog>
