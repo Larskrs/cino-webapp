@@ -13,7 +13,8 @@ import { PostBody } from "./post-body";
 import Link from "next/link";
 import CreatePostDialog from "./create-post";
 import { useSession } from "next-auth/react";
-import { MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
@@ -67,43 +68,10 @@ export function PostCard({
             <PostBody onClick={onClick} post={post} colors={colors} />
 
             {/* Attachments */}
-            {Array.isArray(post.attachments) &&
-              post.attachments.length > 0 && (
-                <div
-                  className={cn(
-                    "mt-3 flex flex-col gap-3 max-h-160 w-auto relative overflow-hidden rounded-xl"
-                  )}
-                   // prevent attachment clicks from bubbling
-                >
-                  {post.attachments.map((att: any, i: number) =>
-                    att.type === "image" ? (
-                      <Image
-                        width={720}
-                        height={720}
-                        alt={att.alt}
-                        src={att.url}
-                        key={i}
-                        // onClick={(e) => e.stopPropagation()}
-                        className={cn(
-                          "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
-                        )}
-                      />
-                    ) : att.type === "video" ? (
-                      <Video
-                        autoPlayOnView
-                        loop
-                        key={i}
-                        controls
-                        className={cn(
-                          "max-h-160 mx-auto w-fit object-contain rounded-xl inset-0"
-                        )}
-                        src={att.url}
-                      />
-                    ) : null
-                  )}
-                </div>
-              )}
-
+            {Array.isArray(post.attachments) && post.attachments.length > 0 && (
+              <PostAttachments attachments={post.attachments} />
+            )}
+            
             {/* Reply button */}
             {!post.parentId && (
               <CreatePostDialog
@@ -136,4 +104,109 @@ export function PostCard({
       </div>
     </Card>
   );
+}
+
+
+function PostAttachments({ attachments }: { attachments: any[] }) {
+  const [index, setIndex] = React.useState(0);
+  const total = attachments.length;
+
+  const next = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIndex((prev) => (prev + 1 < total ? prev + 1 : prev));
+  };
+
+  const prev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIndex((prev) => (prev - 1 >= 0 ? prev - 1 : prev));
+  };
+
+  return (
+    <div 
+      className="relative max-h-150 min-h-75 mt-3 w-full overflow-hidden rounded-xl"
+      >
+      {/* Slides wrapper */}
+      <div
+        className="h-full flex transition-transform duration-500 ease-in-out"
+        style={{
+          transform: `translateX(-${index * 100/attachments.length}%)`,
+          width: `${total * 100}%`,
+        }}
+      >
+        {attachments.map((att, i) => (
+          <div
+            key={i}
+            className="w-full flex-shrink-0 flex items-center justify-center"
+            style={{ width: `${100 / total}%` }}
+          >
+            {att.type === "image" ? (
+              <Image
+                width={720}
+                height={720}
+                alt={att.alt}
+                src={att.url}
+                onClick={(e) => e.stopPropagation()}
+                className="w-fit h-fit max-h-full max-w-full object-contain rounded-xl"
+              />
+            ) : att.type === "video" ? (
+              <Video
+                autoPlayOnView
+                loop
+                controls
+                src={att.url}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full h-fit object-contain rounded-xl"
+              />
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation buttons */}
+      {total > 1 && (
+        <>
+          {index > 0 && (
+            <Button
+              type="button"
+              onClick={prev}
+              className="absolute size-12 top-1/2 left-2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2"
+            >
+              <div className="absolute inset-0 scale-175" />
+              <ChevronLeft className="size-full" />
+            </Button>
+          )}
+          {index < total - 1 && (
+            <Button
+              type="button"
+              onClick={next}
+              className="absolute size-12 top-1/2 right-2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2"
+            >
+              <div className="absolute inset-0 scale-175" />
+              <ChevronRight className="size-full" />
+            </Button>
+          )}
+        </>
+      )}
+
+      {/* Pagination dots */}
+      {total > 1 && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2">
+          {Array.from({ length: total }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "w-2 h-2 rounded-full",
+                i === index ? "bg-white" : "bg-white/40"
+              )}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function ScrollArrow (dir: "left" | "right") {
+
 }
