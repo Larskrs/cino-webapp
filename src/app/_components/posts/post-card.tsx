@@ -127,7 +127,7 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
     <div className="relative mt-3 w-full overflow-hidden rounded-xl">
       {/* Slides wrapper */}
       <div
-        className="flex transition-transform duration-500 ease-in-out"
+        className="flex transition-transform duration-750 ease-in-out"
         style={{
           transform: `translateX(-${index * (100 / total)}%)`,
           width: `${total * 100}%`,
@@ -137,8 +137,8 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
           <div
             key={i}
             className={cn(
-              "flex-shrink-0 flex items-center justify-center",
-              forceSquare ? "aspect-square" : ""
+              "flex-shrink-0 max-h-200 flex items-center justify-center",
+              forceSquare ? "" : ""
             )}
             style={{
               width: `${100 / total}%`,
@@ -154,7 +154,7 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
                 className={cn(
                   "rounded-xl",
                   forceSquare
-                    ? "w-full h-full object-cover"
+                    ? "w-full h-fit object-cover"
                     : "max-h-2xl max-w-full object-contain"
                 )}
               />
