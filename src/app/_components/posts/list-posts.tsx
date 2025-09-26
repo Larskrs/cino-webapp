@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import Avatar from "../users/avatar";
+import { usePostPreview } from "@/hooks/post-preview";
 
 type PageProps = {
   userId?: string;
@@ -16,6 +17,7 @@ type PageProps = {
 
 export function PostList({ userId }: PageProps) {
   const { colors } = useTheme();
+  const { post: postPreview, setPost: setPostPreview } = usePostPreview()
   const searchParams = useSearchParams();
   const router = useRouter();
   const postId = searchParams.get("p");
@@ -56,7 +58,7 @@ export function PostList({ userId }: PageProps) {
         <PostCard
           key={p.id}
           post={p as any}
-          onClick={() => router.push(`?p=${p.id}`)} // navigate into single view
+          onClick={() => setPostPreview(p.id)} // navigate into single view
         />
       ))}
     </div>

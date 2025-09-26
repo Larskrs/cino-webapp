@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Logo from "public/lucide/logo";
 import TrendingTags from "../_components/posts/trending-tags";
+import { usePostPreview } from "@/hooks/post-preview";
+import PostPreviewDisplay from "../_components/posts/post-preview-display";
 
 export function ThemeSwitcher({
   theme,
@@ -58,9 +60,13 @@ export default function Layout({
     { label: <ThemeSwitcher theme={theme} colors={colors} />, key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark") }
   ];
 
+  const { post, setPost } = usePostPreview()
+
   return (
     <div className={colors.background}>
       <ResponsiveNav links={links} />
+
+      {post && <PostPreviewDisplay />}
 
       {/* Loading animation */}
       <AnimatePresence>

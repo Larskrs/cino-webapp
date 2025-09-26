@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { SessionProvider } from "next-auth/react";
 import { cookies } from "next/headers";
 import { auth } from "@/server/auth";
+import { PostPreviewProvider } from "@/hooks/post-preview";
 
 export const metadata: Metadata = {
   title: "Cino.no",
@@ -44,7 +45,9 @@ export default async function RootLayout({
     <html lang="en" className={cn(geist.variable, courier.variable)}>
       <ThemeProvider initialTheme={savedTheme}>
         <SessionProvider session={session}>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <PostPreviewProvider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </PostPreviewProvider>
         </SessionProvider>
       </ThemeProvider>
     </html>
