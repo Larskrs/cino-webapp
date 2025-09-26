@@ -121,23 +121,28 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
     setIndex((prev) => (prev - 1 >= 0 ? prev - 1 : prev));
   };
 
+  const forceSquare = total > 1;
+
   return (
-    <div 
-      className="relative max-h-150 min-h-75 mt-3 w-full overflow-hidden rounded-xl"
-      >
+    <div className="relative mt-3 w-full overflow-hidden rounded-xl">
       {/* Slides wrapper */}
       <div
-        className="h-full flex transition-transform duration-500 ease-in-out"
+        className="flex transition-transform duration-500 ease-in-out"
         style={{
-          transform: `translateX(-${index * 100/attachments.length}%)`,
+          transform: `translateX(-${index * (100 / total)}%)`,
           width: `${total * 100}%`,
         }}
       >
         {attachments.map((att, i) => (
           <div
             key={i}
-            className="w-full flex-shrink-0 flex items-center justify-center"
-            style={{ width: `${100 / total}%` }}
+            className={cn(
+              "flex-shrink-0 flex items-center justify-center",
+              forceSquare ? "aspect-square" : ""
+            )}
+            style={{
+              width: `${100 / total}%`,
+            }}
           >
             {att.type === "image" ? (
               <Image
@@ -146,7 +151,12 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
                 alt={att.alt}
                 src={att.url}
                 onClick={(e) => e.stopPropagation()}
-                className="w-fit h-fit max-h-full max-w-full object-contain rounded-xl"
+                className={cn(
+                  "rounded-xl",
+                  forceSquare
+                    ? "w-full h-full object-cover"
+                    : "max-h-2xl max-w-full object-contain"
+                )}
               />
             ) : att.type === "video" ? (
               <Video
@@ -155,7 +165,12 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
                 controls
                 src={att.url}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full h-fit object-contain rounded-xl"
+                className={cn(
+                  "rounded-xl",
+                  forceSquare
+                    ? "w-full h-full object-cover aspect-square"
+                    : "w-full h-fit object-contain"
+                )}
               />
             ) : null}
           </div>
@@ -171,7 +186,6 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
               onClick={prev}
               className="absolute size-12 top-1/2 left-2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2"
             >
-              <div className="absolute inset-0 scale-175" />
               <ChevronLeft className="size-full" />
             </Button>
           )}
@@ -181,7 +195,6 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
               onClick={next}
               className="absolute size-12 top-1/2 right-2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2"
             >
-              <div className="absolute inset-0 scale-175" />
               <ChevronRight className="size-full" />
             </Button>
           )}
@@ -205,6 +218,7 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
     </div>
   );
 }
+
 
 
 function ScrollArrow (dir: "left" | "right") {
