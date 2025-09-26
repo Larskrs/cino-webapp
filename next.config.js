@@ -8,7 +8,7 @@ import "./src/env.js";
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
-  distDir: "/.next",
+  distDir: ".next",
   turbopack: {
       rules: {
         '*.svg': {
