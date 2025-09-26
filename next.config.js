@@ -9,14 +9,6 @@ const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
   distDir: ".next",
-  turbopack: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   images: {
     remotePatterns: [
       {
