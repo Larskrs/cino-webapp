@@ -137,7 +137,7 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
           <div
             key={i}
             className={cn(
-              "flex-shrink-0 max-h-200 flex items-center justify-center",
+              "flex-shrink-0 max-h-175 flex items-center justify-center",
               forceSquare ? "" : ""
             )}
             style={{
@@ -152,7 +152,7 @@ function PostAttachments({ attachments }: { attachments: any[] }) {
                 src={att.url}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  "rounded-xl",
+ 
                   forceSquare
                     ? "w-full h-fit object-cover"
                     : "max-h-2xl max-w-full object-contain"
