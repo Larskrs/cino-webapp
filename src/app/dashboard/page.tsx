@@ -168,7 +168,7 @@ function ProjectList() {
   const [page, setPage] = useState(1)
   const perPage = 6
 
-  const { data: projects, isLoading } = api.projects.list.useQuery()
+  const { data: projects, isLoading } = api.projects.listAll.useQuery()
   const listRef = useRef<HTMLDivElement>(null)
 
   // Paginate client-side (since route returns all)

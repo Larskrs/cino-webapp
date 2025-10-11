@@ -34,6 +34,24 @@ export const projectRouter = createTRPCRouter({
     return projects;
   }),
 
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const projects = await ctx.db.project.findMany({
+      include: {
+        members: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } },
+          },
+        },
+        _count: { select: { files: true, scripts: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return projects;
+  }),
+
   get: protectedProcedure.input(
       z.object({
         projectId: z.string(),
