@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { api } from "@/trpc/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,11 @@ import { Label } from "@/components/ui/label";
 import { useTheme } from "@/hooks/use-theme";
 
 export function CreateScriptDialog({
+  children,
   projectId,
   className,
 }: {
+  children: ReactNode,
   projectId: string;
   className?: string;
 }) {
@@ -39,10 +41,11 @@ export function CreateScriptDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild className={cn("cursor-pointer", className)}>
-        <Button className={colors.components.dialog.button}>
+        {/* <Button className={colors.components.dialog.button}>
           <PlusSquare />
           New Script
-        </Button>
+        </Button> */}
+        {children}
       </DialogTrigger>
 
       <DialogContent>

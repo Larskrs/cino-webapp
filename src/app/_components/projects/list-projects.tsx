@@ -19,7 +19,7 @@ export function ProjectList() {
   const { colors } = useTheme()
 
   return (
-    <div className="w-full max-w-5xl container grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+    <div className="w-full container grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
       {projects.map((p) => (
         <Link
           href={`/project/${p.id}`}
@@ -31,10 +31,11 @@ export function ProjectList() {
             <p className="text-sm text-gray-700">{p.description}</p>
           )}
 
-          <div className="mt-auto flex flex-row absolute h-fit px-4 pb-3 inset-0 items-end justify-start gap-2 text-sm text-gray-500">
+          <div className="min-w-60 mt-auto flex flex-row absolute h-fit px-4 pb-3 inset-0 items-end justify-start gap-2 text-sm text-gray-500">
             <div className="flex flex-row items-center justify-start gap-2">
-              <p>{p._count.files} Filer</p>
-              <p>{p._count.scripts} Manus</p>
+              <p>{p._count.files} Files</p>
+              <p>{p._count.scripts} Scripts</p>
+              <p>{p._count.boards} Boards</p>
             </div>
 
             <div className="flex -space-x-2 ml-auto">

@@ -8,6 +8,7 @@ import AddMemberDialog from "./_components/add-member-dialog";
 import { ScriptList } from "./_components/list-scripts";
 import { CreateScriptDialog } from "./_components/create-script-dialog";
 import { notFound, redirect } from "next/navigation";
+import { BoardList } from "./_components/board-list";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -39,10 +40,11 @@ export default async function ProjectPage({ params }: PageProps) {
         </div>
 
         <div className="flex flex-row flex-wrap gap-2 items-center justify-start w-full max-w-5xl px-4 mb-4">
-          <CreateScriptDialog className="" projectId={projectId} />
           <AddMemberDialog projectId={projectId} />
         </div>
         <ScriptList projectId={projectId} />
+
+        <BoardList projectId={projectId} parentId={null} />
       </main>
     </HydrateClient>
   );

@@ -129,6 +129,7 @@ model Project {
   files       File[]
   scripts     Script[]
   labels      Label[]
+  boards      Board[]
 }
 
 enum ProjectRole {
@@ -177,6 +178,46 @@ model File {
 
   // Labels
   labels      FileLabel[]
+}
+
+
+model Board {
+  id          String    @id @default(cuid())
+  name        String
+  color       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relation to Project (owner)
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id])
+
+  // Parent board (for nested boards)
+  parentId    String? 
+  parent      Board?    @relation("BoardChildren", fields: [parentId], references: [id])
+  children    Board[]   @relation("BoardChildren")
+
+  // Cards on this board
+  cards       BoardCard[]
+}
+
+model BoardCard {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  type        String?  // could be 'text', 'image', 'link', etc.
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  x           Float?
+  y           Float?
+  width       Float?
+  height      Float?
+
+  // Relationship to the board
+  boardId     String
+  board       Board     @relation(fields: [boardId], references: [id])
 }
 
 // ========== SCRIPT + VERSIONING ==========
