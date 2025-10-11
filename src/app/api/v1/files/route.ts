@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
         id: id,
         name: file.name,
         storage: filePath,
+        size: buffer.byteLength,
         createdBy: { 
           connect: {
             id: session.user.id
@@ -83,7 +84,13 @@ export async function POST(req: NextRequest) {
     // Create a public URL
     const url = `/api/v1/files?fid=${id}`;
 
-    return NextResponse.json({ url, data });
+    return NextResponse.json({
+      url,
+      data: {
+        ...data,
+        size: data.size.toString(),
+      },
+    });
   } catch (error) {
     console.error("Upload failed:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });

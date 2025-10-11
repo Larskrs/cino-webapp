@@ -32,3 +32,16 @@ export function timeAgo(
   if (Math.abs(months) < 12) return rtf.format(months, "month");
   return rtf.format(years, "year");
 }
+
+export function formatFileSize(size: bigint) {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  let n = Number(size);
+
+  while (n >= 1024 && i < units.length - 1) {
+    n /= 1024;
+    i++;
+  }
+
+  return `${n.toFixed(2)} ${units[i]}`;
+}
