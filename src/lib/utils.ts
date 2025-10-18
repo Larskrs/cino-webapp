@@ -4,6 +4,9 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+export function clamp (v: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, v));
+}
 
 export function getLocalFileURL (fileId:string) {
   return `/api/v1/files?fid=${fileId}`

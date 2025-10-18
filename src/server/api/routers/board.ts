@@ -80,6 +80,9 @@ export const boardRouter = createTRPCRouter({
         where: {
           id: input.id
         },
+        include: {
+          project: true
+        }
       });
     }),
 
@@ -103,6 +106,30 @@ export const boardRouter = createTRPCRouter({
     });
 
     return board;
+  }),
+
+delete_card: protectedProcedure
+  .input(z.object({ id: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const card = await ctx.db.boardCard.findUnique({ where: { id: input.id } });
+    if (!card) throw new TRPCError({ code: "NOT_FOUND", message: "Card not found" });
+
+    // Optional: check if user has permission to delete (same project)
+    const board = await ctx.db.board.findUnique({
+      where: { id: card.boardId },
+      include: { project: true },
+    });
+    const member = await ctx.db.projectMember.findUnique({
+      where: {
+        userId_projectId: { userId: ctx.session.user.id, projectId: board?.projectId ?? "" },
+      },
+    });
+    if (!member)
+      throw new TRPCError({ code: "FORBIDDEN", message: "You are not allowed to delete this card" });
+
+    await ctx.db.boardCard.delete({ where: { id: input.id } });
+
+    return { success: true, id: input.id };
   }),
 
   // Update board (name, color)

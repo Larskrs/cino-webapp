@@ -1,6 +1,7 @@
 // app/project/[id]/board/[boardId]/page.tsx
 import { api } from "@/trpc/server";
 import BoardClient from "./editor";
+import Link from "next/link";
 
 export default async function BoardPage({
   params,
@@ -12,12 +13,12 @@ export default async function BoardPage({
   const cards = await api.board.list_cards({ boardId });
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <div className="fixed -z-10 inset-0 h-screen w-screen 
-        bg-[radial-gradient(circle,#73737340_1px,transparent_1px)] 
-        bg-[size:10px_10px]" />
+    <div className="fixed w-full max-h-screen overscroll-x-none h-[calc(100vh-4rem)] min-h-20 overflow-hidden">
 
-      <nav className="flex items-center justify-center bg-transparent w-full p-2 gap-2">
+      <nav className="fixed flex items-center justify-center bg-transparent w-full p-2 gap-2 z-100">
+        <Link href={"/project/" + board?.projectId} className="hover:underline">
+          {board?.project?.name}
+        </Link>
         <span
           className="size-2 rounded-full"
           style={{ background: board?.color || "gray" }}
@@ -25,7 +26,7 @@ export default async function BoardPage({
         <p>{board?.name}</p>
       </nav>
 
-      <BoardClient board={board} initialCards={cards} />
+      {cards && <BoardClient board={board} initialCards={cards as any} />}
     </div>
   );
 }
