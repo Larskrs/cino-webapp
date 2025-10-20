@@ -318,7 +318,7 @@ export default function BoardClient({
         "grid relative w-full h-full overflow-hidden",
         "grid-cols-[3rem_1fr_22rem] grid-rows-[1fr]",
         "bg-[radial-gradient(circle,#73737325_1px,transparent_1px)] bg-[size:10px_10px]",
-        selected ? "grid-cols-[4rem_1fr_22rem]" : "grid-cols-[4rem_1fr]"
+        "grid-cols-[4rem_1fr]"
       )}
       style={{ gridTemplateAreas: `"sidebar board editor"` }}
     >
@@ -396,9 +396,31 @@ export default function BoardClient({
         // persist to server
         update.mutate({ id, x, y, });
       }}
-      render={({ card }) => <View card={card} />}
+      render={({ card }) => <div>
+        {selected?.id !== card.id && <View card={card} />}
+        {selected && selected.id == card.id && (() => {
+              const Editor = CARD_TYPES[selected.type]?.Editor;
+              if (!Editor) return <p className="p-3 text-sm">No editor available</p>;
+
+              // Editor reads/writes local buffer only (content-only)
+              const editorCard = { ...selected, ...(editedFields[selected.id] ?? {}) };
+
+              return (
+                <Editor
+                  card={editorCard}
+                  onSave={(u: Partial<CardProps>) =>
+                    setEditedFields((prev) => ({
+                      ...prev,
+                      [selected.id]: { ...prev[selected.id], ...pickEditable(u) },
+                    }))
+                  }
+                  closeEditor={() => {setSelected(null)}}
+                />
+              );
+            })()}
+      </div>}
       defaultSize={{ width: 200, height: 120, widthFactor: 1.5 }}
-      className={cn("shadow", colors.components.boards.card)}                 // your extra styles
+      className={cn("shadow", colors.components.boards.card, selected?.id == card.id ? "z-100" : "")}                 // your extra styles
     />
   );
 })}
@@ -434,7 +456,7 @@ export default function BoardClient({
       </section>
 
       {/* Editor */}
-      {selected && (
+      {/* {selected && (
         <aside
           className="col-[3] row-[1] flex flex-col h-full border-l border-white/10 bg-white/90 shadow-lg z-50"
           style={{ gridArea: "editor" }}
@@ -476,7 +498,7 @@ export default function BoardClient({
             })()}
           </div>
         </aside>
-      )}
+      )} */}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize, cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import type { File } from "@prisma/client";
 import {
@@ -13,36 +13,96 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function TextCardEditor({
   card,
   onSave,
+  closeEditor=()=>{}
 }: {
   card: any;
   onSave: (updates: any) => void;
+  closeEditor?: () => void;
 }) {
   const [title, setTitle] = useState(card.title || "");
   const [content, setContent] = useState(card.content || "");
-  const [selectedFile, setSelectedFile] = useState<File | null>(card.file || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(
+    card.file || null
+  );
 
   useEffect(() => {
     if (!selectedFile) return;
-    setContent(`/api/v1/files?fid=${selectedFile.id}`);
-    onSave({ title, content: `/api/v1/files?fid=${selectedFile.id}`, fileId: selectedFile?.id })
+    const url = `/api/v1/files?fid=${selectedFile.id}`;
+    setContent(url);
+    onSave({ title, content: url, fileId: selectedFile?.id });
   }, [selectedFile]);
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        className="border-b border-neutral-300 focus:border-blue-400 bg-transparent outline-none text-sm font-semibold"
+      <FileSelectionDialog
+        selected={selectedFile}
+        onSelect={(f) => setSelectedFile(f)}
+        closeEditor={closeEditor}
       />
-
-      <FileSelection selected={selectedFile} onSelect={(f) => setSelectedFile(f)} />
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        Dialog (auto-opened on mount)                       */
+/* -------------------------------------------------------------------------- */
+
+function FileSelectionDialog({
+  selected,
+  onSelect,
+  closeEditor
+}: {
+  selected: File | null;
+  onSelect: (file: File | null) => void;
+  closeEditor?: () => void
+}) {
+  const [open, setOpen] = useState(true); // 👈 Open instantly when editor mounts
+
+  // If a file is already selected, close the dialog automatically
+  useEffect(() => {
+    if (selected) setOpen(false);
+  }, [selected]);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent onCloseAutoFocus={()=>closeEditor} className="max-w-4xl p-0 overflow-hidden bg-white/90 backdrop-blur-xl border border-neutral-200">
+        <DialogHeader className="p-4 border-b border-neutral-200">
+          <DialogTitle className="text-lg font-semibold">
+            {selected ? "Change Image" : "Select an Image"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="p-4">
+          <FileSelection
+            selected={selected}
+            onSelect={(f) => {
+              onSelect(f);
+              setOpen(false);
+            }}
+          />
+        </div>
+
+        {selected && (
+          <DialogFooter className="p-4 border-t border-neutral-200 flex justify-end">
+            <Button variant="ghost" onClick={() => onSelect(null)}>
+              Remove
+            </Button>
+            <Button onClick={() => setOpen(false)}>Done</Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -62,7 +122,10 @@ function FileSelection({
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const perPage = 12;
 
-  const { data, isLoading } = api.files.list.useQuery({ page, per_page: perPage });
+  const { data, isLoading } = api.files.list.useQuery({
+    page,
+    per_page: perPage,
+  });
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,7 +139,6 @@ function FileSelection({
     if (!file) return;
     setUploadPreview(URL.createObjectURL(file));
 
-    // Example upload: integrate with your file upload API
     const formData = new FormData();
     formData.append("file", file);
     const res = await fetch("/api/v1/files", { method: "POST", body: formData });
@@ -86,11 +148,10 @@ function FileSelection({
   };
 
   return (
-    <div className="flex flex-col gap-3 bg-white/60 backdrop-blur-md rounded-xl border border-neutral-200 p-3 shadow-sm">
+    <div className="flex flex-col gap-3 bg-white/70 rounded-xl border border-neutral-200 p-3 shadow-sm">
       {/* Mode Switch */}
       <div className="grid grid-cols-2 gap-2">
         <Button
-          variant={mode === "upload" ? "default" : "secondary"}
           onClick={() => setMode("upload")}
           className={cn(
             "flex items-center gap-1 justify-center text-sm",
@@ -102,7 +163,6 @@ function FileSelection({
           <Upload size={14} /> Upload
         </Button>
         <Button
-          variant={mode === "library" ? "default" : "secondary"}
           onClick={() => setMode("library")}
           className={cn(
             "flex items-center gap-1 justify-center text-sm",
@@ -114,24 +174,6 @@ function FileSelection({
           <ImageIcon size={14} /> Library
         </Button>
       </div>
-
-      {/* Selected Preview */}
-      {selected && (
-        <div className="relative w-full h-32 rounded-lg overflow-hidden border border-blue-300/60">
-          <Image
-            src={`/api/v1/files?fid=${selected.id}`}
-            fill
-            alt="Selected preview"
-            className="object-cover"
-          />
-          <button
-            onClick={() => onSelect(null)}
-            className="absolute top-1 right-1 bg-white/80 text-xs px-2 py-0.5 rounded-md shadow-sm"
-          >
-            Remove
-          </button>
-        </div>
-      )}
 
       {/* Upload Mode */}
       {mode === "upload" && (
@@ -213,11 +255,9 @@ function FileSelection({
                     alt="File preview"
                     className="object-cover"
                   />
-
                   <div className="absolute bottom-0 left-0 right-0 text-[10px] text-white/90 bg-gradient-to-t from-black/50 to-transparent p-1 px-2 truncate">
                     {f.name || "Unnamed"} • {formatFileSize(f?.size || 0)}
                   </div>
-
                   {isSelected && (
                     <motion.div
                       layoutId="selected-overlay"
@@ -229,7 +269,7 @@ function FileSelection({
             })}
           </div>
 
-          {/* Pagination Controls */}
+          {/* Pagination */}
           <div className="flex justify-between items-center text-sm text-neutral-600 mt-2">
             <Button
               size="sm"

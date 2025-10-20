@@ -28,7 +28,7 @@ export default function TextCardEditor({
 
     timeoutRef.current = setTimeout(() => {
       onSave({ title, content });
-    }, 100); // 1 second delay
+    }, 10); // 1 second delay
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -36,21 +36,14 @@ export default function TextCardEditor({
   }, [title, content, onSave]);
 
   return (
-    <div className="flex flex-col gap-3 p-3">
+    <div className="flex flex-col gap-3 p-0 h-full">
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write something..."
-        className="text-sm resize-none bg-transparent outline-none"
-        rows={4}
+        style={{fontSize: "18px"}}
+        className="text-2xl resize-none bg-transparent rounded-0 p-4 min-h-30 outline-none border-0"
       />
-
-      <button
-        onClick={() => onSave({ title, content })}
-        className="self-end px-3 py-1 bg-blue-500 text-white rounded-md text-xs"
-      >
-        Save now
-      </button>
     </div>
   );
 }

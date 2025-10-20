@@ -168,7 +168,7 @@ export default function DrawingCardEditor({ card, onSave }: CardEditorProps) {
         </div>
       </div>
 
-      <div className="relative w-full h-[300px] bg-white border border-neutral-300 rounded-md overflow-hidden">
+      <div className="relative w-[400px] h-[300px] bg-white border border-neutral-300 rounded-md overflow-hidden">
         <svg
           ref={svgRef}
           className="w-full h-full touch-none cursor-crosshair"

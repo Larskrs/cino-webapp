@@ -15,6 +15,7 @@ export interface CardProps {
 export interface CardEditorProps {
   card: CardProps;
   onSave: (updates: Partial<CardProps>) => void;
+  closeEditor?: () => void
 }
 
 export interface CardTypeDefinition {

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import type { CardProps } from "../index";
 
+const BASE_WIDTH = 400;
+const BASE_HEIGHT = 300;
+
 type PathData = {
   id: string;
   d: string;
@@ -23,8 +26,11 @@ export default function DrawingCardView({ card }: { card: CardProps }) {
   }, [card.content]);
 
   return (
-    <div className="relative w-full h-full bg-white">
-      <svg className="w-full h-[300px]">
+    <div className="relative w-full aspect-[4/3] bg-white border border-neutral-300 rounded-md overflow-hidden">
+      <svg
+        viewBox={`0 0 ${BASE_WIDTH} ${BASE_HEIGHT}`}
+        className="w-full h-full"
+      >
         {paths.map((p) => (
           <path
             key={p.id}
