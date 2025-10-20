@@ -278,7 +278,7 @@ export default function DraggableCard({
       ref={elRef}
       // Absolutely position in the board canvas; transform handles the (x,y)
       className={cn(
-        "absolute select-none rounded-xl border p-1",
+        "absolute select-none rounded-0 border p-0",
         disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing",
         selected && "ring-2 ring-blue-400",
         className

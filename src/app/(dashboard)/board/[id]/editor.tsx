@@ -10,6 +10,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { Plus, Minus, Undo2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import DraggableCard from "./draggable-card";
+import Link from "next/link";
 
 type Vec2 = { x: number; y: number };
 
@@ -321,6 +322,7 @@ export default function BoardClient({
       )}
       style={{ gridTemplateAreas: `"sidebar board editor"` }}
     >
+
       {/* Sidebar */}
       <aside
         className={cn(
@@ -355,6 +357,18 @@ export default function BoardClient({
           if (e.currentTarget === e.target && selected) deselectBoard();
         }}
       >
+
+      <nav className="absolute left-1/2 top-0 -translate-x-1/2 flex items-center justify-center bg-transparent w-full p-2 gap-2 z-100">
+        <Link href={"/project/" + board?.projectId} className="hover:underline">
+          {board?.project?.name}
+        </Link>
+        <span
+          className="size-2 rounded-full"
+          style={{ background: board?.color || "gray" }}
+        />
+        <p>{board?.name}</p>
+      </nav>
+
         <div ref={canvasRef} className="absolute top-0 left-0 origin-top-left will-change-transform">
           {cards.map((card, idx) => {
   const pending = editedFields[card.id];
@@ -384,7 +398,7 @@ export default function BoardClient({
       }}
       render={({ card }) => <View card={card} />}
       defaultSize={{ width: 200, height: 120, widthFactor: 1.5 }}
-      className={cn("shadow", colors.components.switch.container)}                 // your extra styles
+      className={cn("shadow", colors.components.boards.card)}                 // your extra styles
     />
   );
 })}
