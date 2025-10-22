@@ -11,6 +11,8 @@ import { Plus, Minus, Undo2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import DraggableCard from "./draggable-card";
 import Link from "next/link";
+import { useContextMenu } from "@/hooks/context-menu-provider";
+import { CardContextMenu } from "./card-context-menu";
 
 type Vec2 = { x: number; y: number };
 
@@ -311,6 +313,8 @@ export default function BoardClient({
     setSelected(null);
   };
 
+  const { contextMenu, openContextMenu, closeContextMenu } = useContextMenu<CardProps>();
+
   // === Layout ===
   return (
     <div
@@ -388,6 +392,24 @@ export default function BoardClient({
       disabled={isEditingThis}            // disable drag while editing
       bounds={{...computeBounds(), minX: computeBounds().minX / 2, minY: computeBounds().minY / 2}}            // optional, or remove
       onSelect={() => selectCard(card)}
+      onContextMenu={(card, e) =>
+        openContextMenu(card, e, (data, close) => (
+          <CardContextMenu
+            card={data}
+            onEdit={() => {
+              selectCard(data);
+              close();
+            }}
+            onDuplicate={() => {
+              //
+            }}
+            onDelete={() => {
+              handleDelete(data.id);
+              close();
+            }}
+          />
+        ))
+      }
       onMovePreview={(id, x, y) => {
         // optimistic move (no server)
         setCards((prev) => prev.map((c) => (c.id === id ? { ...c, x, y } : c)));

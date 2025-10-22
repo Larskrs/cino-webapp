@@ -26,7 +26,7 @@ export default function DrawingCardView({ card }: { card: CardProps }) {
   }, [card.content]);
 
   return (
-    <div className="relative w-full aspect-[4/3] bg-white border border-neutral-300 rounded-md overflow-hidden">
+    <div className="relative w-full aspect-[4/3] bg-white border border-neutral-300 overflow-hidden">
       <svg
         viewBox={`0 0 ${BASE_WIDTH} ${BASE_HEIGHT}`}
         className="w-full h-full"

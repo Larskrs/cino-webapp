@@ -10,6 +10,7 @@ import { SessionProvider } from "next-auth/react";
 import { cookies } from "next/headers";
 import { auth } from "@/server/auth";
 import { PostPreviewProvider } from "@/hooks/post-preview";
+import { ContextMenuProvider } from "@/hooks/context-menu-provider";
 
 export const metadata: Metadata = {
   title: "Cino.no",
@@ -46,7 +47,11 @@ export default async function RootLayout({
       <ThemeProvider initialTheme={savedTheme}>
         <SessionProvider session={session}>
           <PostPreviewProvider>
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <TRPCReactProvider>
+              <ContextMenuProvider>
+                {children}
+              </ContextMenuProvider>
+            </TRPCReactProvider>
           </PostPreviewProvider>
         </SessionProvider>
       </ThemeProvider>
