@@ -30,11 +30,13 @@ export interface CardTypeDefinition {
 import note from "./note"
 import image from "./image"
 import drawing from "./drawing";
+import heading from "./heading"
 
 export const CARD_TYPES = {
+  heading,
   note,
   image,
-  drawing
+  drawing,
 } as const;
 
 export type CardTypeKey = keyof typeof CARD_TYPES;

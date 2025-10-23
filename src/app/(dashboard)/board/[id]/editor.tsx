@@ -40,6 +40,11 @@ export default function BoardClient({
 
   const [selected, setSelected] = useState<CardProps | null>(null);
 
+  // Grid
+  const GRID_SIZE = 16; // 👈 all movement will snap to this multiple
+
+  const snapToGrid = (value: number) => Math.round(value / GRID_SIZE) * GRID_SIZE;
+
   // Local-only editable fields while editor is open (never x/y/width/height)
   const [editedFields, setEditedFields] = useState<Record<string, Partial<CardProps>>>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -411,12 +416,24 @@ export default function BoardClient({
         ))
       }
       onMovePreview={(id, x, y) => {
-        // optimistic move (no server)
+        // Optimistic move (live drag)
+        const snappedX = snapToGrid(x);
+        const snappedY = snapToGrid(y);
+        
         setCards((prev) => prev.map((c) => (c.id === id ? { ...c, x, y } : c)));
       }}
+
       onCommitMove={(id, x, y) => {
-        // persist to server
-        update.mutate({ id, x, y, });
+        const snappedX = snapToGrid(x);
+        const snappedY = snapToGrid(y);
+      
+        // Optimistically apply snapped pos
+        setCards((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, x: snappedX, y: snappedY } : c))
+        );
+      
+        // Persist to server
+        update.mutate({ id, x: snappedX, y: snappedY });
       }}
       render={({ card }) => <div>
         {selected?.id !== card.id && <View card={card} />}
@@ -442,7 +459,7 @@ export default function BoardClient({
             })()}
       </div>}
       defaultSize={{ width: 200, height: 120, widthFactor: 1.5 }}
-      className={cn("shadow", colors.components.boards.card, selected?.id == card.id ? "z-100" : "")}                 // your extra styles
+      className={cn("border-0", selected?.id == card.id ? "z-100" : "")}                 // your extra styles
     />
   );
 })}

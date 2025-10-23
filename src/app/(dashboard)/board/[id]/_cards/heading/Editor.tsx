@@ -1,8 +1,6 @@
 "use client";
 
 import { Textarea } from "@/components/ui/textarea";
-import { useTheme } from "@/hooks/use-theme";
-import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 
 export default function TextCardEditor({
@@ -44,17 +42,15 @@ export default function TextCardEditor({
     };
   }, [title, content, onSave]);
 
-  const { colors } = useTheme()
-
   return (
-    <div className={cn("flex flex-col gap-3 p-0 h-full", colors.components.boards.card)}>
+    <div className="flex flex-col gap-3 p-0 h-full">
       <Textarea
         ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write something..."
         style={{ fontSize: "18px" }}
-        className="text-2xl resize-none bg-transparent rounded-0 p-4 outline-none border-0"
+        className="text-2xl resize-none bg-transparent rounded-0 p-4 min-h-30 outline-none border-0"
       />
     </div>
   );

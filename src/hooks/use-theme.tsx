@@ -82,7 +82,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         button: "text-zinc-600 bg-transparent border-transparent",
       },
       boards: {
-        card: "border-neutral-400 bg-neutral-100 hover:bg-neutral-200"
+        card: "shadow border-neutral-100 bg-neutral-100 hover:bg-neutral-200"
       },
       dialog: {
         container: "border-1 border-zinc-400 backdrop-blur-lg supports-[backdrop-filter]:bg-white/100 text-zinc-700",
@@ -175,7 +175,7 @@ const RAW_THEMES: Record<ThemeKey, ThemeColors> = {
         button: "bg-zinc-100 hover:bg-zinc-200 text-zinc-900"
       },
       boards: {
-        card: "border-neutral-700 bg-neutral-900 hover:bg-neutral-800"
+        card: "border-neutral-900 bg-neutral-900 hover:bg-neutral-800"
       },
       switch: {
         container: "border-1 bg-zinc-900 border-zinc-800"
