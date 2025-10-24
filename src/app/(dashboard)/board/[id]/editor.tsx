@@ -41,7 +41,7 @@ export default function BoardClient({
   const [selected, setSelected] = useState<CardProps | null>(null);
 
   // Grid
-  const GRID_SIZE = 16; // 👈 all movement will snap to this multiple
+  const GRID_SIZE = 8; // 👈 all movement will snap to this multiple
 
   const snapToGrid = (value: number) => Math.round(value / GRID_SIZE) * GRID_SIZE;
 
@@ -396,7 +396,7 @@ export default function BoardClient({
       selected={selected?.id === card.id}
       disabled={isEditingThis}            // disable drag while editing
       bounds={{...computeBounds(), minX: computeBounds().minX / 2, minY: computeBounds().minY / 2}}            // optional, or remove
-      onSelect={() => selectCard(card)}
+      onEdit={() => selectCard(card)}
       onContextMenu={(card, e) =>
         openContextMenu(card, e, (data, close) => (
           <CardContextMenu
@@ -458,7 +458,7 @@ export default function BoardClient({
               );
             })()}
       </div>}
-      defaultSize={{ width: 200, height: 120, widthFactor: 1.5 }}
+      defaultSize={{ width: 200, height: 0, widthFactor: 1.5 }}
       className={cn("border-0", selected?.id == card.id ? "z-100" : "")}                 // your extra styles
     />
   );

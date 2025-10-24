@@ -14,13 +14,13 @@ export type DraggableCardProps = {
   selected?: boolean;
   disabled?: boolean;
   onSelect?: (card: CardProps, event: PointerEvent | MouseEvent) => void;
+  onEdit?: (card: CardProps) => void;
   onMovePreview?: (id: string, x: number, y: number) => void;
   onCommitMove?: (id: string, x: number, y: number) => void;
   bounds?: { minX: number; minY: number; maxX: number; maxY: number };
   className?: string;
   render: (args: { card: CardProps }) => React.ReactNode;
   defaultSize?: { width: number; height: number; widthFactor?: number };
-  /** Called when the user right-clicks (context menu). */
   onContextMenu?: (card: CardProps, e: React.MouseEvent) => void;
 };
 
@@ -36,6 +36,7 @@ export default function DraggableCard({
   selected = false,
   disabled = false,
   onSelect,
+  onEdit,
   onMovePreview,
   onCommitMove,
   bounds,
@@ -45,7 +46,6 @@ export default function DraggableCard({
   onContextMenu,
 }: DraggableCardProps) {
   const elRef = useRef<HTMLDivElement | null>(null);
-
   const zoomRef = useRef(zoom);
   const posRef = useRef<{ x: number; y: number }>({ x: card.x ?? 0, y: card.y ?? 0 });
 
@@ -59,6 +59,7 @@ export default function DraggableCard({
     frame: number | null;
   } | null>(null);
 
+  const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
   const MOVE_THRESHOLD = 3;
 
   /* -------------------------------------------------------------------------- */
@@ -75,7 +76,6 @@ export default function DraggableCard({
     const nextY = card.y ?? 0;
     posRef.current = { x: nextX, y: nextY };
     applyTransform(nextX, nextY);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card.x, card.y]);
 
   useLayoutEffect(() => {
@@ -83,7 +83,6 @@ export default function DraggableCard({
     const y = card.y ?? 0;
     posRef.current = { x, y };
     applyTransform(x, y);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* -------------------------------------------------------------------------- */
@@ -112,10 +111,20 @@ export default function DraggableCard({
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (disabled) return;
 
+      // 🧠 Allow links and inputs to behave normally
       const target = e.target as HTMLElement;
-      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
-      if (e.button !== 0) return;
+      if (
+        target.closest("a") ||
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      )
+        return;
 
+      // 🧠 Skip dragging entirely when holding Ctrl or Cmd
+      if (e.ctrlKey || e.metaKey) return;
+
+      if (e.button !== 0) return;
       (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
 
       dragRef.current = {
@@ -145,6 +154,7 @@ export default function DraggableCard({
       if (!session.moved) {
         if (Math.abs(dxScreen) < MOVE_THRESHOLD && Math.abs(dyScreen) < MOVE_THRESHOLD) return;
         session.moved = true;
+        setGhost({ x: session.startX, y: session.startY });
       }
 
       const dxBoard = dxScreen / dz;
@@ -160,6 +170,7 @@ export default function DraggableCard({
           session.frame = null;
           applyTransform(posRef.current.x, posRef.current.y);
           onMovePreview?.(card.id, posRef.current.x, posRef.current.y);
+          setGhost({ x: posRef.current.x, y: posRef.current.y });
         });
       }
     },
@@ -182,12 +193,15 @@ export default function DraggableCard({
 
       dragRef.current = null;
 
+      // Single click
       if (!session.moved) {
         onSelect?.(card, e.nativeEvent as MouseEvent);
         return;
       }
 
+      // Commit drag
       onCommitMove?.(card.id, posRef.current.x, posRef.current.y);
+      setTimeout(() => setGhost(null), 100);
     },
     [onSelect, onCommitMove, card]
   );
@@ -202,19 +216,12 @@ export default function DraggableCard({
 
   const onPointerCancel = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      const session = dragRef.current;
-      if (!session) return;
-      if (session.frame != null) {
-        cancelAnimationFrame(session.frame);
-        session.frame = null;
-      }
       dragRef.current = null;
-
+      setGhost(null);
       const x = card.x ?? 0;
       const y = card.y ?? 0;
       posRef.current = { x, y };
       applyTransform(x, y);
-
       if ((e.currentTarget as HTMLDivElement).hasPointerCapture(e.pointerId)) {
         (e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId);
       }
@@ -223,7 +230,7 @@ export default function DraggableCard({
   );
 
   /* -------------------------------------------------------------------------- */
-  /*                                Context Menu                                */
+  /*                              Context & Double Click                        */
   /* -------------------------------------------------------------------------- */
 
   const handleContextMenu = useCallback(
@@ -232,6 +239,16 @@ export default function DraggableCard({
       onContextMenu?.(card, e);
     },
     [disabled, onContextMenu, card]
+  );
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (disabled) return;
+      // Ignore Ctrl + double click (should still open links)
+      if (e.ctrlKey || e.metaKey) return;
+      onEdit?.(card);
+    },
+    [disabled, onEdit, card]
   );
 
   /* -------------------------------------------------------------------------- */
@@ -246,22 +263,23 @@ export default function DraggableCard({
     <div
       ref={elRef}
       className={cn(
-        "absolute select-none rounded-0 border p-0",
+        "absolute select-none rounded-0 border p-0 transition-opacity duration-100",
         disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing",
         selected && "ring-2 ring-blue-400",
         className
       )}
       style={{
         transform: `translate3d(${card.x ?? 0}px, ${card.y ?? 0}px, 0)`,
+        opacity: 1,
         minWidth: w,
-        minHeight: 0,
-        willChange: "transform",
+        minHeight: h,
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
       onContextMenu={handleContextMenu}
+      onDoubleClick={handleDoubleClick}
     >
       {render({ card })}
     </div>

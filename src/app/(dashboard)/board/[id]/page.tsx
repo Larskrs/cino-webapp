@@ -13,8 +13,8 @@ export default function BoardPage({
 
   const { id } = React.use(params);
 
-  const [board] = api.board.get.useSuspenseQuery({ id });
-  const [cards] = api.board.list_cards.useSuspenseQuery({ boardId: id });
+  const [board] = api.board.get.useSuspenseQuery({ id }, {gcTime: 0});
+  const [cards] = api.board.list_cards.useSuspenseQuery({ boardId: id }, {gcTime: 0});
 
   const normalizedCards: CardProps[] = cards as CardProps[];
 

@@ -31,12 +31,14 @@ import note from "./note"
 import image from "./image"
 import drawing from "./drawing";
 import heading from "./heading"
+import link from "./link"
 
 export const CARD_TYPES = {
   heading,
   note,
   image,
   drawing,
+  link
 } as const;
 
 export type CardTypeKey = keyof typeof CARD_TYPES;
