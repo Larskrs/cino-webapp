@@ -41,6 +41,11 @@ export default async function ProjectPage({ params }: PageProps) {
 
         <div className="flex flex-row flex-wrap gap-2 items-center justify-start w-full max-w-5xl px-4 mb-4">
           <AddMemberDialog projectId={projectId} />
+          <div className="flex -space-x-2">
+            {project.members.map((user, i) => (
+              <Avatar className="size-8 border-2" key={i} src={user.user.image} />
+            ))}
+          </div>
         </div>
         <ScriptList projectId={projectId} />
 

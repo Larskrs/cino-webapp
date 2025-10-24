@@ -7,6 +7,8 @@ import {
 } from "@/server/api/trpc";
 import { getLocalFileURL } from "@/lib/utils";
 
+const MAX_PER_PAGE = 50
+
 export const userRouter = createTRPCRouter({
 
   get: publicProcedure
@@ -151,4 +153,56 @@ export const userRouter = createTRPCRouter({
   
         return updatedUser;
       }),
-  });
+    list: publicProcedure
+        .input(
+          z.object({
+            page: z.number().int().min(1).default(1),
+            per_page: z.number().int().min(1).max(MAX_PER_PAGE).default(10)
+          })
+        )
+        .query(async ({ ctx, input }) => {
+          const { page, per_page } = input;
+    
+          // total count (for pagination UI)
+          const total = await ctx.db.file.count();
+    
+          // fetch paginated results
+          const files = await ctx.db.user.findMany({
+            skip: (page - 1) * per_page,
+            take: per_page,
+          });
+    
+          return {
+            items: files,
+            page,
+            per_page,
+            total,
+            total_pages: Math.ceil(total / per_page),
+          };
+        }),
+    search: publicProcedure
+      .input(z.object({ query: z.string().min(1).max(50) }))
+      .query(async ({ ctx, input }) => {
+        const q = input.query.toLowerCase();
+
+        const users = await ctx.db.user.findMany({
+          where: {
+            OR: [
+              { name: { contains: q, mode: "insensitive" } },
+              { email: { contains: q, mode: "insensitive" } },
+            ],
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+          take: 10,
+        });  
+        
+        return users;
+      }
+    ),
+  },
+);
