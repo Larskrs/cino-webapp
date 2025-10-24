@@ -25,7 +25,7 @@ export const fileRouter = createTRPCRouter({
 
       // fetch paginated results
       const files = await ctx.db.file.findMany({
-        // where: { createdById: userId },
+        where: { createdById: userId },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * per_page,
         take: per_page,
