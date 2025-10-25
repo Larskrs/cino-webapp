@@ -11,6 +11,7 @@ import { cookies } from "next/headers";
 import { auth } from "@/server/auth";
 import { PostPreviewProvider } from "@/hooks/post-preview";
 import { ContextMenuProvider } from "@/hooks/context-menu-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Cino.no",
@@ -50,6 +51,7 @@ export default async function RootLayout({
             <TRPCReactProvider>
               <ContextMenuProvider>
                 {children}
+                <Toaster />
               </ContextMenuProvider>
             </TRPCReactProvider>
           </PostPreviewProvider>

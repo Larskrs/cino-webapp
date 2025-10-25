@@ -173,4 +173,98 @@ export const projectRouter = createTRPCRouter({
 
       return member;
     }),
+      // 🔤 Rename project
+  rename: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        name: z.string().min(1, "Project name cannot be empty"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const member = await ctx.db.projectMember.findUnique({
+        where: { userId_projectId: { userId, projectId: input.projectId } },
+      });
+
+      if (!member)
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not a member of this project" });
+
+      return ctx.db.project.update({
+        where: { id: input.projectId },
+        data: { name: input.name },
+      });
+    }),
+
+  // 🖼 Change image
+  change_image: protectedProcedure
+  .input(
+    z.object({
+      projectId: z.string(),
+      fileId: z.string().nullable().optional(),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const userId = ctx.session.user.id;
+
+    // Ensure user is a project member
+    const member = await ctx.db.projectMember.findUnique({
+      where: { userId_projectId: { userId, projectId: input.projectId } },
+    });
+
+    if (!member)
+      throw new TRPCError({ code: "FORBIDDEN", message: "Not a member of this project" });
+
+    // If fileId is provided, validate it exists
+    let fileUrl: string | null = null;
+
+    if (input.fileId) {
+      const file = await ctx.db.file.findUnique({
+        where: { id: input.fileId },
+      });
+
+      if (!file) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "File not found" });
+      }
+
+      fileUrl = `/api/v1/files?fid=${file.id}`;
+    }
+
+    // Update the project
+    const updated = await ctx.db.project.update({
+      where: { id: input.projectId },
+      data: { image: fileUrl ?? null },
+    });
+
+    return {
+      ...updated,
+      imageUrl: fileUrl,
+    };
+  }),
+
+
+  // 🎨 Change color
+  change_color: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        color: z.string().min(1, "Color cannot be empty"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const member = await ctx.db.projectMember.findUnique({
+        where: { userId_projectId: { userId, projectId: input.projectId } },
+      });
+
+      if (!member)
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not a member of this project" });
+
+      return ctx.db.project.update({
+        where: { id: input.projectId },
+        data: { color: input.color },
+      });
+    }),
 });

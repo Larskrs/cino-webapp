@@ -230,29 +230,6 @@ function setCookie(name: string, value: string, days = 365) {
   document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
 }
 
-function resolveThemeClasses(input: string, map: Record<string, string>): string {
-  return input
-    .split(/\s+/)
-    .map(token => (map[token] ? map[token] : token))
-    .join(" ");
-}
-
-function flattenTheme(obj: any, prefix: string[] = []): Record<string, string> {
-  let out: Record<string, string> = {};
-  for (const key in obj) {
-    const value = obj[key];
-    const path = [...prefix, key];
-    if (typeof value === "string") {
-      const alias = `t-${path.join("-")}`;
-      out[alias] = value;
-    } else if (typeof value === "object" && value !== null) {
-      Object.assign(out, flattenTheme(value, path));
-    }
-  }
-  return out;
-}
-
-
 export function ThemeProvider({
   children,
   initialTheme,
@@ -264,33 +241,33 @@ export function ThemeProvider({
     initialTheme ?? getSystemTheme()
   );
 
+  // On mount: load saved or system theme
   useEffect(() => {
     const saved = getCookie("theme") as ThemeKey | null;
-    setThemeState(saved || "dark");
+    const chosen = saved || getSystemTheme();
+    setThemeState(chosen);
+    document.documentElement.classList.toggle("dark", chosen === "dark");
   }, []);
 
+  // When theme changes: update <html> class & cookie
   const setTheme = (newTheme: ThemeKey) => {
     setThemeState(newTheme);
     setCookie("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
   const colors = THEMES[theme];
-  const aliasMap = flattenTheme(colors);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, colors }}>
       <body
-        className={resolveThemeClasses(
-          "t-background t-text min-h-screen",
-          aliasMap
-        )}
+        className={`min-h-screen transition-colors ${colors.background} ${colors.text}`}
       >
         {children}
       </body>
     </ThemeContext.Provider>
   );
 }
-
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);

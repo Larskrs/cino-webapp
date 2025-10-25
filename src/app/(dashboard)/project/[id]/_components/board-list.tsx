@@ -12,7 +12,7 @@ export function BoardList({ projectId, parentId }: { projectId: string; parentId
   const { colors } = useTheme();
 
   return (
-    <div className="w-full px-4 container max-w-5xl h-48 flex flex-row flex-wrap gap-2 py-6">
+    <div className="w-full h-48 flex flex-row flex-wrap gap-2 py-6">
       {/* Create board button */}
       <CreateBoardDialog projectId={projectId} parentId={parentId}>
         <div
@@ -32,17 +32,18 @@ export function BoardList({ projectId, parentId }: { projectId: string; parentId
           href={`/board/${b.id}`}
           key={b.id}
           className={cn(
-            "cursor-pointer aspect-square rounded-xl border border-neutral-700/30 hover:border-neutral-400",
-            "flex flex-col items-center justify-center p-4 aspect-square w-auto h-full"
+            "cursor-pointer aspect-square rounded-xl border border-neutral-700/10 hover:border-neutral-400",
+            "flex flex-col items-center justify-center p-4 aspect-square w-auto h-full",
+            "text-neutral-800 dark:text-neutral-300"
           )}
         >
           <div
             className="p-2 rounded-2xl border-2 mb-1"
             style={{ backgroundColor: b.color ?? undefined, borderColor: b.color ?? undefined }}
           >
-            <Folder size={42} className="stroke-[1.5] text-black" />
+            <Folder size={42} className="stroke-[1.5] text-neutral-800 dark:text-neutral-300" />
           </div>
-          <p className="text-sm font-normal text-center">{b.name}</p>
+          <p className="text-sm font-normal text-center text-neutral-800 dark:text-neutral-300">{b.name}</p>
           {b.cards.length > 0 && (
             <p className="text-xs text-neutral-500">{b.cards.length} cards</p>
           )}

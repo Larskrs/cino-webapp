@@ -7,7 +7,12 @@ import { Progress } from "@/components/ui/progress";
 import { useTheme } from "@/hooks/use-theme";
 import Video from "../video";
 
+/* -------------------------------------------------------------------------- */
+/*                                   Types                                    */
+/* -------------------------------------------------------------------------- */
+
 export interface UploadedFile {
+  id: string; // <- new
   url: string;
   type: "image" | "video";
   name: string;
@@ -23,6 +28,7 @@ interface SingleFileUploaderProps {
 /* -------------------------------------------------------------------------- */
 /*                             Single File Uploader                           */
 /* -------------------------------------------------------------------------- */
+
 export function SingleFileUploader({
   accept = "image/*,video/*",
   onUpload,
@@ -62,17 +68,22 @@ export function SingleFileUploader({
         setUploading(false);
         if (xhr.status >= 200 && xhr.status < 300) {
           const json = JSON.parse(xhr.responseText);
-          if (json.url) {
+
+          console.log(json)
+
+          if (json.url && json.data.id) {
             const uploaded: UploadedFile = {
+              id: json.data.id,
               url: json.url,
               type: file.type.startsWith("video/") ? "video" : "image",
               name: file.name,
             };
+
             setProgress(100);
             setErrorMsg("");
             onUpload?.(uploaded);
           } else {
-            const msg = json.error || "Upload failed";
+            const msg = json.error || "Upload failed (missing file id or url)";
             setErrorMsg(msg);
             onError?.(msg);
           }
@@ -106,7 +117,7 @@ export function SingleFileUploader({
     (fileList: FileList | null) => {
       if (!fileList || fileList.length === 0) return;
       const f = fileList?.[0];
-      if (!f) return
+      if (!f) return;
       setFile(f);
       const url = URL.createObjectURL(f);
       setPreviewUrl(url);
@@ -198,10 +209,7 @@ export function SingleFileUploader({
         <div className="absolute bottom-0 left-0 right-0">
           <Progress
             value={progress}
-            className={cn(
-              "h-1",
-              colors.components.dialog?.button || "bg-indigo-500"
-            )}
+            className={cn("h-1", colors.components.dialog?.button || "bg-indigo-500")}
           />
         </div>
       )}
