@@ -20,11 +20,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { SingleFileUploader, type UploadedFile } from "@/app/_components/files/file-upload"; // 👈 import new uploader
 
 export default function TextCardEditor({
   card,
   onSave,
-  closeEditor=()=>{}
+  closeEditor = () => {},
 }: {
   card: any;
   onSave: (updates: any) => void;
@@ -50,9 +51,15 @@ export default function TextCardEditor({
         onSelect={(f) => setSelectedFile(f)}
         closeEditor={closeEditor}
       />
-          <div className="text-sm pointer-events-none text-neutral-600 min-w-60 w-full whitespace-pre-wrap break-words select-none">
-            <Image width={400} height={400} src={card.content} alt="Image" className="rounded-0 w-full h-full object-cover" />
-          </div>
+      <div className="text-sm pointer-events-none text-neutral-600 min-w-60 w-full whitespace-pre-wrap break-words select-none">
+        <Image
+          width={400}
+          height={400}
+          src={card.content}
+          alt="Image"
+          className="rounded-0 w-full h-full object-cover"
+        />
+      </div>
     </div>
   );
 }
@@ -64,22 +71,24 @@ export default function TextCardEditor({
 function FileSelectionDialog({
   selected,
   onSelect,
-  closeEditor
+  closeEditor,
 }: {
   selected: File | null;
   onSelect: (file: File | null) => void;
-  closeEditor?: () => void
+  closeEditor?: () => void;
 }) {
-  const [open, setOpen] = useState(true); // 👈 Open instantly when editor mounts
+  const [open, setOpen] = useState(true);
 
-  // If a file is already selected, close the dialog automatically
   useEffect(() => {
     if (selected) setOpen(false);
   }, [selected]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent onCloseAutoFocus={()=>closeEditor} className="max-w-4xl p-0 overflow-hidden bg-white/90 backdrop-blur-xl border border-neutral-200">
+      <DialogContent
+        onCloseAutoFocus={() => closeEditor}
+        className="max-w-4xl p-0 overflow-hidden bg-white/90 backdrop-blur-xl border border-neutral-200"
+      >
         <DialogHeader className="p-4 border-b border-neutral-200">
           <DialogTitle className="text-lg font-semibold">
             {selected ? "Change Image" : "Select an Image"}
@@ -122,7 +131,6 @@ function FileSelection({
 }) {
   const [page, setPage] = useState(1);
   const [mode, setMode] = useState<"upload" | "library">("library");
-  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const perPage = 12;
 
   const { data, isLoading } = api.files.list.useQuery({
@@ -136,19 +144,6 @@ function FileSelection({
   }, [page]);
 
   const { items = [], total_pages = 1 } = data ?? {};
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadPreview(URL.createObjectURL(file));
-
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch("/api/v1/files", { method: "POST", body: formData });
-    const uploaded = await res.json();
-
-    if (uploaded?.id) onSelect(uploaded);
-  };
 
   return (
     <div className="flex flex-col gap-3 bg-white/70 rounded-xl border border-neutral-200 p-3 shadow-sm">
@@ -180,37 +175,19 @@ function FileSelection({
 
       {/* Upload Mode */}
       {mode === "upload" && (
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
-          <input
-            id="file-upload"
-            type="file"
+        <div className="border border-dashed border-neutral-300 rounded-xl p-4 bg-white/50">
+          <SingleFileUploader
             accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
+            onUpload={(uploaded: UploadedFile) => {
+              // Automatically select first uploaded image
+              onSelect({
+                id: uploaded.url.split("?fid=")[1] ?? uploaded.url, // fallback if not stored by ID
+                name: uploaded.name,
+                url: uploaded.url,
+                type: uploaded.type,
+              } as any);
+            }}
           />
-          {uploadPreview ? (
-            <div className="relative w-full h-40 rounded-lg overflow-hidden">
-              <Image
-                src={uploadPreview}
-                fill
-                alt="Preview"
-                className="object-cover rounded-md"
-              />
-            </div>
-          ) : (
-            <>
-              <Upload size={32} className="text-neutral-400 mb-2" />
-              <p className="text-sm text-neutral-600">
-                Drag & drop or click to upload an image
-              </p>
-            </>
-          )}
-          <label
-            htmlFor="file-upload"
-            className="mt-3 cursor-pointer px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600"
-          >
-            Choose File
-          </label>
         </div>
       )}
 
