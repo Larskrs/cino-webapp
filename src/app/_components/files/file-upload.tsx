@@ -12,7 +12,7 @@ import Video from "../video";
 /* -------------------------------------------------------------------------- */
 
 export interface UploadedFile {
-  id: string; // <- new
+  id: string;
   url: string;
   type: "image" | "video";
   name: string;
@@ -68,17 +68,13 @@ export function SingleFileUploader({
         setUploading(false);
         if (xhr.status >= 200 && xhr.status < 300) {
           const json = JSON.parse(xhr.responseText);
-
-          console.log(json)
-
-          if (json.url && json.data.id) {
+          if (json.url && json.data?.id) {
             const uploaded: UploadedFile = {
               id: json.data.id,
               url: json.url,
               type: file.type.startsWith("video/") ? "video" : "image",
               name: file.name,
             };
-
             setProgress(100);
             setErrorMsg("");
             onUpload?.(uploaded);
@@ -157,10 +153,10 @@ export function SingleFileUploader({
       onDragOver={(e) => e.preventDefault()}
       onClick={handleClick}
       className={cn(
-        "relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer transition-all select-none p-6",
+        "relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer transition-all select-none p-6 max-w-full w-full",
         uploading
-          ? "border-indigo-400 bg-indigo-50/40"
-          : "border-neutral-300 hover:border-indigo-400 hover:bg-neutral-50/40",
+          ? "border-indigo-400 bg-indigo-50/40 dark:border-indigo-500 dark:bg-indigo-900/20"
+          : "border-neutral-300 bg-neutral-50/40 hover:border-indigo-400 hover:bg-neutral-100/40 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:border-indigo-500 dark:hover:bg-neutral-800/60",
         className
       )}
     >
@@ -174,11 +170,15 @@ export function SingleFileUploader({
 
       {/* Preview */}
       {previewUrl && (
-        <div className="relative w-full max-w-sm aspect-video rounded-lg overflow-hidden">
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-800">
           {file?.type.startsWith("video/") ? (
             <Video src={previewUrl} controls className="w-full h-full object-contain" />
           ) : (
-            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-full object-cover"
+            />
           )}
 
           {!uploading && (
@@ -187,7 +187,7 @@ export function SingleFileUploader({
                 e.stopPropagation();
                 reset();
               }}
-              className="absolute top-2 right-2 bg-black/60 rounded-full p-1 text-white"
+              className="absolute top-2 right-2 bg-black/60 dark:bg-white/20 hover:bg-black/80 dark:hover:bg-white/30 rounded-full p-1 text-white dark:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -197,10 +197,14 @@ export function SingleFileUploader({
 
       {/* Empty state */}
       {!previewUrl && (
-        <div className="flex flex-col items-center justify-center text-center gap-2 text-neutral-600">
-          <UploadCloud className="size-10 text-neutral-400" />
-          <p className="text-sm font-medium">Dra inn eller klikk for å laste opp</p>
-          <p className="text-xs text-neutral-400">Kun ett bilde eller video om gangen</p>
+        <div className="flex flex-col items-center justify-center text-center gap-2 text-neutral-600 dark:text-neutral-300">
+          <UploadCloud className="size-10 text-neutral-400 dark:text-neutral-500" />
+          <p className="text-sm font-medium">
+            Dra inn eller klikk for å laste opp
+          </p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">
+            Kun ett bilde eller video om gangen
+          </p>
         </div>
       )}
 
@@ -209,14 +213,19 @@ export function SingleFileUploader({
         <div className="absolute bottom-0 left-0 right-0">
           <Progress
             value={progress}
-            className={cn("h-1", colors.components.dialog?.button || "bg-indigo-500")}
+            className={cn(
+              "h-1",
+              colors.components.dialog?.button || "bg-indigo-500"
+            )}
           />
         </div>
       )}
 
       {/* Error */}
       {errorMsg && (
-        <p className="text-xs text-red-500 mt-2 text-center">{errorMsg}</p>
+        <p className="text-xs text-red-500 dark:text-red-400 mt-2 text-center">
+          {errorMsg}
+        </p>
       )}
     </div>
   );

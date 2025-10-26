@@ -87,9 +87,9 @@ function FileSelectionDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         onCloseAutoFocus={() => closeEditor}
-        className="max-w-4xl p-0 overflow-hidden bg-white/90 backdrop-blur-xl border border-neutral-200"
+        className="max-w-4xl p-0 overflow-hidden bg-white/90 backdrop-blur-xl border"
       >
-        <DialogHeader className="p-4 border-b border-neutral-200">
+        <DialogHeader className="p-4 border-b">
           <DialogTitle className="text-lg font-semibold">
             {selected ? "Change Image" : "Select an Image"}
           </DialogTitle>
@@ -106,7 +106,7 @@ function FileSelectionDialog({
         </div>
 
         {selected && (
-          <DialogFooter className="p-4 border-t border-neutral-200 flex justify-end">
+          <DialogFooter className="p-4 border-t flex justify-end">
             <Button variant="ghost" onClick={() => onSelect(null)}>
               Remove
             </Button>
@@ -146,7 +146,7 @@ function FileSelection({
   const { items = [], total_pages = 1 } = data ?? {};
 
   return (
-    <div className="flex flex-col gap-3 bg-white/70 rounded-xl border border-neutral-200 p-3 shadow-sm">
+    <div className="flex flex-col gap-3 rounded-xl border p-3 shadow-sm">
       {/* Mode Switch */}
       <div className="grid grid-cols-2 gap-2">
         <Button
@@ -155,7 +155,7 @@ function FileSelection({
             "flex items-center gap-1 justify-center text-sm",
             mode === "upload"
               ? "bg-blue-500 text-white hover:bg-blue-600"
-              : "bg-neutral-100 hover:bg-neutral-200"
+              : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
           )}
         >
           <Upload size={14} /> Upload
@@ -165,8 +165,8 @@ function FileSelection({
           className={cn(
             "flex items-center gap-1 justify-center text-sm",
             mode === "library"
-              ? "bg-blue-500 text-white hover:bg-blue-600"
-              : "bg-neutral-100 hover:bg-neutral-200"
+              ? "bg-blue-500 text-white  hover:bg-blue-600"
+              : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
           )}
         >
           <ImageIcon size={14} /> Library
@@ -250,7 +250,7 @@ function FileSelection({
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-between items-center text-sm text-neutral-600 mt-2">
+          <div className="flex justify-between items-center text-sm text-neutral-200 dark:text-neutral-900 mt-2">
             <Button
               size="sm"
               variant="secondary"
@@ -261,7 +261,7 @@ function FileSelection({
               <ChevronLeft size={16} /> Prev
             </Button>
 
-            <span className="text-neutral-500">
+            <span className="">
               Page {page} / {total_pages}
             </span>
 

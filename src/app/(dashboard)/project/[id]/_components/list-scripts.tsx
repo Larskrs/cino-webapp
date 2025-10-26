@@ -28,9 +28,7 @@ export function ScriptList ({ projectId } : { projectId: string }) {
         <Link
           href={`/script/${s.id}`}
           key={s.id}
-          className={cn("cursor-pointer h-full aspect-[8.5/11] hover:outline-black/25 outline-1 outline-transparent rounded-lg bg-white/100 p-4 flex flex-col justify-end text-neutral-800 dark:text-neutral-300 transition",
-            colors.components.boards.card
-          )}
+          className={"cursor-pointer h-full aspect-[8.5/11] hover:outline-black/25 outline-1 outline-transparent rounded-lg bg-white/100 p-4 flex flex-col justify-end text-neutral-800 dark:text-neutral-300 dark:bg-neutral-950 dark:outline-neutral-900 dark:hover:outline-neutral-700 dark:hover:bg-neutral-800 transition"}
         >
           <p className="font-semibold">{s.title}</p>
 

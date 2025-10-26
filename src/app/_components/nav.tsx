@@ -165,7 +165,7 @@ function NavItem({ link, active }: { link: NavLink; active: boolean }) {
       {Icon && <Icon className="h-4 w-4" />}
       {link.label}
       {link.badge && (
-        <span className="ml-2 rounded-full bg-primary px-2 text-xs text-white">
+        <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-white dark:bg-neutral-300 dark:text-neutral-950">
           {link.badge}
         </span>
       )}

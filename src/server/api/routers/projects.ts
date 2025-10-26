@@ -71,7 +71,7 @@ export const projectRouter = createTRPCRouter({
                 user: { select: { id: true, name: true, email: true, image: true } },
               },
             },
-            _count: { select: { files: true, scripts: true } },
+            _count: { select: { files: true, scripts: true, boards: true, members: true } },
           },
         });
     
