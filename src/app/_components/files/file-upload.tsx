@@ -7,10 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { useTheme } from "@/hooks/use-theme";
 import Video from "../video";
 
-/* -------------------------------------------------------------------------- */
-/*                                   Types                                    */
-/* -------------------------------------------------------------------------- */
-
 export interface UploadedFile {
   id: string;
   url: string;
@@ -18,55 +14,55 @@ export interface UploadedFile {
   name: string;
 }
 
-interface SingleFileUploaderProps {
+interface MultiFileUploaderProps {
   accept?: string;
-  onUpload?: (file: UploadedFile) => void | Promise<void>;
+  onUpload?: (files: UploadedFile[]) => void | Promise<void>;
   onError?: (error: string) => void;
+  maxFiles?: number;
   className?: string;
 }
 
-/* -------------------------------------------------------------------------- */
-/*                             Single File Uploader                           */
-/* -------------------------------------------------------------------------- */
-
-export function SingleFileUploader({
+export function MultiFileUploader({
   accept = "image/*,video/*",
   onUpload,
   onError,
+  maxFiles = 10,
   className,
-}: SingleFileUploaderProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [errorMsg, setErrorMsg] = useState("");
+}: MultiFileUploaderProps) {
+  const [uploads, setUploads] = useState<
+    {
+      file: File;
+      preview: string;
+      progress: number;
+      uploaded?: UploadedFile;
+      error?: string;
+    }[]
+  >([]);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { colors } = useTheme();
 
-  /* ---------------------------------------------------------------------- */
-  /*                               File Upload                              */
-  /* ---------------------------------------------------------------------- */
-  const uploadFile = async (file: File) => {
-    try {
-      setUploading(true);
-      setProgress(0);
+  /* ------------------------------- UPLOAD ------------------------------- */
+  const uploadFile = (file: File, index: number) => {
+    const data = new FormData();
+    data.append("file", file);
 
-      const data = new FormData();
-      data.append("file", file);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/v1/files", true);
 
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/v1/files", true);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        setUploads((prev) =>
+          prev.map((u, i) =>
+            i === index ? { ...u, progress: percent } : u
+          )
+        );
+      }
+    };
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percent = Math.round((e.loaded / e.total) * 100);
-          setProgress(percent);
-        }
-      };
-
-      xhr.onload = async () => {
-        setUploading(false);
-        if (xhr.status >= 200 && xhr.status < 300) {
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
           const json = JSON.parse(xhr.responseText);
           if (json.url && json.data?.id) {
             const uploaded: UploadedFile = {
@@ -75,88 +71,101 @@ export function SingleFileUploader({
               type: file.type.startsWith("video/") ? "video" : "image",
               name: file.name,
             };
-            setProgress(100);
-            setErrorMsg("");
-            onUpload?.(uploaded);
-          } else {
-            const msg = json.error || "Upload failed (missing file id or url)";
-            setErrorMsg(msg);
-            onError?.(msg);
-          }
-        } else {
-          const msg = "Upload failed";
-          setErrorMsg(msg);
+            setUploads((prev) =>
+              prev.map((u, i) =>
+                i === index ? { ...u, uploaded, progress: 100 } : u
+              )
+            );
+            onUpload?.(
+              prevUploadedFiles([...uploads, { file, uploaded }])
+            );
+          } else throw new Error("Invalid server response");
+        } catch (err: any) {
+          const msg = err.message || "Upload failed";
+          setUploads((prev) =>
+            prev.map((u, i) =>
+              i === index ? { ...u, error: msg } : u
+            )
+          );
           onError?.(msg);
         }
-      };
-
-      xhr.onerror = () => {
-        setUploading(false);
-        const msg = "Network error during upload";
-        setErrorMsg(msg);
+      } else {
+        const msg = "Upload failed";
+        setUploads((prev) =>
+          prev.map((u, i) =>
+            i === index ? { ...u, error: msg } : u
+          )
+        );
         onError?.(msg);
-      };
+      }
+    };
 
-      xhr.send(data);
-    } catch (err: any) {
-      setUploading(false);
-      const msg = err.message || "Unexpected upload error";
-      setErrorMsg(msg);
+    xhr.onerror = () => {
+      const msg = "Network error";
+      setUploads((prev) =>
+        prev.map((u, i) =>
+          i === index ? { ...u, error: msg } : u
+        )
+      );
       onError?.(msg);
-    }
+    };
+
+    xhr.send(data);
   };
 
-  /* ---------------------------------------------------------------------- */
-  /*                              File Selection                            */
-  /* ---------------------------------------------------------------------- */
-  const handleFile = useCallback(
+  const prevUploadedFiles = (list: any[]) =>
+    list
+      .map((u) => u.uploaded)
+      .filter(Boolean) as UploadedFile[];
+
+  /* ----------------------------- FILE HANDLERS ----------------------------- */
+  const handleFiles = useCallback(
     (fileList: FileList | null) => {
-      if (!fileList || fileList.length === 0) return;
-      const f = fileList?.[0];
-      if (!f) return;
-      setFile(f);
-      const url = URL.createObjectURL(f);
-      setPreviewUrl(url);
-      uploadFile(f);
+      if (!fileList) return;
+      const files = Array.from(fileList).slice(0, maxFiles - uploads.length);
+      if (files.length === 0) return;
+
+      const newUploads = files.map((f) => ({
+        file: f,
+        preview: URL.createObjectURL(f),
+        progress: 0,
+      }));
+
+      setUploads((prev) => [...prev, ...newUploads]);
+      newUploads.forEach((u, i) =>
+        uploadFile(u.file, uploads.length + i)
+      );
     },
-    [uploadFile]
+    [uploads, maxFiles]
   );
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (uploading) return;
-      const file = e.dataTransfer.files?.[0];
-      if (file) handleFile({ 0: file, length: 1, item: () => file } as any);
-    },
-    [uploading, handleFile]
-  );
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleFiles(e.dataTransfer.files);
+  };
 
   const handleClick = () => {
-    if (!uploading) inputRef.current?.click();
+    inputRef.current?.click();
   };
 
-  const reset = () => {
-    setFile(null);
-    setPreviewUrl(null);
-    setProgress(0);
-    setErrorMsg("");
+  const removeFile = (index: number) => {
+    setUploads((prev) => {
+      const newList = prev.filter((_, i) => i !== index);
+      onUpload?.(prevUploadedFiles(newList));
+      return newList;
+    });
   };
 
-  /* ---------------------------------------------------------------------- */
-  /*                                 Render                                 */
-  /* ---------------------------------------------------------------------- */
+  /* ------------------------------ RENDER ------------------------------ */
   return (
     <div
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
       onClick={handleClick}
       className={cn(
-        "relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer transition-all select-none p-6 max-w-full w-full",
-        uploading
-          ? "border-indigo-400 bg-indigo-50/40 dark:border-indigo-500 dark:bg-indigo-900/20"
-          : "border-neutral-300 bg-neutral-50/40 hover:border-indigo-400 hover:bg-neutral-100/40 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:border-indigo-500 dark:hover:bg-neutral-800/60",
+        "relative flex flex-col gap-4 border-2 border-dashed rounded-xl cursor-pointer transition-all select-none p-6 max-w-full w-full",
+        "border-neutral-300 bg-neutral-50/40 hover:border-indigo-400 hover:bg-neutral-100/40 dark:border-neutral-700 dark:bg-neutral-900/40 dark:hover:border-indigo-500 dark:hover:bg-neutral-800/60",
         className
       )}
     >
@@ -164,68 +173,72 @@ export function SingleFileUploader({
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple
         className="hidden"
-        onChange={(e) => handleFile(e.target.files)}
+        onChange={(e) => handleFiles(e.target.files)}
       />
 
-      {/* Preview */}
-      {previewUrl && (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-800">
-          {file?.type.startsWith("video/") ? (
-            <Video src={previewUrl} controls className="w-full h-full object-contain" />
-          ) : (
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="w-full h-full object-cover"
-            />
-          )}
-
-          {!uploading && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                reset();
-              }}
-              className="absolute top-2 right-2 bg-black/60 dark:bg-white/20 hover:bg-black/80 dark:hover:bg-white/30 rounded-full p-1 text-white dark:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!previewUrl && (
+      {/* Empty State */}
+      {uploads.length === 0 && (
         <div className="flex flex-col items-center justify-center text-center gap-2 text-neutral-600 dark:text-neutral-300">
           <UploadCloud className="size-10 text-neutral-400 dark:text-neutral-500" />
           <p className="text-sm font-medium">
-            Dra inn eller klikk for å laste opp
+            Dra inn eller klikk for å laste opp filer
           </p>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Kun ett bilde eller video om gangen
+            Opptil {maxFiles} filer om gangen
           </p>
         </div>
       )}
 
-      {/* Progress bar */}
-      {uploading && (
-        <div className="absolute bottom-0 left-0 right-0">
-          <Progress
-            value={progress}
-            className={cn(
-              "h-1",
-              colors.components.dialog?.button || "bg-indigo-500"
-            )}
-          />
-        </div>
-      )}
+      {/* File Grid */}
+      {uploads.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full">
+          {uploads.map((u, i) => (
+            <div
+              key={i}
+              className="relative aspect-square rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-800"
+            >
+              {u.file.type.startsWith("video/") ? (
+                <Video src={u.preview} className="w-full h-full object-contain" />
+              ) : (
+                <img
+                  src={u.preview}
+                  alt={u.file.name}
+                  className="w-full h-full object-cover"
+                />
+              )}
 
-      {/* Error */}
-      {errorMsg && (
-        <p className="text-xs text-red-500 dark:text-red-400 mt-2 text-center">
-          {errorMsg}
-        </p>
+              {/* Progress */}
+              {u.progress > 0 && u.progress < 100 && (
+                <div className="absolute bottom-0 left-0 right-0">
+                  <Progress
+                    value={u.progress}
+                    className={cn("h-1", colors.components.dialog?.button || "bg-indigo-500")}
+                  />
+                </div>
+              )}
+
+              {/* Remove */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeFile(i);
+                }}
+                className="absolute top-1 right-1 bg-black/60 dark:bg-white/20 hover:bg-black/80 dark:hover:bg-white/30 rounded-full p-1 text-white dark:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Error */}
+              {u.error && (
+                <p className="absolute bottom-2 left-0 right-0 text-xs text-red-500 dark:text-red-400 text-center">
+                  {u.error}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

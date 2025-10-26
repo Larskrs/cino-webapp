@@ -13,7 +13,7 @@ export function ScriptList ({ projectId } : { projectId: string }) {
   const { colors } = useTheme();
 
   return (
-    <div className="w-full h-60 flex flex-row flex-wrap gap-2">
+    <div className="w-full h-48 flex flex-row flex-wrap gap-2">
       <CreateScriptDialog className="h-full" projectId={projectId} >
         <div
           className={cn("cursor-pointer aspect-[8.5/11] outline-black/10 hover:outline-black/50 outline-1 rounded-lg p-4 flex flex-col transition items-center justify-center gap-4",
@@ -21,7 +21,7 @@ export function ScriptList ({ projectId } : { projectId: string }) {
           )}
         >
           <File size={64} className="text-neutral-500 stroke-1" />
-          <p>Create new script</p>
+          <p className="text-center">Create new script</p>
         </div>
       </CreateScriptDialog>
       {scripts.map((s) => (

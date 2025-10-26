@@ -163,7 +163,7 @@ model File {
   storage     String    
 
   // data
-  size        BigInt    @default(0)
+  size        BigInt    @default(0)   
 
   // Hierarchy
   parentId    String?
