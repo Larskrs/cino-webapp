@@ -38,7 +38,7 @@ export default function ImageCardEditor({
       {/* Image Picker */}
       <FileSelectionDialog
         selected={selectedFile}
-        closeEditor={closeEditor}
+        closeEditor={(closeEditor)}
         onSelect={(f) => {
           const url = `/api/v1/files?fid=${f?.id}`;
           setPreview(url);

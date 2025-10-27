@@ -51,11 +51,13 @@ export function PostList({ userId }: PageProps) {
   }
 
   return (
-    <div className="mx-auto gap-2 w-full flex flex-col">
+    <div className="mx-auto gap-4 w-full flex flex-col">
       <CreatePost />
 
       {posts?.map((p) => (
         <PostCard
+          className=""
+          showRepliesUnder
           key={p.id}
           post={p as any}
           onClick={() => setPostPreview(p.id)} // navigate into single view

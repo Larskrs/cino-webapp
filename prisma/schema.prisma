@@ -37,19 +37,21 @@ model Session {
 }
 
 model User {
-  id            String           @id @default(cuid())
-  name          String?
-  email         String?          @unique
-  emailVerified DateTime?
-  image         String?
-  banner        String?
-  status        String?
-  location      String?
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-  files         File[]
-  memberships   ProjectMember[]
+  id                String           @id @default(cuid())
+  name              String?
+  email             String?          @unique
+  emailVerified     DateTime?
+  image             String?
+  banner            String?
+  status            String?
+  location          String?
+  accounts          Account[]
+  sessions          Session[]
+  posts             Post[]
+  files             File[]
+  memberships       ProjectMember[]
+  postNotes         PostNote[]
+  postNoteRatings   PostNoteRating[]
 
   followers  Follower[] @relation("UserFollowers")
   following  Follower[] @relation("UserFollowing")
@@ -75,12 +77,49 @@ model Post {
   hashtags  PostHashtag[]
 
   // Self-relation for replies
-  parentId    Int?      // The post this is replying to
-  parent      Post?     @relation("PostReplies", fields: [parentId], references: [id])
-  replies     Post[]    @relation("PostReplies") // Replies to this post
+  parentId    Int?        // The post this is replying to
+  parent      Post?       @relation("PostReplies", fields: [parentId], references: [id])
+  replies     Post[]      @relation("PostReplies") // Replies to this post
+  notes       PostNote[]       // ✅ Added reverse relation
 
 
   @@index([id])
+}
+model PostNote {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  postId      Int
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  body        String   // The contextual explanation
+  sources     Json?    // Optional list of URLs or references
+
+  // Computed later via aggregation
+  helpfulScore Float?  @default(0)
+  visible      Boolean @default(false)
+
+  ratings      PostNoteRating[]
+}
+
+model PostNoteRating {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      PostNote     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    PostNoteRatingValue
+  createdAt DateTime @default(now())
+
+  @@unique([noteId, userId]) // Prevent duplicate ratings
+}
+
+enum PostNoteRatingValue {
+  HELPFUL
+  SOMEWHAT_HELPFUL
+  NOT_HELPFUL
 }
 
 model Hashtag {

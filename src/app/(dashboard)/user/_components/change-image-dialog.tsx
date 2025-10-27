@@ -1,106 +1,78 @@
 "use client";
 
-import React, { useEffect, useState, type ReactNode } from "react";
+import React, { useState } from "react";
 import { api } from "@/trpc/react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Image, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { useTheme } from "@/hooks/use-theme";
+import FilePickerDialog from "@/app/_components/files/file-picker";
+import type { UploadedFile } from "@/app/_components/files/file-upload";
 import Avatar from "@/app/_components/users/avatar";
+import { motion } from "framer-motion"
+import { CameraIcon } from "lucide-react";
 
-export default function ChangeImageDialog({ className, children }: { className?: string, children?: ReactNode }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+export default function ChangeAvatarDialog({
+  className,
+  children,
+  defaultValue,
+}: {
+  className?: string;
+  defaultValue?: string,
+  children: React.ReactNode;
+}) {
+  const [preview, setPreview] = useState<string | null>(null);
 
   const utils = api.useUtils();
+
   const changeAvatar = api.users.changeAvatar.useMutation({
     onSuccess: async () => {
       await utils.users.get.invalidate();
-      setFile(null);
-      setPreviewUrl(null);
-      setOpen(false);
+      toast.success("Avatar updated!");
+      setPreview(null);
     },
     onError: (err) => {
-      setErrorMsg(err.message || "Noe gikk galt ved endring av profilbilde");
+      toast.error(err.message || "Noe gikk galt ved endring av banner");
     },
   });
 
-  const { colors } = useTheme();
-
-  // Preview the selected file
-  useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null);
-      return;
-    }
-
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
-
-    const data = new FormData();
-    data.append("file", file);
-
-    const res = await fetch("/api/v1/files", { method: "POST", body: data });
-    const json = await res.json();
-
-    if (json.url) {
-      changeAvatar.mutate({ fileId: json.data?.id }); 
-    }
+  const handleUpload = async (files: UploadedFile[]) => {
+    if (files.length === 0) return;
+    const file = files[0];
+    if (!file) return
+    setPreview(file.url);
+    changeAvatar.mutate({ fileId: file.id });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        {children}
-      </DialogTrigger>
-
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex gap-2 items-center"><Image className="size-6" size={6} /> Endre profilbilde</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            id="image-file-input"
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-
-          {previewUrl && (
-            <div className="relative max-h-40 w-40 aspect-square overflow-hidden rounded-md">
-              <Avatar
-                src={previewUrl}
-                className="object-cover w-full h-full"
-              />
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {errorMsg && <Label className="text-red-500">{errorMsg}</Label>}
-
-          <Button type="submit" disabled={!file && changeAvatar.isPending} className={`bg-indigo-600 hover:bg-indigo-500 text-white ${colors.components.dialog.button}`}>
-            {changeAvatar.isPending ? "Lagrer..." : "Lagre profilbilde"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <FilePickerDialog
+      entityType="user"
+      maxFiles={1}
+      type="image"
+      accept="image/*"
+      title="Velg eller last opp nytt banner"
+      currentFiles={preview ? [preview] : null}
+      onUpload={handleUpload}
+    >
+      <div className="z-10 group cursor-pointer relative max-h-50 w-36 sm:w-40 lg:w-52 border-6 border-neutral-100 dark:border-neutral-950 bg-neutral-100 dark:bg-neutral-950 aspect-square overflow-hidden rounded-full">
+        <Avatar
+          height={512}
+          width={512}
+          quality={100}
+          src={preview || defaultValue || null}
+          className="transition-all group-hover:scale-95 object-cover w-full h-full"
+        />
+        <div>
+          <CameraIcon strokeWidth={2} className="opacity-0 group-hover:opacity-75 absolute left-1/2 top-1/2 size-1/2 -translate-1/2 text-white" />
+        </div>
+      </div>
+    </FilePickerDialog>
   );
 }

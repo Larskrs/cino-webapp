@@ -55,7 +55,7 @@ export default function UserPage() {
 
   {/* Avatar + Info */}
   <div className="relative flex flex-col items-center -mt-20 sm:-mt-24 px-4">
-    <ChangeImageDialog>
+    <ChangeImageDialog defaultValue={user.image || ""}>
       <Avatar
         src={user.image || ""}
         className={cn(
