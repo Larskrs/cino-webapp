@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import Avatar from "../users/avatar";
 import { usePostPreview } from "@/hooks/post-preview";
+import React from "react";
 
 type PageProps = {
   userId?: string;
@@ -51,17 +52,19 @@ export function PostList({ userId }: PageProps) {
   }
 
   return (
-    <div className="mx-auto gap-4 w-full flex flex-col">
+    <div className="mx-auto gap-2 w-full flex flex-col">
       <CreatePost />
 
       {posts?.map((p) => (
-        <PostCard
-          className=""
-          showRepliesUnder
-          key={p.id}
-          post={p as any}
-          onClick={() => setPostPreview(p.id)} // navigate into single view
-        />
+        <div key={p.id} className="flex flex-col w-full">
+          <PostCard
+            className=""
+            showRepliesUnder
+            post={p as any}
+            onClick={() => setPostPreview(p.id)} // navigate into single view
+            />
+          <span className="dark:border-t-1 mt-2" />
+        </div>
       ))}
     </div>
   );

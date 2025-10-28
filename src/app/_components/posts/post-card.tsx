@@ -2,7 +2,7 @@
 
 import Avatar from "../users/avatar";
 import { Card } from "@/components/ui/card";
-import { cn, timeAgo } from "@/lib/utils";
+import { cn, timeAgo, timeAgoCompact } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import Image from "next/image";
 import Video from "../video";
@@ -13,7 +13,7 @@ import { PostBody } from "./post-body";
 import Link from "next/link";
 import CreatePostDialog from "./create-post";
 import { useSession } from "next-auth/react";
-import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Circle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
@@ -33,12 +33,12 @@ export function PostCard({
 
   return (
     <div
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-4"
       key={post.id}
     >
       <PostCardPrimitive {...{post, className, onClick}} />
 
-      {showRepliesUnder && post?._count?.replies > 0 && <div className="flex flex-col gap-2 border-l-2 border-neutral-200 dark:border-neutral-800 min-h-20 pl-6 mb-4">
+      {showRepliesUnder && post?._count?.replies > 0 && <div className="flex flex-col gap-2 border-l-2 ml-2 border-neutral-200 dark:border-neutral-800 min-h-20 pl-4 mb-4">
         {post?.replies?.map((r: any) => {
           return (
             <PostCardPrimitive className="" key={r.id} post={r} {...{onClick}} />
@@ -74,7 +74,7 @@ export function PostCardPrimitive ({
           <div className="flex flex-row gap-4">
             <div className="flex flex-col w-full">
               <div
-                className={`flex items-center gap-2 text-lg ${colors.textMuted}`}
+                className={"flex items-center gap-2 text-lg text-neutral-400 font-regular dark:text-neutral-500"}
               >
                 {/* Author profile link */}
                 <Link
@@ -83,15 +83,15 @@ export function PostCardPrimitive ({
                   className="hover:underline cursor-pointer flex items-center justify-center gap-3"
                 >
                   <Avatar
-                    className="size-6 shrink-0 rounded-full"
+                    className="size-10 border-2 shrink-0 rounded-full"
                     src={post.createdBy.image}
                   />
-                  <span className={`font-semibold ${colors.text}`}>
+                  <span className={"text-neutral-900 font-medium dark:text-neutral-100"}>
                     {post.createdBy.name}
                   </span>
                 </Link>
-                <span>·</span>
-                <span>{timeAgo(new Date(post.createdAt), "no")}</span>
+                <Circle className="size-1.25 fill-neutral-400 dark:fill-neutral-500" />
+                <span className="">{timeAgoCompact(new Date(post.createdAt))}</span>
               </div>
 
               {/* Clicking post body should open post */}
@@ -109,19 +109,7 @@ export function PostCardPrimitive ({
                   parentId={post.id}
                   onClick={(e: any) => e.stopPropagation()}
                 >
-                  <div
-                    className={cn(
-                      "mt-2 flex gap-2 p-0 text-sm items-center",
-                      colors.text
-                    )}
-                  >
-                    <MessageCircle strokeWidth={2} size={16} />
-                    <p className="text-md">
-                      {post?._count?.replies && post._count.replies > 0
-                        ? post._count.replies
-                        : ""}
-                    </p>
-                  </div>
+                  <p className="text-sm mt-2 text-neutral-500 font-regular">Write comment ...</p>
                 </CreatePostDialog>
               )}
 

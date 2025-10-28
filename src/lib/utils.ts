@@ -35,6 +35,22 @@ export function timeAgo(
   if (Math.abs(months) < 12) return rtf.format(months, "month");
   return rtf.format(years, "year");
 }
+export function timeAgoCompact(
+  timestamp: string | number | Date
+): string {
+  const now = new Date();
+  const date = new Date(timestamp);
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000); // seconds ago
+
+  const abs = Math.abs(diffSec);
+
+  if (abs < 60) return `${abs}s`;                     // seconds
+  if (abs < 3600) return `${Math.floor(abs / 60)} m`;  // minutes
+  if (abs < 86400) return `${Math.floor(abs / 3600)} h`; // hours
+  if (abs < 2592000) return `${Math.floor(abs / 86400)} d`; // days
+  if (abs < 31536000) return `${Math.floor(abs / 2592000)} mo`; // months (~30 days)
+  return `${Math.floor(abs / 31536000)}y`;            // years
+}
 
 export function formatFileSize(size: bigint) {
   const units = ["B", "KB", "MB", "GB", "TB"];
