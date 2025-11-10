@@ -106,7 +106,12 @@ export function PostCardPrimitive ({
               {/* Clicking post body should open post */}
               <PostBody onClick={onClick} post={post} colors={colors} />
 
-{post.poll && (
+              {/* Attachments */}
+              {Array.isArray(post.attachments) && post.attachments.length > 0 && (
+                <PostAttachments attachments={post.attachments} />
+              )}
+
+              {post.poll && (
   <Card className="mt-2 p-4 flex flex-col gap-2">
     <CardTitle>{post.poll.title}</CardTitle>
     <CardDescription>{post.poll.description}</CardDescription>
@@ -156,13 +161,6 @@ export function PostCardPrimitive ({
     <CardDescription>Total Votes ({post.poll.options.reduce((sum, o) => sum + o._count.entries, 0) ?? 0})</CardDescription>
   </Card>
 )}
-
-
-
-              {/* Attachments */}
-              {Array.isArray(post.attachments) && post.attachments.length > 0 && (
-                <PostAttachments attachments={post.attachments} />
-              )}
 
               {/* Reply button */}
               {!post.parentId && (
