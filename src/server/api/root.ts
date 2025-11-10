@@ -6,6 +6,7 @@ import { userRouter } from "./routers/user";
 import { hashtagRouter } from "./routers/hashtag";
 import { fileRouter } from "./routers/files";
 import { boardRouter } from "./routers/board";
+import { pollRouter } from "./routers/poll";
 
 /**
  * This is the primary router for your server.
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
   files:    fileRouter,
   hashtags: hashtagRouter,
   board: boardRouter,
+  poll: pollRouter,
 });
 
 // export type definition of API

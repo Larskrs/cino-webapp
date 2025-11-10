@@ -54,63 +54,96 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-    create: protectedProcedure
-    .input(
-      z.object({
-        body: z
-          .string()
-          .min(1, "Post content is required")
-          .max(512, "Post content exceeds maximum length"),
-        attachments: z
-          .array(attachmentSchema).optional(),
-        parentId: z.number().optional()
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-      const { body, attachments = [] } = input;
-
-      // Extract URLs from text body (still works)
-      const urls = extractUrls(body);
-      const attachmentResults = await Promise.all(
-        urls.map(async (u) => {
-          const type = await detectAttachmentType(u);
-          return type ? { url: u, type } : null;
+create: protectedProcedure
+  .input(
+    z.object({
+      body: z
+        .string()
+        .min(1, "Post content is required")
+        .max(512, "Post content exceeds maximum length"),
+      attachments: z.array(attachmentSchema).optional(),
+      parentId: z.number().optional(),
+      poll: z
+        .object({
+          title: z.string().min(1),
+          description: z.string().optional(),
+          options: z
+            .array(
+              z.object({
+                text: z.string().min(1),
+                order: z.number().optional().default(0),
+              })
+            )
+            .min(2, "Poll must have at least two options"),
         })
-      );
-      const linkAttachments = attachmentResults.filter(Boolean) as {
-        url: string;
-        type: "image" | "video";
-      }[];
+        .optional(),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const userId = ctx.session.user.id;
+    const { body, attachments = [], poll, parentId } = input;
 
-      const tags = getPostHashtagsFromBody(input.body)
+    // Extract URLs from text body (for embedded media)
+    const urls = extractUrls(body);
+    const attachmentResults = await Promise.all(
+      urls.map(async (u) => {
+        const type = await detectAttachmentType(u);
+        return type ? { url: u, type } : null;
+      })
+    );
+    const linkAttachments = attachmentResults.filter(Boolean) as {
+      url: string;
+      type: "image" | "video";
+    }[];
 
-      const post = await ctx.db.post.create({
-        data: {
-          body: stripUrls(body),
-          attachments: [...attachments, ...linkAttachments],
-          createdBy: { connect: { id: userId } },
-          ...(input.parentId !== undefined && {
-            parent: { connect: { id: input.parentId } },
-          }),
-          hashtags: {
-            create: tags.map((t) => ({
-              hashtag: {
-                connectOrCreate: {
-                  where: { tag: t },
-                  create: { tag: t },
-                },
+    const tags = getPostHashtagsFromBody(input.body);
+
+    // ✅ Create Post (optionally with Poll + PollOptions)
+    const post = await ctx.db.post.create({
+      data: {
+        body: stripUrls(body),
+        attachments: [...attachments, ...linkAttachments],
+        createdBy: { connect: { id: userId } },
+        ...(parentId && {
+          parent: { connect: { id: parentId } },
+        }),
+        hashtags: {
+          create: tags.map((t) => ({
+            hashtag: {
+              connectOrCreate: {
+                where: { tag: t },
+                create: { tag: t },
               },
-            })),
+            },
+          })),
+        },
+        ...(poll && {
+          poll: {
+            create: {
+              title: poll.title,
+              description: poll.description ?? "",
+              createdBy: { connect: { id: userId } },
+              options: {
+                create: poll.options.map((opt) => ({
+                  text: opt.text,
+                  order: opt.order ?? 0,
+                })),
+              },
+            },
           },
+        }),
+      },
+      include: {
+        poll: {
+          include: { options: true },
         },
-        include: {
-          hashtags: { include: { hashtag: true } }, // return tags too
-        },
-      });
+        hashtags: { include: { hashtag: true } },
+      },
+    });
 
-      return post;
-    }),
+    return post;
+  }),
+
 
   getLatest: protectedProcedure.query(async ({ ctx }) => {
     const post = await ctx.db.post.findFirst({
@@ -145,6 +178,19 @@ export const postRouter = createTRPCRouter({
         },
         orderBy: { createdAt: "desc" },
         include: {
+          poll: {
+            include: {
+              options: {
+                include: {
+                  _count: {
+                    select: {
+                      entries: true
+                    }
+                  }
+                }
+              }
+            }
+          },
           createdBy: true,
           replies: {
             take: 5,

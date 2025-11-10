@@ -52,6 +52,8 @@ model User {
   memberships       ProjectMember[]
   postNotes         PostNote[]
   postNoteRatings   PostNoteRating[]
+  polls             Poll[]
+  pollEntries       PollEntry[]
 
   followers  Follower[] @relation("UserFollowers")
   following  Follower[] @relation("UserFollowing")
@@ -81,6 +83,7 @@ model Post {
   parent      Post?       @relation("PostReplies", fields: [parentId], references: [id])
   replies     Post[]      @relation("PostReplies") // Replies to this post
   notes       PostNote[]       // ✅ Added reverse relation
+  poll        Poll?
 
 
   @@index([id])
@@ -259,6 +262,71 @@ model BoardCard {
   // Relationship to the board
   boardId     String
   board       Board     @relation(fields: [boardId], references: [id])
+}
+model Poll {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Creator
+  createdById   String
+  createdBy     User          @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Options in this poll
+  options       PollOption[]
+
+  // Entries (votes)
+  entries       PollEntry[]
+
+  postId        Int?          @unique
+  post          Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Settings
+  multipleChoice Boolean      @default(false)  // allow multiple selections
+  anonymous      Boolean      @default(false)  // hide voter identities
+  expiresAt      DateTime?                 // optional end date/time
+
+  @@index([createdById])
+  @@index([expiresAt])
+}
+
+model PollOption {
+  id        String    @id @default(cuid())
+  text      String
+  order     Int        @default(0)
+
+  // Relation to parent poll
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  // Votes referencing this option
+  entries   PollEntry[]
+
+  // Computed via aggregation
+  voteCount Int        @default(0)
+
+  @@index([pollId])
+}
+
+model PollEntry {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+
+  // Which poll and option this vote belongs to
+  pollId     String
+  optionId   String
+
+  poll       Poll      @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option     PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  // Who voted
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId, optionId]) // Prevent duplicate votes for same option
+  @@index([pollId])
 }
 
 // ========== SCRIPT + VERSIONING ==========

@@ -13,14 +13,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Image, X } from "lucide-react";
+import { Image, X, ListPlus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "@/hooks/use-theme";
 import Video from "../video";
 import type { Session } from "next-auth";
 
 const MAX_FILES = 5;
-const MAX_TOTAL_SIZE = 125 * 1024 * 1024; // 50MB
+const MAX_TOTAL_SIZE = 125 * 1024 * 1024; // 125MB
 
 export default function CreatePostDialog({
   className,
@@ -38,6 +38,12 @@ export default function CreatePostDialog({
   const [previews, setPreviews] = useState<{ url: string; isVideo: boolean; name: string }[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [open, setOpen] = useState(false);
+
+  // 🧩 Poll State
+  const [showPoll, setShowPoll] = useState(false);
+  const [pollTitle, setPollTitle] = useState("");
+  const [pollDescription, setPollDescription] = useState("");
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
 
   const maxLength = 512;
   const remaining = maxLength - body.length;
@@ -63,6 +69,10 @@ export default function CreatePostDialog({
       setBody("");
       setFiles([]);
       setErrorMsg("");
+      setPollTitle("");
+      setPollDescription("");
+      setPollOptions(["", ""]);
+      setShowPoll(false);
       setOpen(false);
     },
     onError: (error) => {
@@ -70,19 +80,17 @@ export default function CreatePostDialog({
     },
   });
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (createPost.isPending) return; // ⛔ prevent double submit
+    if (createPost.isPending) return;
 
+    // Upload attachments
     let attachments: { url: string; type: "image" | "video"; alt: string }[] = [];
-
     for (const file of files) {
       const data = new FormData();
       data.append("file", file);
-
       const res = await fetch("/api/v1/files", { method: "POST", body: data });
       const json = await res.json();
-
       if (json.url) {
         attachments.push({
           url: json.url,
@@ -92,7 +100,19 @@ const handleSubmit = async (e: React.FormEvent) => {
       }
     }
 
-    createPost.mutate({ body, attachments, parentId });
+    // Build poll object only if user created one
+    const poll =
+      showPoll && pollTitle.trim() && pollOptions.filter((o) => o.trim()).length >= 2
+        ? {
+            title: pollTitle,
+            description: pollDescription || undefined,
+            options: pollOptions
+              .filter((text) => text.trim() !== "")
+              .map((text, i) => ({ text, order: i })),
+          }
+        : undefined;
+
+    createPost.mutate({ body, attachments, parentId, poll });
   };
 
   const { colors } = useTheme();
@@ -105,9 +125,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {parentId !== undefined ? "Svar på innlegg" : "Nytt innlegg"}
-          </DialogTitle>
+          <DialogTitle>{parentId ? "Svar på innlegg" : "Nytt innlegg"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col gap-3">
@@ -120,15 +138,89 @@ const handleSubmit = async (e: React.FormEvent) => {
             maxLength={maxLength}
           />
 
+          {/* Poll toggle */}
+          <Button
+            type="button"
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setShowPoll((v) => !v)}
+          >
+            <ListPlus size={16} />
+            {showPoll ? "Fjern avstemning" : "Legg til avstemning"}
+          </Button>
+
+          {/* Poll form */}
+          {showPoll && (
+            <div className="flex flex-col gap-2 border rounded-md p-3 bg-muted/40">
+              <Label htmlFor="poll-title">Tittel</Label>
+              <Input
+                id="poll-title"
+                placeholder="F.eks. Hva bør vi bygge neste?"
+                value={pollTitle}
+                onChange={(e) => setPollTitle(e.target.value)}
+              />
+              <Label htmlFor="poll-description">Beskrivelse</Label>
+              <Textarea
+                id="poll-description"
+                placeholder="Valgfri beskrivelse..."
+                value={pollDescription}
+                onChange={(e) => setPollDescription(e.target.value)}
+              />
+              <div className="flex flex-col gap-2 mt-2">
+                <Label>Alternativer</Label>
+                {pollOptions.map((opt, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <Input
+                      placeholder={`Alternativ ${i + 1}`}
+                      value={opt}
+                      onChange={(e) =>
+                        setPollOptions((prev) => {
+                          const copy = [...prev];
+                          copy[i] = e.target.value;
+                          return copy;
+                        })
+                      }
+                    />
+                    {pollOptions.length > 2 && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() =>
+                          setPollOptions((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mt-2"
+                  onClick={() => setPollOptions((p) => [...p, ""])}
+                >
+                  ➕ Legg til alternativ
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* File input trigger */}
           <div className="flex items-center justify-between">
-            <label htmlFor="post-file-input" className="cursor-pointer flex items-center gap-2 text-muted-foreground">
+            <label
+              htmlFor="post-file-input"
+              className="cursor-pointer flex items-center gap-2 text-muted-foreground"
+            >
               <Image className="size-6" /> Legg til bilder/video
             </label>
             <span
               className={cn(
                 "text-sm",
-                remaining <= 10 ? "text-destructive font-medium" : "text-muted-foreground"
+                remaining <= 10
+                  ? "text-destructive font-medium"
+                  : "text-muted-foreground"
               )}
             >
               {remaining} gjenstående...
@@ -146,14 +238,10 @@ const handleSubmit = async (e: React.FormEvent) => {
             onChange={(e) => {
               const newFiles = Array.from(e.target.files ?? []);
               const combined = [...files, ...newFiles];
-            
-              // limit by number
               if (combined.length > MAX_FILES) {
                 setErrorMsg(`Du kan maks laste opp ${MAX_FILES} filer.`);
                 return;
               }
-            
-              // limit by total size
               const totalSize = combined.reduce((sum, f) => sum + f.size, 0);
               if (totalSize > MAX_TOTAL_SIZE) {
                 setErrorMsg(
@@ -163,24 +251,24 @@ const handleSubmit = async (e: React.FormEvent) => {
                 );
                 return;
               }
-            
               setErrorMsg("");
               setFiles(combined);
             }}
           />
 
-          {/* Previews carousel */}
+          {/* File previews */}
           {previews.length > 0 && (
             <div className="flex gap-3 overflow-x-auto py-2">
               {previews.map((preview, idx) => (
-                <div key={idx} className="relative flex-shrink-0 w-40 h-40 bg-gray-100 rounded-lg overflow-hidden">
+                <div
+                  key={idx}
+                  className="relative flex-shrink-0 w-40 h-40 bg-gray-100 rounded-lg overflow-hidden"
+                >
                   {preview.isVideo ? (
                     <Video src={preview.url} controls className="w-full h-full object-contain" />
                   ) : (
                     <img src={preview.url} alt="preview" className="w-full h-full object-cover" />
                   )}
-
-                  {/* Remove button */}
                   <button
                     type="button"
                     onClick={() => {

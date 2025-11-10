@@ -1,7 +1,7 @@
 "use client";
 
 import Avatar from "../users/avatar";
-import { Card } from "@/components/ui/card";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { cn, timeAgo, timeAgoCompact } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import Image from "next/image";
@@ -15,6 +15,7 @@ import CreatePostDialog from "./create-post";
 import { useSession } from "next-auth/react";
 import { ChevronLeft, ChevronRight, Circle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/trpc/react";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Post = RouterOutputs["post"]["list"][number];
@@ -30,6 +31,8 @@ export function PostCard({
 } & React.HTMLAttributes<HTMLDivElement>) {
   const { colors } = useTheme();
   const session = useSession();
+
+  console.log(post)
 
   return (
     <div
@@ -59,6 +62,12 @@ export function PostCardPrimitive ({
 
     const { colors } = useTheme();
     const session = useSession();
+
+    const vote = api.poll.vote.useMutation({
+      onMutate: ({optionId}) => {
+         
+      } 
+    })
 
     return(
         <Card
@@ -96,6 +105,59 @@ export function PostCardPrimitive ({
 
               {/* Clicking post body should open post */}
               <PostBody onClick={onClick} post={post} colors={colors} />
+
+{post.poll && (
+  <Card className="mt-2 p-4 flex flex-col gap-2">
+    <CardTitle>{post.poll.title}</CardTitle>
+    <CardDescription>{post.poll.description}</CardDescription>
+
+    <div className="flex flex-col gap-2">
+      {(() => {
+        const totalEntries =
+          post.poll.options.reduce((sum, o) => sum + o._count.entries, 0) ?? 0;
+        const maxVotes = Math.max(
+          ...post.poll.options.map((o) => o._count.entries)
+        );
+
+        return post.poll.options.map((o, i) => {
+          const votes = o._count.entries;
+          const percentage = totalEntries
+            ? Math.round((votes / totalEntries) * 100)
+            : 0;
+
+          const isLeader = votes === maxVotes && votes > 0;
+
+          return (
+            <div
+              onClick={() => vote.mutate({ optionId: o.id })}
+              key={i}
+              className="flex flex-row gap-2 relative overflow-hidden rounded-sm px-3 py-2 cursor-pointer hover:opacity-90 transition"
+            >
+              {/* Background layers */}
+              <div className="absolute inset-0 bg-neutral-500/30" />
+              <div
+                className={`absolute inset-y-0 left-0 transition-all duration-500 ${
+                  isLeader ? "bg-blue-500" : "bg-blue-500/50"
+                }`}
+                style={{ width: `${percentage}%` }}
+              />
+
+              {/* Text content */}
+              <p className="relative z-10 font-medium">{o.text}</p>
+              <p className="relative z-10 ml-auto font-medium">
+                {percentage}%
+              </p>
+            </div>
+          );
+        });
+      })()}
+    </div>
+
+    <CardDescription>Total Votes ({post.poll.options.reduce((sum, o) => sum + o._count.entries, 0) ?? 0})</CardDescription>
+  </Card>
+)}
+
+
 
               {/* Attachments */}
               {Array.isArray(post.attachments) && post.attachments.length > 0 && (
