@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { ResponsiveNav, type NavLink } from "../_components/nav";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Blocks, Home, Info, Moon, Sun } from "lucide-react";
+import { Blocks, Home, Info, MessagesSquareIcon, Moon, Sun } from "lucide-react";
 import { useTheme, type ThemeColors, type ThemeKey } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,8 +55,8 @@ export default function Layout({
 
   const links: NavLink[] = [
     { icon: Home, label: "Home", href: "/", key: "home" },
+    { icon: MessagesSquareIcon, label: "Forum", href: "/p", key: "forum" },
     { icon: Blocks, label: "Projects", badge: "beta", href: "/project/", key: "projects" },
-    { icon: Info, label: "Support", href: "/support", key: "support" },
     { label: <ThemeSwitcher theme={theme} colors={colors} />, key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark") }
   ];
 

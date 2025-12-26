@@ -65,7 +65,7 @@ export function PostCardPrimitive ({
 
     const vote = api.poll.vote.useMutation({
       onMutate: ({optionId}) => {
-         
+          
       } 
     })
 
@@ -142,7 +142,7 @@ export function PostCardPrimitive ({
               <div className="absolute inset-0 bg-neutral-500/30" />
               <div
                 className={`absolute inset-y-0 left-0 transition-all duration-500 ${
-                  isLeader ? "bg-blue-500" : "bg-blue-500/50"
+                  isLeader ? "bg-blue-300 dark:bg-blue-500" : "bg-blue-500/50"
                 }`}
                 style={{ width: `${percentage}%` }}
               />

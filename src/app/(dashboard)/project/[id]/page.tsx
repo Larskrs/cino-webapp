@@ -35,7 +35,7 @@ export default async function ProjectPage({ params }: PageProps) {
 
   return (
     <HydrateClient>
-      <main className="w-full flex min-h-screen flex-col items-center justify-start dark:bg-neutral-950">
+      <main className="w-full flex min-h-screen pb-8 flex-col items-center justify-start dark:bg-neutral-950">
         
         <header className="w-full overflow-hidden relative bg-gray-200 dark:bg-black">
           <div className="z-1 w-full py-6 px-4 max-w-7xl mx-auto grid grid-cols-7 w h-50 sm:h-60 md:h-80 lg:h-100 relative rounded-xl flex-wrap gap-8 items-center justify-center mb-4 mt-4">

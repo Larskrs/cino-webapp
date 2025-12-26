@@ -41,7 +41,7 @@ export default async function RootLayout({
     | undefined;
 
   // fetch session on the server
-  const session = await auth();
+  const session = await auth()
 
   return (
     <html lang="en" className={cn(geist.variable, courier.variable)}>

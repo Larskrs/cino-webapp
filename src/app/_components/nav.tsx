@@ -82,17 +82,18 @@ export function ResponsiveNav({ links }: Props) {
   const { colors } = useTheme()
 
   return (
-    <div className="min-h-16">
+    <div className="min-h-16 z-100">
       {/* Desktop */}
-      <div className={cn("h-16 px-4 flex gap-4 items-center justify-center fixed z-10 top-0 left-0 right-0", colors.nav.background)}>
+      <div className={cn("h-16 px-6 md:px-4 flex gap-4 items-center justify-between fixed z-10 top-0 left-0 right-0", colors.nav.background)}>
 
-        <Logo className={cn("size-16 duration-700", colors.text)} />
+        <Logo className="text-primary hidden md:flex size-16 duration-700" />
 
         <div className="hidden md:flex items-center justify-between w-full" ref={containerRef}>
-          <div className="mx-auto flex items-center gap-2 overflow-hidden">
-            {visible.map((link) => (
-              <NavItem key={link.key} link={link} active={pathname === link.href} />
-            ))}
+          <div className="mx-auto flex items-center gap-2 overflow-hidden justify-between">
+
+          {visible.map((link) => (
+            <NavItem key={link.key} link={link} active={pathname === link.href} />
+          ))}
 
             {hidden.length > 0 && (
               <DropdownMenu>
@@ -124,8 +125,8 @@ export function ResponsiveNav({ links }: Props) {
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <Button className={cn("p-4 cursor-pointer", colors.buttonBackground)} variant="ghost" size="icon">
-                <Menu className="size-6" />
+              <Button className="p-4 cursor-pointer" variant="ghost" size="icon">
+                <Menu className="size-8" />
               </Button>
             </SheetTrigger>
             <SheetContent className={cn("p-4", colors.nav.background)} side="left">
@@ -137,11 +138,12 @@ export function ResponsiveNav({ links }: Props) {
             </SheetContent>
           </Sheet>
         </div>
+
+        <Logo className="text-primary md:hidden size-16 duration-700" />
         
         {session?.status === "authenticated"
-          ? <Link href={`/user/${session?.data?.user?.id}`} className="ml-auto size-10 aspect-square relative cursor-pointer opacity-90 hover:opacity-100">
-              <Avatar className="size-10 bg-zinc-300" src={session?.data?.user?.image || "/svg/user/placeholder-avatar.svg"} />
-              <ChevronDown className={cn("size-4 absolute bottom-0 right-0 rounded-full", colors.background)} />
+          ? <Link href={`/user/${session?.data?.user?.id}`} className="size-12 w-12 h-auto hover:outline-1 outline-primary/50 border-2 border-transparent rounded-full relative cursor-pointer opacity-90 hover:opacity-100">
+              <Avatar className="size-auto bg-zinc-300" src={session?.data?.user?.image || "/svg/user/placeholder-avatar.svg"} />
             </Link>
           : <Button className="ml-auto" onClick={() => {signIn()}}>Sign in</Button>
         }
