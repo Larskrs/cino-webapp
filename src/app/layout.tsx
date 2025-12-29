@@ -44,7 +44,7 @@ export default async function RootLayout({
   const session = await auth()
 
   return (
-    <html lang="en" className={cn(geist.variable, courier.variable)}>
+    <html lang="en" className={cn("bg-background", geist.variable, courier.variable)}>
       <ThemeProvider initialTheme={savedTheme}>
         <SessionProvider session={session}>
           <PostPreviewProvider>

@@ -414,3 +414,78 @@ model ScriptLabel {
 
   @@id([scriptId, labelId])
 }
+
+// Media Streaming Service
+enum MediaType {
+  MOVIE
+  SERIES
+}
+
+model MediaContainer {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+
+  title       String
+  description String?
+  thumbnail   String?
+  banner      String?
+  poster      String?
+  color       Json?
+
+  type        MediaType
+  genres      String[]
+
+  isPublic    Boolean  @default(true)
+  isLive      Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  seasons     MediaSeason[]
+
+  @@index([type])
+}
+
+model MediaSeason {
+  id           String   @id @default(cuid())
+  containerId  String
+
+  title        String?
+  seasonNumber Int?
+
+  description  String?
+  thumbnail    String?
+
+  createdAt    DateTime @default(now())
+
+  // Relations
+  container    MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  episodes     MediaEpisode[]
+
+  @@unique([containerId, seasonNumber])
+}
+model MediaEpisode {
+  id            String   @id @default(cuid())
+  seasonId      String
+
+  title         String
+  description   String?
+  thumbnail     String?
+
+  episodeNumber Int?
+  airDate       DateTime?
+
+  durationSec   Int?
+  videoSrc      String
+  isLive        Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  season        MediaSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, episodeNumber])
+  @@index([isLive])
+}

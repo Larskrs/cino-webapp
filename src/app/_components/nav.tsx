@@ -82,14 +82,14 @@ export function ResponsiveNav({ links }: Props) {
   const { colors } = useTheme()
 
   return (
-    <div className="min-h-16 z-100">
+    <div className="min-h-[var(--nav-height)] z-100">
       {/* Desktop */}
-      <div className={cn("h-16 px-6 md:px-4 flex gap-4 items-center justify-between fixed z-10 top-0 left-0 right-0", colors.nav.background)}>
+      <div className={"h-[var(--nav-height)] px-6 md:px-4 flex gap-4 items-center justify-between fixed z-10 top-0 left-0 right-0"}>
 
         <Logo className="text-primary hidden md:flex size-16 duration-700" />
 
         <div className="hidden md:flex items-center justify-between w-full" ref={containerRef}>
-          <div className="mx-auto flex items-center gap-2 overflow-hidden justify-between">
+          <div className="bg-background rounded-lg px-1 duration-250 py-1 mx-auto flex items-center gap-1 overflow-hidden justify-between">
 
           {visible.map((link) => (
             <NavItem key={link.key} link={link} active={pathname === link.href} />
@@ -122,17 +122,17 @@ export function ResponsiveNav({ links }: Props) {
         </div>
 
         {/* Mobile */}
-        <div className="md:hidden">
+        <div className="md:hidden text-primary">
           <Sheet>
             <SheetTrigger asChild>
-              <Button className="p-4 cursor-pointer" variant="ghost" size="icon">
+              <Button className="p-4 cursor-pointer text-primary bg-transparent hover:text-background" variant="default" size="icon">
                 <Menu className="size-8" />
               </Button>
             </SheetTrigger>
-            <SheetContent className={cn("p-4", colors.nav.background)} side="left">
+            <SheetContent className={"p-4 border-primary/25 bg-background"} side="left">
               <div className="flex flex-col gap-2 mt-4">
                 {links.map((link) => (
-                  <NavItem key={link.key} link={link} active={pathname === link.href} />
+                  <NavItem className="hover:bg-primary/15 hover:text-primary" key={link.key} link={link} active={pathname === link.href} />
                 ))}
               </div>
             </SheetContent>
@@ -145,29 +145,29 @@ export function ResponsiveNav({ links }: Props) {
           ? <Link href={`/user/${session?.data?.user?.id}`} className="size-12 w-12 h-auto hover:outline-1 outline-primary/50 border-2 border-transparent rounded-full relative cursor-pointer opacity-90 hover:opacity-100">
               <Avatar className="size-auto bg-zinc-300" src={session?.data?.user?.image || "/svg/user/placeholder-avatar.svg"} />
             </Link>
-          : <Button className="ml-auto" onClick={() => {signIn()}}>Sign in</Button>
+          : <Button className="ml-auto bg-background text-primary hover:bg-primary hover:text-background" onClick={() => {signIn()}}>Sign in</Button>
         }
       </div>
     </div>
   );
 }
 
-function NavItem({ link, active }: { link: NavLink; active: boolean }) {
+function NavItem({ link, active, className }: { link: NavLink; active: boolean; className?: string }) {
   const {colors} = useTheme()
   const Icon = link.icon;
 
   const content = (
     <span
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-md nav-item-test",
-        colors.nav.link.normal
+        "group flex text-primary items-center hover:text-background hover:bg-primary bg-background duration-250 gap-2 px-3 py-2 rounded-md nav-item-test",
+        className
       )}
       onClick={link.onClick}
     >
       {Icon && <Icon className="h-4 w-4" />}
       {link.label}
       {link.badge && (
-        <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-white dark:bg-neutral-300 dark:text-neutral-950">
+        <span className="ml-2 rounded-full group-hover:bg-background group-hover:text-primary bg-primary px-2 py-0.5 text-xs text-background">
           {link.badge}
         </span>
       )}
