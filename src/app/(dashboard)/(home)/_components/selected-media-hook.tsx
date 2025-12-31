@@ -1,11 +1,12 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { medias } from "../page"
 
 export type SelectedMediaContextType = {
   selectedIndex: number
   setSelectedIndex: (index: number) => void
+  selectedId: string,
+  setSelectedId: (id: string) => void
   previewIndex: number
   setPreviewIndex: (index: number) => void
   colors: {
@@ -19,10 +20,11 @@ const SelectedMediaContext = createContext<SelectedMediaContextType | null>(null
 
 export function SelectedMediaProvider({ children }: { children: ReactNode }) {
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedId, setSelectedId] = useState("")
   const [previewIndex, setPreviewIndex] = useState(0)
   const [colors, setColors] = useState<{ background: string; primary: string }>(() => ({
-    background: medias?.[0]?.color.background ?? "",
-    primary: medias?.[0]?.color.primary ?? "",
+    background: "",
+    primary: "",
   }))
 
     useEffect(() => {
@@ -38,7 +40,7 @@ export function SelectedMediaProvider({ children }: { children: ReactNode }) {
 
   return (
     <SelectedMediaContext.Provider
-      value={{ selectedIndex, setSelectedIndex, colors, setColors, previewIndex, setPreviewIndex }}
+      value={{ selectedIndex, setSelectedIndex, selectedId, setSelectedId, colors, setColors, previewIndex, setPreviewIndex }}
     >
       {children}
     </SelectedMediaContext.Provider>

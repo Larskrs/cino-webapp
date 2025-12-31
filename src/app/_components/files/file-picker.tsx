@@ -38,7 +38,7 @@ interface FilePickerDialogProps {
   /** File restrictions */
   maxFiles?: number;
   accept?: string;
-  type?: "image" | "video" | "file" | "any";
+  type?: "image" | "video";
 
   /** Optional — preselected or current image URL */
   currentFiles?: string[] | null;
@@ -98,6 +98,7 @@ export default function FilePickerDialog({
   /* -------------------------------- Fetch existing ------------------------------- */
   const [files] = api.files.list.useSuspenseQuery({
     per_page: 50,
+    type: type
   });
 
   /* -------------------------------------------------------------------------- */

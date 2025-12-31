@@ -17,6 +17,7 @@ export type MediaRowItem = {
 interface MediaRowProps {
   title?: string
   items: MediaRowItem[]
+  showTitle?: boolean
   size?: "sm" | "md" | "lg"
   className?: string
   posterType?: "poster" | "video"
@@ -38,6 +39,7 @@ const WHEEL_COOLDOWN = 100
 export default function MediaRow({
   title,
   items,
+  showTitle,
   size = "md",
   className,
   posterType = "video",
@@ -61,9 +63,9 @@ export default function MediaRow({
       case "sm":
         return 100
       case "lg":
-        return 420
+        return 480
       default:
-        return 280
+        return 360
     }
   }, [size])
 
@@ -254,13 +256,14 @@ const onPointerUp = (e: React.PointerEvent) => {
                     draggable={false}
                     onDragStart={e => e.preventDefault()}
                     src={getPoster(item.posters, [posterType, "video", "banner", "poster"])}
-                    alt={item.title}
+                    alt={item.title}    
                     width={512}
                     height={512}
                     className="object-cover w-full h-full"
                   />
                 </div>
               </div>
+              {showTitle && <p className="text-primary text-lg mt-0.5 line-clamp-1">{item.title}</p>}
             </article>
           ))}
         </motion.div>
@@ -272,7 +275,7 @@ const onPointerUp = (e: React.PointerEvent) => {
             aria-label="Previous page"
             className="cursor-pointer absolute left-0 top-0 z-10 h-full w-20 flex items-center justify-start"
           >
-            <div className="relative ml-5 rounded-full bg-background p-2 text-primary backdrop-blur transition hover:bg-primary hover:text-background">
+            <div className={cn(showTitle ? "-translate-y-3" : "","relative ml-5 rounded-full bg-background p-2 text-primary backdrop-blur transition hover:bg-primary hover:text-background")}>
               <ChevronLeft className="size-8 lg:size-10" />
             </div>
           </button>
@@ -285,7 +288,7 @@ const onPointerUp = (e: React.PointerEvent) => {
             aria-label="Next page"
             className="cursor-pointer absolute right-0 top-0 z-10 h-full w-20 flex items-center justify-end"
           >
-            <div className="relative mr-5 rounded-full bg-background p-2 text-primary backdrop-blur transition hover:bg-primary hover:text-background">
+            <div className={cn(showTitle ? "-translate-y-3" : "","relative mr-5 rounded-full bg-background p-2 text-primary backdrop-blur transition hover:bg-primary hover:text-background")}>
               <ChevronRight className="size-8 lg:size-10" />
             </div>
           </button>

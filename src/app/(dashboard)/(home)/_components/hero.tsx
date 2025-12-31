@@ -10,14 +10,16 @@ import { motion, AnimatePresence } from "framer-motion"
 import { getPoster } from "@/lib/poster"
 import { useSelectedMedia } from "./selected-media-hook"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 const TRAILER_DELAY = 3000
 const VISIBILITY_THRESHOLD = 0.25
 
 export default function Hero({ medias }: { medias: any[] }) {
-  const { previewIndex, setPreviewIndex, colors, setColors } = useSelectedMedia()
+  const { previewIndex, setPreviewIndex, selectedId, setSelectedId, colors, setColors } = useSelectedMedia()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const preview = medias[previewIndex]
+  const router = useRouter()
 
   const [playTrailer, setPlayTrailer] = useState(false)
   const [inView, setInView] = useState(false)
@@ -91,7 +93,7 @@ export default function Hero({ medias }: { medias: any[] }) {
   {/* VIDEO – always mounted (preloads) */}
   <VideoPlayer
   key={preview.videoId}
-    id={preview.videoId}
+    src={preview.videoId}
     ref={videoRef}
     autoPlay={false}
     muted
@@ -156,11 +158,7 @@ export default function Hero({ medias }: { medias: any[] }) {
         posterType="video"
         selectedIndex={previewIndex}
         onItemClick={(_, index) => {
-          setPreviewIndex(index)
-          setColors({
-            background: medias?.[index]?.color.background ?? "",
-            primary: medias?.[index]?.color.primary ?? "",
-          })
+          router.push("/serie/"+_.id)
         }}
         onItemHover={(_, index) => {
           setPreviewIndex(index)
