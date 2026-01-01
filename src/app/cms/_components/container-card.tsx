@@ -21,7 +21,7 @@ export default function ContainerCard({ container, className }: ContainerCardPro
   return (
     <li className={cn("list-none", className)}>
       <Link
-        href={`/cms/${container.slug ?? container.id}`}
+        href={`/cms/${container.id}`}
         className={cn(
           "group flex w-full gap-4 rounded-xl border bg-card p-2 transition hover:bg-accent",
         )}

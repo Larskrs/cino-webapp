@@ -141,7 +141,7 @@ export default function Hero({ medias }: { medias: any[] }) {
               {preview.badge}
             </Badge>
 
-            <h1 className="text-2xl md:text-4xl max-w-lg font-bold text-primary">
+            <h1 className="text-2xl md:text-4xl max-w-lg font-bold text-accent">
               {preview.title}
             </h1>
 
