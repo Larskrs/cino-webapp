@@ -1,5 +1,7 @@
 "use client"
 
+import type { ThemeColor } from "@/app/_components/theme-injection"
+import ThemeInjection from "@/app/_components/theme-injection"
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 
 export type SelectedMediaContextType = {
@@ -13,7 +15,7 @@ export type SelectedMediaContextType = {
     background: string
     primary: string
   }
-  setColors: (colors: { background: string; primary: string }) => void
+  setColors: (colors: ThemeColor) => void
 }
 
 const SelectedMediaContext = createContext<SelectedMediaContextType | null>(null)
@@ -22,26 +24,18 @@ export function SelectedMediaProvider({ children }: { children: ReactNode }) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [selectedId, setSelectedId] = useState("")
   const [previewIndex, setPreviewIndex] = useState(0)
-  const [colors, setColors] = useState<{ background: string; primary: string }>(() => ({
+  const [colors, setColors] = useState<ThemeColor>({
     background: "",
     primary: "",
-  }))
-
-    useEffect(() => {
-      document.documentElement.style.setProperty(
-        "--background",
-        colors.background || ''
-      )
-      document.documentElement.style.setProperty(
-        "--primary",
-        colors.primary || ''
-      )
-    }, [colors])
+    secondary: "",
+    text: ""
+  })
 
   return (
     <SelectedMediaContext.Provider
       value={{ selectedIndex, setSelectedIndex, selectedId, setSelectedId, colors, setColors, previewIndex, setPreviewIndex }}
     >
+      <ThemeInjection color={colors} />
       {children}
     </SelectedMediaContext.Provider>
   )

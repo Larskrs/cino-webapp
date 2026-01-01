@@ -1,9 +1,8 @@
 "use client"
-import { Badge, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Hero from "./_components/hero";
-import Image from "next/image";
 import MediaRow from "./_components/media-row";
-import { SelectedMediaProvider, useSelectedMedia } from "./_components/selected-media-hook";
+import { useSelectedMedia } from "./_components/selected-media-hook";
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { useRouter } from "next/navigation"
@@ -21,14 +20,6 @@ export default function StreamingPage() {
     router.push("/serie/"+selectedId)
   }, [selectedId])
 
-  if (error) {
-    return (
-      error
-    )
-  }
-
-
-
   return (
       <div className="bg-background duration-600 ease-out">
         {!isLoading && <Hero medias={containers?.items?.map((media, index) => {
@@ -36,18 +27,17 @@ export default function StreamingPage() {
           const latest = media?.seasons?.[0]?.episodes?.[0]
 
           return {
-    id: media.id,
-    title: latest?.title,
-    description: latest?.description,
-    badge: media.title,
-    posters: {
-      video: latest?.thumbnail,
-    },
-    videoId: latest?.videoSrc,
-    color: media.color
-  }
-}) ?? []} />}
-        <h1>{isLoading.toString()}</h1>
+            id: media.id,
+            title: latest?.title,
+            description: latest?.description,
+            badge: media.title,
+            posters: {
+              video: latest?.thumbnail,
+            },
+            videoId: latest?.videoSrc,
+            color: media.color
+          }
+        }) ?? []} />}
         <div className="flex flex-col mx-auto gap-8 max-w-7xl pb-16 py-6 px-2">
           <EpisodeRow seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjroc0pc0003w25aqxocaq6r" />
         </div>
@@ -55,9 +45,9 @@ export default function StreamingPage() {
   );
 }
 
-
 function EpisodeRow({ seasonId, containerId }: { seasonId: string, containerId: string }) {
   const { data: episodes, isLoading } = api.media.list_episodes.useQuery({ seasonId });
+  const router = useRouter()
 
   if (isLoading) {
     return (
@@ -67,7 +57,7 @@ function EpisodeRow({ seasonId, containerId }: { seasonId: string, containerId: 
     );
   }
 
-  if (!episodes?.length) return null;
+  if (!episodes?.length) return <></>;
 
   return (
     <MediaRow
@@ -88,6 +78,9 @@ function EpisodeRow({ seasonId, containerId }: { seasonId: string, containerId: 
           accent: "oklch(0.7 0.12 250)",
         },
       }))}
+      onItemClick={(item, index) => {
+        router.push("/serie/"+containerId+"?e="+item?.id)
+      }}
     />
   );
 }

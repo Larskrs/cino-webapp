@@ -16,7 +16,7 @@ function buildBamblingenUrls(id: string, base = BAMBLINGEN_BASE) {
 function resolveRef<T>(
   ref: React.ForwardedRef<T>,
   fallback: React.RefObject<T>
-): React.RefObject<T> {
+): React.RefObject<T | null> {
   if (!ref) return fallback
   if (typeof ref === "function") {
     return fallback
@@ -55,7 +55,7 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(
     "id" in props && "src" in props && typeof (props as any).src === "string"
 
   const derived = useMemo(() => {
-    if ("id" in props) return buildBamblingenUrls(props.id, props.apiBase)
+    if ("id" in props) return buildBamblingenUrls(props.id ?? "", props.apiBase)
     return { src: props.src, poster: props.poster }
   }, [props])
 

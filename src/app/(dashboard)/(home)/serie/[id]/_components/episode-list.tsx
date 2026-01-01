@@ -19,7 +19,7 @@ export default function EpisodeList({
   const episodes = data?.episodes
 
   return (
-    <ul className="col-span-3 flex flex-col gap-3 px-4">
+    <ul className="col-span-3 flex flex-col gap-3">
       {episodes?.map((ep, index) => {
         const active = ep.id === episodeId
 
@@ -27,7 +27,7 @@ export default function EpisodeList({
             <button
               onClick={() => setEpisodeId(ep.id)}
               className={cn(
-                "group relative h-fit grid grid-cols-[160px_1fr] gap-4 rounded-xl p-3 w-full text-left transition-all",
+                "group relative h-fit grid grid-cols-[200px_1fr] gap-4 rounded-xl p-2 w-full text-left transition-all",
                 "bg-secondary/15 hover:bg-secondary/50",
                 active && "bg-secondary hover:bg-secondary"
               )}
@@ -39,7 +39,7 @@ export default function EpisodeList({
                     src={ep.thumbnail}
                     alt={ep.title}
                     fill
-                    className="object-cover rounded-lg"
+                    className="object-cover rounded-lg bg-background text-transparent"
                   />
                 )}
               </div>
@@ -60,7 +60,7 @@ export default function EpisodeList({
                 </h3>
 
                 {ep.description && (
-                  <p className="text-sm text-primary/75 line-clamp-2">
+                  <p className="text-sm text-accent/75 line-clamp-2">
                     {ep.description}
                   </p>
                 )}

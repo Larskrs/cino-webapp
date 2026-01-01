@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { type ThemeColor } from "@/app/_components/theme-injection";
 
 import { EditContainerDialog } from "../_components/edit-container-dialog";
 import { CreateSeasonDialog } from "../_components/create-season-dialog";
@@ -40,17 +41,21 @@ export default function ContainerPage({ params }: ContainerPageProps) {
   );
 
   useEffect(() => {
+    const color = (container?.color as ThemeColor ?? {
+      background: "",
+      primary: "",
+      secondary: "",
+      text: ""
+    })
+
     document.documentElement.style.setProperty(
-      "--background",
-      container?.color?.background || ''
+      "--background", color.background
     )
     document.documentElement.style.setProperty(
-      "--secondary",
-      container?.color?.secondary || ''
+      "--secondary", color.secondary
     )
     document.documentElement.style.setProperty(
-      "--primary",
-      container?.color?.primary || ''
+      "--primary", color.primary
     )
   }, [container])
 

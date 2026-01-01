@@ -1,5 +1,5 @@
 // ThemeInjection.tsx
-type ThemeColor = {
+export type ThemeColor = {
   primary: string
   secondary: string
   background: string

@@ -22,8 +22,8 @@ interface MediaRowProps {
   className?: string
   posterType?: "poster" | "video"
   selectedIndex?: number
-  onItemClick?: (item: MediaRowItem, index: number) => void
-  onItemHover?: (item: MediaRowItem, index: number) => void
+  onItemClick?: (item: MediaRowItem | null, index: number) => void
+  onItemHover?: (item: MediaRowItem | null, index: number) => void
 }
 
 const GAP = 0
@@ -117,7 +117,7 @@ export default function MediaRow({
 
   useEffect(() => {
     if (itemsPerPage > 2) { return }
-    onItemHover?.(items[page], page)
+    onItemHover?.(items[page] ?? null, page)
   }, [page])
 
   const handleMouseEnter = (item: MediaRowItem, index: number) => {

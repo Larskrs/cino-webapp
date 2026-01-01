@@ -10,25 +10,24 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { OklchThemeEditor } from "./oklch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { type MediaContainer } from "@prisma/client";
+import type { ThemeColor } from "@/app/_components/theme-injection";
 
 interface EditContainerDialogProps {
-  container: {
-    id: string;
-    title: string;
-    color?: { background?: string; primary?: string; secondary?: string; accent?: string } | null;
-  };
+  container: MediaContainer
   children?: ReactNode;
 }
 
 export function EditContainerDialog({ container, children }: EditContainerDialogProps) {
+  const color = (container?.color as ThemeColor)
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(container.title);
   const [hue, setHue] = useState(250); // Default hue
   const [colors, setColors] = useState({
-    background: container.color?.background ?? "",
-    primary: container.color?.primary ?? "",
-    secondary: container.color?.secondary ?? "",
-    accent: container.color?.accent ?? "",
+    background: color.background,
+    primary: color.primary,
+    secondary: color.secondary,
+    text: color.text,
   });
 
   const utils = api.useContext();

@@ -13,14 +13,14 @@ export default function EpisodePlayer({ initialEpisode }: {initialEpisode: Media
 
   return (
     <div className=" max-w-[1920px] mx-auto p-4">
-      {ep?.videoSrc ? <VideoPlayer
+      {ep?.videoSrc && ep?.thumbnail ? <VideoPlayer
         key={episodeId ?? initialEpisode.id}
-        className="rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] min-h-auto aspect-video h-full"
+        className="bg-background rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] min-h-auto aspect-video h-full"
         src={ep?.videoSrc}
-        poster={ep.thumbnail}
+        poster={ep?.thumbnail}
         controls
         />: <div className="bg-black/50 rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] min-h-auto aspect-video h-full" />}
-        <div className="bg-secondary rounded-md min-h-20"></div>
+        <div className="bg-secondary/25 rounded-md min-h-20"></div>
     </div>
   )
 }

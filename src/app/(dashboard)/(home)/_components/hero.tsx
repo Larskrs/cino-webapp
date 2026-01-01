@@ -47,6 +47,7 @@ export default function Hero({ medias }: { medias: any[] }) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        if (!entry) return
         setInView(entry.intersectionRatio >= VISIBILITY_THRESHOLD)
       },
       { threshold: VISIBILITY_THRESHOLD }
@@ -158,12 +159,14 @@ export default function Hero({ medias }: { medias: any[] }) {
         posterType="video"
         selectedIndex={previewIndex}
         onItemClick={(_, index) => {
-          router.push("/serie/"+_.id)
+          router.push("/serie/"+_?.id)
         }}
         onItemHover={(_, index) => {
           setPreviewIndex(index)
           setColors({
             background: medias?.[index]?.color.background ?? "",
+            secondary: medias?.[index]?.color.secondary ?? "",
+            text: medias?.[index]?.color.text ?? "",
             primary: medias?.[index]?.color.primary ?? "",
           })
         }}

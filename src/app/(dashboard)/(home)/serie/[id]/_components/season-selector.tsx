@@ -4,6 +4,7 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useSelection } from "./media-selection-provider"
+import type { MediaSeason } from "@prisma/client"
 
 type Season = {
   id: string
@@ -13,7 +14,7 @@ type Season = {
 export default function SeasonSelector({
   seasons,
 }: {
-  seasons: Season[]
+  seasons: MediaSeason[]
 }) {
   const { seasonId, setSeasonId } = useSelection()
 
@@ -30,7 +31,7 @@ export default function SeasonSelector({
             <button
               onClick={() => setSeasonId(season.id)}
               className={cn(
-                "w-full text-left rounded-sm px-4 py-2 transition-colors",
+                "w-full cursor-pointer text-left rounded-sm px-4 py-2 transition-colors",
                 active
                   ? "bg-primary text-background"
                   : "bg-primary/25 text-primary hover:bg-primary hover:text-background"

@@ -19,12 +19,24 @@ interface OklchThemeEditorProps {
   onChange: (val: OklchColor) => void;
 }
 
-  function fromOklch(color: string): [number, number, number] {
-    const match = color.match(/oklch\(([^)]+)\)/);
-    if (!match) return [0,0,0]
-    const [l, c, h] = match[1].split(" ").map(Number);
-    return [l, c, h];
-  };
+function fromOklch(color?: string | null): [number, number, number] {
+  if (!color) return [0, 0, 0];
+
+  const match = color.match(/oklch\(([^)]+)\)/);
+  if (!match?.[1]) return [0, 0, 0];
+
+  const parts = match[1]
+    .trim()
+    .split(/\s+/)
+    .map(Number);
+
+  if (parts.length !== 3 || parts.some(Number.isNaN)) {
+    return [0, 0, 0];
+  }
+
+  return parts as [number, number, number];;
+}
+
 
 export function OklchThemeEditor({ value, onChange }: OklchThemeEditorProps) {
   const [lightness, setLightness] = useState(fromOklch(value.primary)[0] ?? 0.7);
@@ -61,15 +73,15 @@ useEffect(() => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label className="block mb-1">Lyshet ({(lightness * 100).toFixed(0)}%)</Label>
-          <Slider min={0} max={1} step={0.01} value={[lightness]} onValueChange={([v]) => setLightness(v)} />
+          <Slider min={0} max={1} step={0.01} value={[lightness]} onValueChange={([v]) => setLightness(v ?? 0)} />
         </div>
         <div>
           <Label className="block mb-1">Vibranse ({(chroma * 100).toFixed(0)}%)</Label>
-          <Slider min={0} max={0.4} step={0.01} value={[chroma]} onValueChange={([v]) => setChroma(v)} />
+          <Slider min={0} max={0.4} step={0.01} value={[chroma]} onValueChange={([v]) => setChroma(v ?? 0)} />
         </div>
         <div>
           <Label className="block mb-1">Farge ({hue}°)</Label>
-          <Slider min={0} max={360} step={1} value={[hue]} onValueChange={([v]) => setHue(v)} />
+          <Slider min={0} max={360} step={1} value={[hue]} onValueChange={([v]) => setHue(v ?? 0)} />
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Menu, MoreHorizontal } from "lucide-react";
 import {
   Sheet,
@@ -81,12 +81,14 @@ export function ResponsiveNav({ links }: Props) {
 
   const { colors } = useTheme()
 
+  const router = useRouter()
+
   return (
     <div className="min-h-[var(--nav-height)] z-100">
       {/* Desktop */}
       <div className={"h-[var(--nav-height)] px-6 md:px-4 flex gap-4 items-center justify-between fixed z-10 top-0 left-0 right-0"}>
 
-        <Logo className="text-primary hidden md:flex size-16 duration-700" />
+        <Logo onClick={() => router.push("/")} className="cursor-pointer text-primary hidden md:flex size-16 duration-700" />
 
         <div className="hidden md:flex items-center justify-between w-full" ref={containerRef}>
           <div className="bg-background rounded-lg px-1 duration-250 py-1 mx-auto flex items-center gap-1 overflow-hidden justify-between">
@@ -139,7 +141,7 @@ export function ResponsiveNav({ links }: Props) {
           </Sheet>
         </div>
 
-        <Logo className="text-primary md:hidden size-16 duration-700" />
+        <Logo onClick={() => router.push("/")} className="cursor-pointer text-primary md:hidden size-16 duration-700" />
         
         {session?.status === "authenticated"
           ? <Link href={`/user/${session?.data?.user?.id}`} className="size-12 w-12 h-auto hover:outline-1 outline-primary/50 border-2 border-transparent rounded-full relative cursor-pointer opacity-90 hover:opacity-100">
