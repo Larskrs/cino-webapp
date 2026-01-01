@@ -162,7 +162,7 @@ export const mediaRouter = createTRPCRouter({
             include: {
                 episodes: {
                     take: 1,
-                    orderBy: [{ airDate: "desc" }, { createdAt: "desc" }]
+                    orderBy: [{ episodeNumber: "desc", airDate: "desc" }, { createdAt: "desc" }]
                 }
             }
           }
