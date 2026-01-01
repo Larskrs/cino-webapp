@@ -44,6 +44,10 @@ export default function StreamingPage() {
             seasonId="cmjvvva2m00024bzteuisgxfl" containerId="cmjvvueex00004bztnrsgpzwr"
             title="Julebord 25"
           />
+          <EpisodeRow
+            seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjru7i230005w25a7pe4vf82"
+            title="Nyheter"
+          />
         </div>
       </div>
   );
@@ -68,6 +72,7 @@ function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, contai
       title={title ?? "Episoder"}
       posterType="video"
       showTitle={true}
+      size="md"
       items={episodes.map((ep) => ({
         id: ep.id,
         title: ep.title,
@@ -83,7 +88,7 @@ function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, contai
         },
       }))}
       onItemClick={(item, index) => {
-        router.push("/serie/"+containerId+"?e="+item?.id)
+        router.push("/serie/"+(containerId)+"?e="+item?.id)
       }}
     />
   );

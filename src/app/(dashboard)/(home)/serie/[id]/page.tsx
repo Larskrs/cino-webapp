@@ -8,6 +8,10 @@ import EpisodeList from "./_components/episode-list"
 import EpisodePlayer from "./_components/episode-player"
 import { type MediaEpisode } from "@prisma/client"
 
+function isLikelyId(value: string) {
+  return /^[a-z0-9]{16,}$/.test(value); // Adjust length if needed
+}
+
 export default async function Page({
   params,
   searchParams,
@@ -15,7 +19,14 @@ export default async function Page({
   params: Promise<{ id: string }>
   searchParams: Promise<{ e?: string }>
 }) {
-  const media = await api.media.get_container({ id: (await params).id })
+
+  const containerParam = (await params).id;
+
+  const containerQuery = isLikelyId(containerParam)
+    ? { id: containerParam }
+    : { slug: containerParam };
+
+  const media = await api.media.get_container(containerQuery)
   if (!media) return notFound()
 
   const requestedEpisodeId = (await searchParams).e
