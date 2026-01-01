@@ -20,11 +20,25 @@ interface ContainerPageProps {
   params: Promise<{ container: string }>;
 }
 
-export default function ContainerPage({ params }: ContainerPageProps) {
-  const containerId = React.use(params).container;
 
-  const { data: container, isLoading: containerLoading } = api.media.get_container.useQuery({ id: containerId });
-  const { data: seasons, isLoading: seasonsLoading } = api.media.list_seasons.useQuery({ containerId });
+function isLikelyId(value: string) {
+  return /^[a-z0-9]{16,}$/.test(value); // Adjust length if needed
+}
+
+export default function ContainerPage({ params }: ContainerPageProps) {
+  const containerParam = React.use(params).container;
+
+  const containerQuery = isLikelyId(containerParam)
+    ? { id: containerParam }
+    : { slug: containerParam };
+
+  const { data: container, isLoading: containerLoading } = api.media.get_container.useQuery(containerQuery);
+  const { data: seasons, isLoading: seasonsLoading } = api.media.list_seasons.useQuery(
+    { containerId: container?.id ?? "" },
+    { enabled: !!container?.id }
+  );
+
+  console.log(container)
 
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
 
@@ -83,7 +97,7 @@ export default function ContainerPage({ params }: ContainerPageProps) {
           <p>Laster sesonger...</p>
         ) : (
           <ul className="space-y-1">
-            <CreateSeasonDialog containerId={containerId} seasonCount={seasons?.length ?? 0}>
+            <CreateSeasonDialog containerId={container.id} seasonCount={seasons?.length ?? 0}>
                 <Button className="w-full mb-3 hover:text-background hover:bg-primary bg-background/75 text-primary font-semibold" size="sm">+ Ny</Button>
             </CreateSeasonDialog>
 

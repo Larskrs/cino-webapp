@@ -186,7 +186,12 @@ export const mediaRouter = createTRPCRouter({
         include: {
           seasons: {
             orderBy: [{ seasonNumber: "desc" }, { createdAt: "desc" }],
-            include: { _count: { select: { episodes: true } } },
+            include: {
+              _count: { select: { episodes: true } },
+              episodes: {
+                take: 1
+              }
+            },
           },
         },
       })
@@ -201,10 +206,9 @@ export const mediaRouter = createTRPCRouter({
       return container
     }),
 
-  create_container: protectedProcedure
+  create_container: permittedProcedure("media.admin.write")
     .input(ContainerCreateInput)
     .mutation(async ({ ctx, input }) => {
-      await requireAdmin(ctx)
 
       try {
         const created = await ctx.db.mediaContainer.create({

@@ -64,3 +64,11 @@ export function formatFileSize(size: bigint) {
 
   return `${n.toFixed(2)} ${units[i]}`;
 }
+export function slugify(str: string) {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/--+/g, "-");
+}
