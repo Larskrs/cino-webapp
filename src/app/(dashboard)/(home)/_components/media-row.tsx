@@ -248,8 +248,8 @@ const onPointerUp = (e: React.PointerEvent) => {
             >
               <div
                 className={cn(
-                    index === selectedIndex ? "border-2 border-primary" : "border-transparent",
-                    "border-2 relative hover:-translate-y-2 duration-150 hover:shadow-[0px_4px_8px] hover:shadow-black/50 overflow-hidden rounded-lg"
+                    onItemHover ? (index === selectedIndex ? "border-2 border-primary" : "border-transparent") : "",
+                    "relative hover:-translate-y-2 duration-150 hover:shadow-[0px_4px_8px] hover:shadow-black/50 overflow-hidden rounded-lg"
                     )}>
                 <div className={cn("relative aspect-video w-full", posterType === "video" ? "aspect-video" : "aspect-[27/40]")}>
                   <Image

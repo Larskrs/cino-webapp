@@ -40,16 +40,13 @@ export default function StreamingPage() {
           }
         }) ?? []} />}
         <div className="flex flex-col mx-auto gap-8 max-w-7xl pb-16 py-6 px-2">
-          <EpisodeRow
-            seasonId="cmjvvva2m00024bzteuisgxfl" containerId="cmjvvueex00004bztnrsgpzwr"
-            title="Julebord 25"
-          />
+          <EpisodeRow seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjvvueex00004bztnrsgpzwr" />
         </div>
       </div>
   );
 }
 
-function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, containerId: string, title?: string }) {
+function EpisodeRow({ seasonId, containerId }: { seasonId: string, containerId: string }) {
   const { data: episodes, isLoading } = api.media.list_episodes.useQuery({ seasonId });
   const router = useRouter()
 
@@ -65,7 +62,7 @@ function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, contai
 
   return (
     <MediaRow
-      title={title ?? "Episoder"}
+      title="Episoder"
       posterType="video"
       showTitle={true}
       items={episodes.map((ep) => ({
