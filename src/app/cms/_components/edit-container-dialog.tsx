@@ -24,10 +24,10 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
   const [title, setTitle] = useState(container.title);
   const [hue, setHue] = useState(250); // Default hue
   const [colors, setColors] = useState({
-    background: color.background,
-    primary: color.primary,
-    secondary: color.secondary,
-    text: color.text,
+    background: color?.background ?? "",
+    primary: color?.primary ?? "",
+    secondary: color?.secondary ?? "",
+    text: color?.text ?? "",
   });
 
   const utils = api.useContext();
