@@ -304,6 +304,7 @@ export default function Video({
       {/* Center big play/pause button (Instagram style) */}
       <button
         onClick={(e) => {
+          e.preventDefault();
           e.stopPropagation();
           togglePlay();
         }}

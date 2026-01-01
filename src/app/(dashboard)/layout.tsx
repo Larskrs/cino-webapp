@@ -57,13 +57,13 @@ export default function Layout({
     { icon: Home, label: "Home", href: "/", key: "home" },
     { icon: MessagesSquareIcon, label: "Forum", href: "/p", key: "forum" },
     { icon: Blocks, label: "Projects", badge: "beta", href: "/project/", key: "projects" },
-    { label: <ThemeSwitcher theme={theme} colors={colors} />, key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark") }
+    // { label: <ThemeSwitcher theme={theme} colors={colors} />, key: "theme", onClick: () => setTheme(theme == "dark" ? "light" : "dark") }
   ];
 
   const { post, setPost } = usePostPreview()
 
   return (
-    <div className={colors.background}>
+    <div className="bg-background">
       <ResponsiveNav links={links} />
 
       {post && <PostPreviewDisplay />}
@@ -77,7 +77,7 @@ export default function Layout({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut"}}
-            className={cn("fixed inset-0 z-50 flex flex-col items-center justify-center", colors.background, colors.text)}
+            className={"fixed inset-0 z-50 flex flex-col items-center justify-center text-primary bg-background"}
           >
             <motion.div
               className="mb-4"

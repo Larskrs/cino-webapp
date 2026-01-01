@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
+import { hasPermission } from "@/lib/permissions";
 
 /**
  * 1. CONTEXT
@@ -132,3 +133,23 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+export function permittedProcedure(permission: string) {
+  return protectedProcedure.use(async ({ ctx, next }) => {
+    const userId = ctx.session.user.id
+
+    if (!hasPermission(userId, permission)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not permitted to perform this action",
+      })
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        permission,
+      },
+    })
+  })
+}

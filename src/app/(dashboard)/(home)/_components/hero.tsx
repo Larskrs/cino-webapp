@@ -1,145 +1,176 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { ArrowRight, Sparkles } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import VideoPlayer from "@/app/_components/hls-video"
+import MediaRow from "./media-row"
+import { motion, AnimatePresence } from "framer-motion"
+import { getPoster } from "@/lib/poster"
+import { useSelectedMedia } from "./selected-media-hook"
+import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
-export default function Hero() {
+const TRAILER_DELAY = 3000
+const VISIBILITY_THRESHOLD = 0.25
+
+export default function Hero({ medias }: { medias: any[] }) {
+  const { previewIndex, setPreviewIndex, selectedId, setSelectedId, colors, setColors } = useSelectedMedia()
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const preview = medias[previewIndex]
+  const router = useRouter()
+
+  const [playTrailer, setPlayTrailer] = useState(false)
+  const [inView, setInView] = useState(false)
+
+  const previewRef = useRef<HTMLDivElement | null>(null)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  /* Trailer delay */
+  useEffect(() => {
+    setPlayTrailer(false)
+    if (timerRef.current) clearTimeout(timerRef.current)
+
+    timerRef.current = setTimeout(() => {
+      setPlayTrailer(true)
+    }, TRAILER_DELAY)
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [previewIndex])
+
+  /* Visibility observer */
+  useEffect(() => {
+    if (!previewRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return
+        setInView(entry.intersectionRatio >= VISIBILITY_THRESHOLD)
+      },
+      { threshold: VISIBILITY_THRESHOLD }
+    )
+
+    observer.observe(previewRef.current)
+    return () => observer.disconnect()
+  }, [])
+  
+  useEffect(() => {
+  const video = videoRef.current
+  if (!video) return
+
+  // --- Playback control ---
+  if (playTrailer) {
+    video
+      .play()
+  } else {
+    video.pause()
+    video.currentTime = 0
+  }
+
+  //   video.muted = !inView
+
+}, [playTrailer, inView, previewIndex])
+
+  if (!preview) return null
+
   return (
-    <section className="w-full">
-      <div className="container max-w-7xl mx-auto px-4 py-12 sm:py-16 md:py-24">
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          {/* Left */}
-          <div className="flex flex-col items-start">
-            <EyebrowBadge>
-              <Sparkles className="h-3.5 w-3.5" />
-              Norsk workflow for media-produksjon
-            </EyebrowBadge>
-
-            <HeroTitle
-              title="Planlegg. Produser. Publiser."
-              subtitle="Få oversikt på minutter — ikke dager."
-            />
-
-            <HeroDescription>
-              Cino samler brief, shotlist, tidsplan, filer og godkjenning i én enkel flyt.
-              Mindre ping-pong. Raskere leveranser. Bedre samarbeid med kunder.
-            </HeroDescription>
-
-            <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
-              <PrimaryCta href="#cta">Kom i gang gratis</PrimaryCta>
-              <SecondaryCta href="#product">Se hvordan det fungerer</SecondaryCta>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              <TagPill>Brief</TagPill>
-              <TagPill>Shotlist</TagPill>
-              <TagPill>Call sheet</TagPill>
-              <TagPill>Assets</TagPill>
-              <TagPill>Godkjenning</TagPill>
-              <TagPill>Leveranse</TagPill>
-            </div>
-          </div>
-
-          {/* Right */}
-          <div className="relative w-full md:justify-self-end">
-            <ImageFrame>
-              <Image
-                src="/api/v1/files?fid=7fwolgrgbmb7"
-                alt="Cino dashboard preview"
-                width={1200}
-                height={650}
-                className="h-80 md:h-100 lg:h-120 min-w-md w-full object-cover"
-                priority
-              />
-            </ImageFrame>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* --------------------------------- Reusable -------------------------------- */
-
-function EyebrowBadge({ children }: { children: React.ReactNode }) {
-  return (
-    <Badge
-      variant="secondary"
-      className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
-    >
-      {children}
-    </Badge>
-  )
-}
-
-function HeroTitle({ title, subtitle }: { title: string; subtitle?: string }) {
-  return (
-    <div className="mt-4">
-      <h1 className="text-balance text-5xl md:text-6xl font-semibold tracking-tight sm:text-4xl">
-        {title}
-        {subtitle ? (
-          <span className="text-3xl mt-2 block text-balance text-muted-foreground">
-            {subtitle}
-          </span>
-        ) : null}
-      </h1>
-    </div>
-  )
-}
-
-function HeroDescription({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-      {children}
-    </p>
-  )
-}
-
-function PrimaryCta({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 sm:w-auto"
-    >
-      {children}
-      <ArrowRight className="h-4 w-4" />
-    </a>
-  )
-}
-
-function SecondaryCta({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground/80 shadow-sm transition hover:bg-accent hover:text-foreground sm:w-auto"
-    >
-      {children}
-      <ArrowRight className="h-4 w-4 opacity-70" />
-    </a>
-  )
-}
-
-function TagPill({ children }: { children: React.ReactNode }) {
-  return (
-    <Badge
-      variant="outline"
-      className="rounded-full border-border px-3 py-1 text-xs text-muted-foreground"
-    >
-      {children}
-    </Badge>
-  )
-}
-
-function ImageFrame({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
-      {/* soft glow */}
+    <section className="w-full pb-6">
       <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-10 bg-gradient-to-br from-emerald-500/15 via-sky-500/10 to-fuchsia-500/15 blur-2xl"
+        ref={previewRef}
+        className="-mt-[var(--nav-height)] relative w-full overflow-hidden lg:h-[60dvh] xl:h-[80dvh] 2xl:h-[75dvh] h-125 bg-black"
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+  key={preview.id}
+  initial={{ opacity: 0, scale: 1.15 }}
+  animate={{ opacity: 1, scale: 1 }}
+  exit={{ opacity: 0 }}
+  transition={{ duration: 0.5, ease: "easeOut" }}
+  className="absolute inset-0"
+>
+  {/* VIDEO – always mounted (preloads) */}
+  <VideoPlayer
+  key={preview.videoId}
+    src={preview.videoId}
+    ref={videoRef}
+    autoPlay={false}
+    muted
+    loop
+    playsInline
+    controls={false}
+    preload="auto"
+    className={cn(
+      "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
+      playTrailer && inView ? "opacity-100" : "opacity-100"
+    )}
+  />
+
+  {/* POSTER IMAGE – fades out */}
+  <Image
+    src={getPoster(preview.posters, ["banner", "video", "poster"])}
+    alt={preview.title}
+    fill
+    priority
+    className={cn(
+      "object-cover transition-opacity duration-500",
+      playTrailer && inView ? "opacity-0" : "opacity-100"
+    )}
+  />
+</motion.div>
+
+        </AnimatePresence>
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/0 to-transparent" />
+        <div className="absolute h-[50dvh] inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/0 to-transparent" />
+
+        {/* Meta */}
+        <motion.div
+          key={`${preview.id}-meta`}
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.45, ease: "easeOut", delay: 0.15 }}
+          className="absolute inset-0 flex flex-col justify-end md:justify-center"
+        >
+          <div className="container mx-auto xl:-translate-y-16 p-6 md:p-8 space-y-3">
+            <Badge variant="secondary" className="bg-primary text-small text-background gap-2 px-3 w-fit">
+              {preview.badge}
+            </Badge>
+
+            <h1 className="text-2xl md:text-4xl max-w-lg font-bold text-primary">
+              {preview.title}
+            </h1>
+
+            <p className="text-lg max-w-md text-primary/75">
+              {preview.description}
+            </p>
+          </div>
+        </motion.div>
+      </div>
+
+      <MediaRow
+        className="xl:-mt-25 px-2 max-w-[1700px] mx-auto"
+        items={medias}
+        size="lg"
+        posterType="video"
+        selectedIndex={previewIndex}
+        onItemClick={(_, index) => {
+          router.push("/serie/"+_?.id)
+        }}
+        onItemHover={(_, index) => {
+          setPreviewIndex(index)
+          setColors({
+            background: medias?.[index]?.color.background ?? "",
+            secondary: medias?.[index]?.color.secondary ?? "",
+            text: medias?.[index]?.color.text ?? "",
+            primary: medias?.[index]?.color.primary ?? "",
+          })
+        }}
       />
-      <div className="relative">{children}</div>
-    </div>
+    </section>
   )
 }

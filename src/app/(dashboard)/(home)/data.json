@@ -1,0 +1,33 @@
+[
+{
+"id": "community",
+"type": "tv-show",
+"title": "Community",
+"logo": "/media/community/logo.png",
+"heroImage": "/media/community/hero.jpg",
+"description": "A study group forms at a dysfunctional community college.",
+"seasons": [
+{
+"season": 3,
+"episodes": [
+{
+"id": "20251012-216dbd5619f89e57",
+"title": "Remedial Chaos Theory",
+"episode": 4,
+"duration": "21m"
+}
+]
+}
+]
+},
+{
+"id": "desperados",
+"type": "film",
+"title": "Desperados, Banditos & Litagos",
+"logo": "/media/desperados/logo.png",
+"heroImage": "/media/desperados/hero.jpg",
+"description": "A wild western‑inspired adventure.",
+"videoId": "20250207-473868e90d9a768d",
+"duration": "1h 42m"
+}
+]
