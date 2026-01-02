@@ -76,7 +76,7 @@ function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, contai
 
   return (
     <MediaRow
-      title={container?.data?.slug}
+      title={container?.data?.title}
       posterType="video"
       showTitle={true}
       size="md"
