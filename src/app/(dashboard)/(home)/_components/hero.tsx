@@ -145,7 +145,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
               {preview.title}
             </h1>
 
-            <p className="text-lg max-w-md text-primary/75">
+            <p className="text-lg max-w-md text-accent/75">
               {preview.description}
             </p>
           </div>
