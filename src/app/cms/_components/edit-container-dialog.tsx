@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import { OklchThemeEditor } from "./oklch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { type MediaContainer } from "@prisma/client";
@@ -22,6 +22,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
   const color = (container?.color as ThemeColor)
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(container.title);
+  const [slug, setSlug] = useState(container.slug)
   const [hue, setHue] = useState(250); // Default hue
   const [colors, setColors] = useState({
     background: color?.background ?? "",
@@ -43,6 +44,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
     updateContainer.mutate({
       id: container.id,
       title,
+      slug,
       color: colors,
     });
   };
@@ -63,7 +65,17 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
             <Label className="mb-1 block text-sm font-medium">Tittel</Label>
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {setTitle(e.target.value); setSlug(slugify(e.target.value))}}
+              required
+            />
+          </div>
+
+          {/* Nettlenke */}
+          <div>
+            <Label className="mb-1 block text-sm font-medium">Nettlenke</Label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlug(slugify(e.target.value))}
               required
             />
           </div>

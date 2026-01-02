@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation"
 const TRAILER_DELAY = 3000
 const VISIBILITY_THRESHOLD = 0.25
 
-export default function Hero({ medias }: { medias: any[] }) {
+export default function Hero({ medias, link }: { medias: any[], link?: (index: number) => string }) {
   const { previewIndex, setPreviewIndex, selectedId, setSelectedId, colors, setColors } = useSelectedMedia()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const preview = medias[previewIndex]
@@ -159,7 +159,7 @@ export default function Hero({ medias }: { medias: any[] }) {
         posterType="video"
         selectedIndex={previewIndex}
         onItemClick={(_, index) => {
-          router.push("/serie/"+_?.id)
+          router.push(link?.(index) ?? ("/serie/"+_?.id))
         }}
         onItemHover={(_, index) => {
           setPreviewIndex(index)

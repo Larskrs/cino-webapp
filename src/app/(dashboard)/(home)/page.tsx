@@ -23,7 +23,11 @@ export default function StreamingPage() {
 
   return (
       <div className="bg-background duration-600 ease-out">
-        {!isLoading && <Hero medias={containers?.items?.map((media, index) => {
+        {!isLoading && <Hero
+        link={(i) => {
+          const slug = containers?.items?.[i]?.slug
+          return slug ? `/serie/${slug}` : ""
+        }} medias={containers?.items?.map((media, index) => {
 
           const latest = media?.seasons?.[0]?.episodes?.[0]
 
@@ -45,7 +49,7 @@ export default function StreamingPage() {
             title="Julebord 25"
           />
           <EpisodeRow
-            seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjru7i230005w25a7pe4vf82"
+            seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjroc0pc0003w25aqxocaq6r"
             title="Nyheter"
           />
         </div>
@@ -54,10 +58,11 @@ export default function StreamingPage() {
 }
 
 function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, containerId: string, title?: string }) {
-  const { data: episodes, isLoading } = api.media.list_episodes.useQuery({ seasonId });
+  const episodes = api.media.list_episodes.useQuery({ seasonId });
+  const container = api.media.get_container.useQuery({ id: containerId })
   const router = useRouter()
 
-  if (isLoading) {
+  if (episodes.isLoading || container.isLoading) {
     return (
       <div className="flex justify-center items-center py-10">
         <Loader2 className="animate-spin w-6 h-6 text-muted-foreground" />
@@ -65,15 +70,17 @@ function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, contai
     );
   }
 
-  if (!episodes?.length) return <></>;
+  if (!episodes?.data?.length) return <></>;
+  
+  console.log(container.data)
 
   return (
     <MediaRow
-      title={title ?? "Episoder"}
+      title={container?.data?.slug}
       posterType="video"
       showTitle={true}
       size="md"
-      items={episodes.map((ep) => ({
+      items={episodes?.data?.map((ep) => ({
         id: ep.id,
         title: ep.title,
         description: ep.description ?? "",
@@ -88,7 +95,7 @@ function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, contai
         },
       }))}
       onItemClick={(item, index) => {
-        router.push("/serie/"+(containerId)+"?e="+item?.id)
+        router.push("/serie/"+(container.data?.slug ?? containerId)+"?e="+item?.id)
       }}
     />
   );
