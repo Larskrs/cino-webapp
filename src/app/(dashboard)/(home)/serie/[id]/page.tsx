@@ -100,10 +100,10 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: { id: string }
-  searchParams?: { e?: string }
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{ e?: string }>
 }): Promise<Metadata> {
-  const containerParam = params.id
+  const containerParam = (await params).id
 
   const containerQuery = isLikelyId(containerParam)
     ? { id: containerParam }
@@ -112,7 +112,7 @@ export async function generateMetadata({
   const media = await api.media.get_container(containerQuery)
   if (!media) return notFound()
 
-  const episodeId = searchParams?.e
+  const episodeId = (await searchParams)?.e
   let episodeTitle: string | null = null
   let episodeDescription: string | null = null
 
