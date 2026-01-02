@@ -85,7 +85,7 @@ export default async function Page({
         <div className="min-h-[calc(100dvh-var(--nav-height))]">
           <EpisodePlayer initialEpisode={initialEpisode as any} />
 
-          <div className="py-16 min-h-150 gap-8 px-4 container max-w-6xl mx-auto grid grid-cols-4">
+          <div className="py-16 min-h-150 flex flex-col gap-8 px-4 container max-w-6xl mx-auto md:grid grid-cols-4">
             {media.seasons && <SeasonSelector seasons={media?.seasons} />}
             <EpisodeList initialEpisodes={initialEpisodes} />
           </div>
