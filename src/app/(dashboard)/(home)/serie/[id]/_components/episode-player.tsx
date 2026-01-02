@@ -39,8 +39,6 @@ export default function EpisodePlayer({ container, initialEpisode }: { container
         ) : (
           <div className="w-full h-full bg-black" />
         )}
-
-        {/* --- Show logo overlay --- */}
         {logo && (
           <div className="absolute bottom-4 left-4 z-10">
             <Image
@@ -54,13 +52,15 @@ export default function EpisodePlayer({ container, initialEpisode }: { container
         )}
 
       </div>
+      <div>
+{/* --- Show logo overlay --- */}
         {/* --- Title & Description overlay --- */}
-        <div className="container mx-auto max-w-6xl rounded-lg relative w-full bg-secondary/25 text-white p-4 text-sm sm:text-base z-10">
-          <h2 className="font-semibold text-lg sm:text-xl mb-1">{ep?.title}</h2>
+        <div className="container mx-auto max-w-6xl rounded-lg relative w-full bg-secondary text-white p-4 text-sm sm:text-base z-10">
           {ep?.description && (
-            <p className="line-clamp-3 text-xs sm:text-sm text-white/80">{ep.description}</p>
+            <p className="line-clamp-3 text-sm sm:text-base text-accent/75">{ep.description}</p>
           )}
         </div>
+      </div>
     </div>
   );
 }
