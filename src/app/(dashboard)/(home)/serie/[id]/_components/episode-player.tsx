@@ -1,38 +1,66 @@
-// video-player.tsx
-"use client"
+"use client";
 
-import type { MediaEpisode } from "@prisma/client"
-import { useSelection } from "./media-selection-provider"
-import { api } from "@/trpc/react"
-import VideoPlayer from "@/app/_components/hls-video"
-import Image from "next/image"
+import type { MediaEpisode, MediaContainer } from "@prisma/client";
+import { useSelection } from "./media-selection-provider";
+import { api } from "@/trpc/react";
+import VideoPlayer from "@/app/_components/hls-video";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
-export default function EpisodePlayer({ initialEpisode }: {initialEpisode: MediaEpisode}) {
-  const { episodeId } = useSelection()
-  const { data: episode, isLoading } = api.media.get_episode.useQuery({id: episodeId ?? initialEpisode.id})
-  const ep = isLoading ? initialEpisode : episode
+export default function EpisodePlayer({ container, initialEpisode }: { container: MediaContainer, initialEpisode: MediaEpisode }) {
+  const { episodeId } = useSelection();
+  const { data: episode, isLoading } = api.media.get_episode.useQuery({
+    id: episodeId ?? initialEpisode.id,
+  });
+  const ep = isLoading ? initialEpisode : episode;
+
+  const poster = ep?.thumbnail;
+  const videoSrc = ep?.videoSrc;
+  const logo = container?.logo ?? null;
 
   return (
-    <div className=" max-w-[1920px] mx-auto p-4">
-      {ep?.videoSrc && ep?.thumbnail ? <VideoPlayer
-        key={episodeId ?? initialEpisode.id}
-        className="bg-black/50 rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] min-h-auto aspect-video h-full"
-        src={ep?.videoSrc}
-        poster={ep?.thumbnail}
-        controls
-        />: <div className="bg-black/50 rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] min-h-auto aspect-video h-full" >
-            {ep?.thumbnail && <Image
-              src={ep?.thumbnail}
-              alt={ep?.title}
-              width={1280}
-              height={720}
-              className="w-auto mx-auto h-full aspect-video object-cover"
-            />}
-          </div>}
-        
-        <div className="bg-secondary/25 rounded-md min-h-20">
+    <div className="relative max-w-[1920px] mx-auto p-4">
+      <div className="relative bg-black/50 rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] aspect-video overflow-hidden">
+        {videoSrc ? (
+          <VideoPlayer
+            key={episodeId ?? initialEpisode.id}
+            className="w-full h-full object-cover"
+            src={videoSrc}
+            poster={poster ?? container.thumbnail ?? ""}
+            controls
+          />
+        ) : poster ? (
+          <Image
+            src={poster}
+            alt={ep?.title ?? "Episode thumbnail"}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-black" />
+        )}
 
+        {/* --- Show logo overlay --- */}
+        {logo && (
+          <div className="absolute bottom-4 left-4 z-10">
+            <Image
+              src={logo}
+              alt="Show logo"
+              width={300}
+              height={150}
+              className="object-contain w-full max-w-[25vw] sm:max-w-[250px]"
+            />
+          </div>
+        )}
+
+      </div>
+        {/* --- Title & Description overlay --- */}
+        <div className="container mx-auto max-w-6xl rounded-lg relative w-full bg-secondary/25 text-white p-4 text-sm sm:text-base z-10">
+          <h2 className="font-semibold text-lg sm:text-xl mb-1">{ep?.title}</h2>
+          {ep?.description && (
+            <p className="line-clamp-3 text-xs sm:text-sm text-white/80">{ep.description}</p>
+          )}
         </div>
     </div>
-  )
+  );
 }

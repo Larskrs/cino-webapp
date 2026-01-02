@@ -428,6 +428,7 @@ model MediaContainer {
   title       String
   description String?
   thumbnail   String?
+  logo        String?
   banner      String?
   poster      String?
   color       Json?

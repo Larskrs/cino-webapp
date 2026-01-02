@@ -32,6 +32,7 @@ const ContainerUpdateInput = z.object({
   description: z.string().optional().nullable(),
 
   thumbnail: z.string().optional().nullable(),
+  logo: z.string().optional().nullable(),
   banner: z.string().optional().nullable(),
   poster: z.string().optional().nullable(),
   color: z.unknown().optional().nullable(),
@@ -252,6 +253,7 @@ export const mediaRouter = createTRPCRouter({
             title: input.title,
             description: input.description,
             thumbnail: input.thumbnail,
+            logo: input.logo,
             banner: input.banner,
             poster: input.poster,
             color: input.color as any,

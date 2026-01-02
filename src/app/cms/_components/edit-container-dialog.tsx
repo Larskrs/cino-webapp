@@ -12,6 +12,7 @@ import { OklchThemeEditor } from "./oklch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { type MediaContainer } from "@prisma/client";
 import type { ThemeColor } from "@/app/_components/theme-injection";
+import FilePickerDialog from "@/app/_components/files/file-picker";
 
 interface EditContainerDialogProps {
   container: MediaContainer
@@ -23,6 +24,12 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(container.title);
   const [slug, setSlug] = useState(container.slug)
+
+  const [showFilePicker, setShowFilePicker] = useState<"thumbnail" | "logo" | "poster" | null>(null);
+  const [thumbnail, setThumbnail] = useState(container.thumbnail ?? "");
+  const [logo, setLogo] = useState(container.logo ?? "");
+  const [poster, setPoster] = useState(container.poster ?? "");
+  
   const [hue, setHue] = useState(250); // Default hue
   const [colors, setColors] = useState({
     background: color?.background ?? "",
@@ -45,67 +52,131 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
       id: container.id,
       title,
       slug,
+      thumbnail,
+      logo,
+      poster,
       color: colors,
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children ?? <Button variant="outline">Rediger</Button>}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Rediger Medie</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          {children ?? <Button variant="outline">Rediger</Button>}
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rediger Medie</DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleUpdate} className="space-y-4">
-          {/* Tittel */}
-          <div>
-            <Label className="mb-1 block text-sm font-medium">Tittel</Label>
-            <Input
-              value={title}
-              onChange={(e) => {setTitle(e.target.value); setSlug(slugify(e.target.value))}}
-              required
-            />
-          </div>
-
-          {/* Nettlenke */}
-          <div>
-            <Label className="mb-1 block text-sm font-medium">Nettlenke</Label>
-            <Input
-              value={slug}
-              onChange={(e) => setSlug(slugify(e.target.value))}
-              required
-            />
-          </div>
-
-          <Collapsible>
-            <div className="flex items-center gap-2">
-
-              <CollapsibleTrigger className="bg-neutral-100 data-[state=open]:rounded-b-none hover:bg-neutral-200 rounded-md px-4 py-1">Vis fargeinnstillinger</CollapsibleTrigger>
-              <div className="ml-auto grid grid-cols-4 gap-2">{Object.entries(colors).map(([key, value]) => (
-                  <div className="size-6 rounded-full" style={{ backgroundColor: value }} />
-              ))}</div>
-            </div>
-            <CollapsibleContent className="border-2 p-3 border-neutral-100 rounded-r-md rounded-bl-md">
-              <OklchThemeEditor
-                value={colors}
-                onChange={setColors}
+          <form onSubmit={handleUpdate} className="space-y-4">
+            {/* Tittel */}
+            <div>
+              <Label className="mb-1 block text-sm font-medium">Tittel</Label>
+              <Input
+                value={title}
+                onChange={(e) => {setTitle(e.target.value); setSlug(slugify(e.target.value))}}
+                required
               />
-            </CollapsibleContent>
-          </Collapsible>
+            </div>
 
-          {/* Error */}
-          {updateContainer.error && (
-            <p className="text-sm text-red-600">{updateContainer.error.message}</p>
-          )}
+            {/* Nettlenke */}
+            <div>
+              <Label className="mb-1 block text-sm font-medium">Nettlenke</Label>
+              <Input
+                value={slug}
+                onChange={(e) => setSlug(slugify(e.target.value))}
+                required
+              />
+            </div>
 
-          <Button type="submit" disabled={updateContainer.isPending} className="w-full">
-            {updateContainer.isPending ? "Lagrer..." : "Lagre endringer"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div>
+              <label className="block text-sm font-medium mb-1">Videokilde</label>
+              <div className="flex gap-2">
+                <Input value={thumbnail} onChange={(e) => setThumbnail(e.target.value)} />
+                <Button type="button" variant="secondary" onClick={() => {
+                  setOpen(false);
+                  setShowFilePicker("thumbnail");
+                }}>
+                  Velg
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Videokilde</label>
+              <div className="flex gap-2">
+                <Input value={logo} onChange={(e) => setLogo(e.target.value)} />
+                <Button type="button" variant="secondary" onClick={() => {
+                  setOpen(false);
+                  setShowFilePicker("logo");
+                }}>
+                  Velg
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Videokilde</label>
+              <div className="flex gap-2">
+                <Input value={poster} onChange={(e) => setPoster(e.target.value)} />
+                <Button type="button" variant="secondary" onClick={() => {
+                  setOpen(false);
+                  setShowFilePicker("poster");
+                }}>
+                  Velg
+                </Button>
+              </div>
+            </div>
+
+            <Collapsible>
+              <div className="flex items-center gap-2">
+
+                <CollapsibleTrigger className="bg-neutral-100 data-[state=open]:rounded-b-none hover:bg-neutral-200 rounded-md px-4 py-1">Vis fargeinnstillinger</CollapsibleTrigger>
+                <div className="ml-auto grid grid-cols-4 gap-2">{Object.entries(colors).map(([key, value]) => (
+                    <div className="size-6 rounded-full" style={{ backgroundColor: value }} />
+                ))}</div>
+              </div>
+              <CollapsibleContent className="border-2 p-3 border-neutral-100 rounded-r-md rounded-bl-md">
+                <OklchThemeEditor
+                  value={colors}
+                  onChange={setColors}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Error */}
+            {updateContainer.error && (
+              <p className="text-sm text-red-600">{updateContainer.error.message}</p>
+            )}
+
+            <Button type="submit" disabled={updateContainer.isPending} className="w-full">
+              {updateContainer.isPending ? "Lagrer..." : "Lagre endringer"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <FilePickerDialog
+        title={showFilePicker ?? "ukjent problem"}
+        key={showFilePicker}
+        openDefault={showFilePicker != null}
+        type={showFilePicker == "thumbnail" ? "image" : "video"}
+        onUpload={(files) => {
+          const url = files[0]?.url;
+          if (!url) return;
+          if (showFilePicker === "thumbnail") setThumbnail(url);
+          if (showFilePicker === "logo") setLogo(url);
+          if (showFilePicker === "poster") setPoster(url);
+          setShowFilePicker(null);
+          setTimeout(() => setOpen(true), 100); // delay reopen to allow dialog unmount
+        }}
+        onClose={() => {
+          setShowFilePicker(null);
+          setTimeout(() => setOpen(true), 100);
+        }}
+      />
+    </>
   );
 }

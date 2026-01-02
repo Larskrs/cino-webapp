@@ -7,6 +7,7 @@ import SeasonSelector from "./_components/season-selector"
 import EpisodeList from "./_components/episode-list"
 import EpisodePlayer from "./_components/episode-player"
 import { type MediaEpisode } from "@prisma/client"
+import type { Metadata } from "next"
 
 function isLikelyId(value: string) {
   return /^[a-z0-9]{16,}$/.test(value); // Adjust length if needed
@@ -83,7 +84,7 @@ export default async function Page({
         initialEpisodeId={initialEpisode.id}
       >
         <div className="min-h-[calc(100dvh-var(--nav-height))]">
-          <EpisodePlayer initialEpisode={initialEpisode as any} />
+          <EpisodePlayer container={media} initialEpisode={initialEpisode as any} />
 
           <div className="py-16 min-h-150 flex flex-col gap-8 px-4 container max-w-6xl mx-auto md:grid grid-cols-4">
             {media.seasons && <SeasonSelector seasons={media?.seasons} />}
@@ -93,4 +94,69 @@ export default async function Page({
       </MediaSelectionProvider>
     </>
   )
+}
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { e?: string }
+}): Promise<Metadata> {
+  const containerParam = params.id
+
+  const containerQuery = isLikelyId(containerParam)
+    ? { id: containerParam }
+    : { slug: containerParam }
+
+  const media = await api.media.get_container(containerQuery)
+  if (!media) return notFound()
+
+  const episodeId = searchParams?.e
+  let episodeTitle: string | null = null
+  let episodeDescription: string | null = null
+
+  if (episodeId) {
+    for (const season of media.seasons) {
+      const seasonData = await api.media.get_season({ id: season.id })
+      const match = seasonData.episodes.find(ep => ep.id === episodeId)
+
+      if (match) {
+        episodeTitle = match.title
+        episodeDescription = match.description ?? null
+        break
+      }
+    }
+  }
+
+  const title = episodeTitle
+    ? `${episodeTitle} – ${media.title}`
+    : media.title
+
+  const description =
+    episodeDescription ??
+    media.description ??
+    `Watch ${media.title}`
+
+  const image =
+    media?.banner ||
+    media?.poster ||
+    undefined
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: image ? [image] : undefined,
+      type: "video.tv_show",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  }
 }
