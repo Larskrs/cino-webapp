@@ -39,14 +39,15 @@ function fromOklch(color?: string | null): [number, number, number] {
 
 
 export function OklchThemeEditor({ value, onChange }: OklchThemeEditorProps) {
-  const [lightness, setLightness] = useState(fromOklch(value.primary)[0] ?? 0.7);
-  const [chroma, setChroma] = useState(fromOklch(value.primary)[1] ?? 0.15);
-  const [hue, setHue] = useState(fromOklch(value.primary)[2] ?? 220);
+  const [lightness, setLightness] = useState(0);
+  const [chroma, setChroma] = useState(0);
+  const [hue, setHue] = useState(0);
   const [colors, setColors] = useState<OklchColor>(value);
   const [showRaw, setShowRaw] = useState(false);
 
 useEffect(() => {
   const newColors = generateFromOklch(lightness, chroma, hue);
+  if (!lightness && !chroma && !hue) { return }
   setColors(newColors);
   onChange(newColors); // <-- denne manglet
 }, [lightness, chroma, hue]);

@@ -2,6 +2,7 @@ import { z } from "zod"
 import { createTRPCRouter, permittedProcedure, protectedProcedure, publicProcedure } from "@/server/api/trpc"
 import { TRPCError } from "@trpc/server"
 import { MediaType } from "@prisma/client"
+import { hasPermission } from "@/lib/permissions"
 
 /* ------------------------------- Zod схемas ------------------------------- */
 
@@ -122,6 +123,19 @@ async function requireAdmin(ctx: any) {
   }
 }
 
+async function requirePermission(ctx: any, permission: string) {
+  // If you already have roles (admin/manager/...), hook it up here.
+  // For now: require a session and an "isAdmin" flag if present, else deny.
+  const user = ctx.session?.user
+  if (!user) throw new TRPCError({ code: "UNAUTHORIZED" })
+
+  // Common pattern: user.role === "admin"
+  // If you don't have it, replace with project membership checks.
+  if (!hasPermission((user as any).id, permission)) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Permission required" })
+  }
+}
+
 /* ------------------------------- Media router ------------------------------ */
 
 export const mediaRouter = createTRPCRouter({
@@ -179,7 +193,7 @@ export const mediaRouter = createTRPCRouter({
       return { items, nextCursor }
     }),
 
-  get_container: protectedProcedure
+  get_container: publicProcedure
     .input(z.object({ id: z.string().optional(), slug: z.string().optional() }).refine((v) => v.id || v.slug, "Provide id or slug"))
     .query(async ({ ctx, input }) => {
       const container = await ctx.db.mediaContainer.findUnique({
@@ -201,7 +215,7 @@ export const mediaRouter = createTRPCRouter({
 
       // If private, only admin (or your own ACL) should see
       if (!container.isPublic) {
-        await requireAdmin(ctx)
+        await requirePermission(ctx, "media.admin.read")
       }
 
       return container
@@ -271,10 +285,9 @@ export const mediaRouter = createTRPCRouter({
       }
     }),
 
-  delete_container: protectedProcedure
+  delete_container: permittedProcedure("media.admin.write")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await requireAdmin(ctx)
 
       const existing = await ctx.db.mediaContainer.findUnique({ where: { id: input.id } })
       if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Container not found" })
@@ -303,7 +316,7 @@ export const mediaRouter = createTRPCRouter({
       })
     }),
 
-  get_season: protectedProcedure
+  get_season: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const season = await ctx.db.mediaSeason.findUnique({
@@ -314,7 +327,7 @@ export const mediaRouter = createTRPCRouter({
         },
       })
       if (!season) throw new TRPCError({ code: "NOT_FOUND", message: "Season not found" })
-      if (!season.container.isPublic) await requireAdmin(ctx)
+      if (!season.container.isPublic) await requirePermission(ctx, "media.admin.read")
       return season
     }),
 

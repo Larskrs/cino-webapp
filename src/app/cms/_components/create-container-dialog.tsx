@@ -17,8 +17,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { api } from "@/trpc/react";
 import { MediaType } from "@prisma/client";
 import { toast } from "sonner";
-import { slugify } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 
 interface ContainerDialogProps {
   container?: {
@@ -26,10 +27,11 @@ interface ContainerDialogProps {
     title: string;
   };
   onSuccess?: () => void;
-  triggerLabel?: string;
+  triggerLabel?: string | LucideIcon;
+  className?: string;
 }
 
-export default function ContainerDialog({ container, onSuccess, triggerLabel = "Legg til nytt medie" }: ContainerDialogProps) {
+export default function ContainerDialog({ container, onSuccess, triggerLabel = "Legg til nytt medie", className }: ContainerDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(container?.title ?? "");
   const [slug, setSlug] = useState("");
@@ -74,15 +76,20 @@ export default function ContainerDialog({ container, onSuccess, triggerLabel = "
     }
   };
 
+  const Icon = triggerLabel
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={container ? "destructive" : "default"}>{triggerLabel}</Button>
+        <Button className={cn(className)} variant={container ? "destructive" : "default"}>{typeof triggerLabel === "string" ? triggerLabel : <Icon />}</Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[90dvh] overflow-y-auto border-0" style={{
+          background: "var(--background)",
+          color: "var(--accent)"
+        }}>
         <DialogHeader>
-          <DialogTitle>{container ? "Slett mediet" : "Nytt medie"}</DialogTitle>
+          <DialogTitle className="text-primary">{container ? "Slett mediet" : "Nytt medie"}</DialogTitle>
         </DialogHeader>
 
         {container ? (

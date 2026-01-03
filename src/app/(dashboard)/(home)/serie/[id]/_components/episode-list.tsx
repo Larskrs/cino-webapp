@@ -27,7 +27,7 @@ export default function EpisodeList({
             <button
               onClick={() => setEpisodeId(ep.id)}
               className={cn(
-                "group relative h-fit grid grid-cols-[160px_1fr] md:grid-cols-[180px_1fr] lg:grid-cols-[200px_1fr] gap-4 rounded-xl p-2 pr-4 w-full text-left transition-all",
+                "group relative h-fit grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] lg:grid-cols-[200px_1fr] gap-4 rounded-xl p-2 pr-4 w-full text-left transition-all",
                 "bg-secondary/15 hover:bg-secondary/50",
                 active && "bg-secondary hover:bg-secondary"
               )}

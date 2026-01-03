@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { DialogTrigger } from "@/components/ui/dialog";
-import { Edit } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type ThemeColor } from "@/app/_components/theme-injection";
+import ThemeInjection, { type ThemeColor } from "@/app/_components/theme-injection";
 
 import { EditContainerDialog } from "../_components/edit-container-dialog";
 import { CreateSeasonDialog } from "../_components/create-season-dialog";
@@ -15,6 +15,7 @@ import { EditSeasonDialog } from "../_components/edit-season-dialog";
 import { CreateEpisodeDialog } from "../_components/create-episode-dialog";
 import { EditEpisodeDialog } from "../_components/edit-episode-dialog";
 import Image from "next/image";
+import ContainerDialog from "../_components/create-container-dialog";
 
 interface ContainerPageProps {
   params: Promise<{ container: string }>;
@@ -54,38 +55,27 @@ export default function ContainerPage({ params }: ContainerPageProps) {
     { enabled: !!selectedSeasonId }
   );
 
-  useEffect(() => {
-    const color = (container?.color as ThemeColor ?? {
-      background: "",
-      primary: "",
-      secondary: "",
-      text: ""
-    })
-
-    document.documentElement.style.setProperty(
-      "--background", color.background
-    )
-    document.documentElement.style.setProperty(
-      "--secondary", color.secondary
-    )
-    document.documentElement.style.setProperty(
-      "--primary", color.primary
-    )
-  }, [container])
-
   if (containerLoading) return <p className="p-4">Laster innhold...</p>;
   if (!container) return <p className="p-4 text-red-500">Fant ikke container.</p>;
 
   return (
+    <>
+    <ThemeInjection color={container.color as ThemeColor} />
     <div className="md:grid md:grid-cols-4 grid-cols-1 gap-6 min-h-screen text-primary bg-background">
       {/* Venstreside: Sesonger */}
       <aside className="md:col-span-1 bg-secondary p-4 flex flex-col max-h-100 overflow-y-auto md:min-h-screen">
         <div className="mb-4">
-          <h1 className="text-2xl font-semibold flex items-center justify-between">
+          <h1 className="text-2xl font-semibold flex gap-2 items-center justify-between">
             {container.title}
-            <EditContainerDialog container={container}>
-              <Button className="hover:text-background hover:bg-primary text-primary font-semibold" variant="outline" size="sm">Rediger</Button>
-            </EditContainerDialog>
+            <div className="flex flex-row gap-1">
+              <ContainerDialog
+                className="py-2 px-0 w-8 rounded- h-fit bg-background text-primary hover:text-background hover:bg-primary"
+                onSuccess={() => {}} triggerLabel={Trash} container={{title: container.title, id: container.id}} />
+              <EditContainerDialog container={container}>
+                <Button className="hover:text-background hover:bg-primary text-primary font-semibold" variant="outline" size="sm">Rediger</Button>
+              </EditContainerDialog>
+            </div>
+            
           </h1>
         </div>
 
@@ -108,10 +98,10 @@ export default function ContainerPage({ params }: ContainerPageProps) {
                   className={cn(
                     "px-2 py-1 flex flex-row items-center justify-between cursor-pointer w-full rounded",
                     season.id === selectedSeasonId
-                      ? "bg-primary text-background"
-                      : "bg-background text-primary hover:bg-background"
+                    ? "bg-primary text-background"
+                    : "bg-background text-primary hover:bg-background"
                   )}
-                >
+                  >
                   <span className={cn("", season.title ? "opacity-100" : "opacity-50")}>
                     {season.title ?? "Uten navn"}
                   </span>
@@ -121,7 +111,7 @@ export default function ContainerPage({ params }: ContainerPageProps) {
                   <Button
                     variant="ghost"
                     className="size-8 rounded-sm text-xs bg-background hover:bg-primary hover:text-background text-primary"
-                  >
+                    >
                     <Edit />
                   </Button>
                 </EditSeasonDialog>
@@ -161,7 +151,7 @@ export default function ContainerPage({ params }: ContainerPageProps) {
                       width={135}
                       height={67}
                       className="rounded aspect-video object-cover"
-                    />
+                      />
                   </div>
                   <div className="flex px-4 flex-col gap-0">
                     <span>{ep.title}</span>
@@ -183,6 +173,7 @@ export default function ContainerPage({ params }: ContainerPageProps) {
         )}
       </main>
     </div>
+    </>
   );
 }
 

@@ -14,8 +14,8 @@ type ContainerCardProps = {
 }
 
 export default function ContainerCard({ container, className }: ContainerCardProps) {
-  const image = container.poster ?? container.thumbnail ?? container.banner
   const latestEpisode = container.seasons?.[0]?.episodes?.[0]
+  const image = container.thumbnail ?? container.poster ?? container.banner ?? latestEpisode?.thumbnail
   const airDateLabel = formatExactDateTime(latestEpisode?.airDate)
 
   return (
@@ -33,7 +33,7 @@ export default function ContainerCard({ container, className }: ContainerCardPro
               src={image}
               alt={container.title}
               fill
-              className="object-cover"
+              className="object-cover w-full h-full"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
