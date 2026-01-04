@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Play, Layers } from "lucide-react"
+import { Play, Layers, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { RouterOutputs } from "@/trpc/react"
 
@@ -19,11 +19,12 @@ export default function ContainerCard({ container, className }: ContainerCardPro
   const airDateLabel = formatExactDateTime(latestEpisode?.airDate)
 
   return (
-    <li className={cn("list-none", className)}>
+    <li className={cn("list-none relative", className)}>
+      {container.isPublic && <Lock className="absolute z-1 p-1 size-6 bg-background rounded-sm top-2 left-2" />}
       <Link
         href={`/cms/${container.id}`}
         className={cn(
-          "group flex w-full gap-4 rounded-xl border bg-card p-2 transition hover:bg-accent",
+          "group flex w-full gap-4 rounded-xl border bg-card p-1 transition hover:bg-accent",
         )}
       >
         {/* Image */}

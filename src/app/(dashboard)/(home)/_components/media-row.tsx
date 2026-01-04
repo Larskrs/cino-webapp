@@ -272,6 +272,7 @@ const onPointerUp = (e: React.PointerEvent) => {
                     alt={item.title}    
                     width={512}
                     height={512}
+                    quality={100}
                     className="object-cover w-full h-full"
                   />
                 </div>

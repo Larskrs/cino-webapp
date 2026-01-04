@@ -29,10 +29,11 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
   const [slug, setSlug] = useState(container.slug)
   const [isPublic, setIsPublic] = useState<boolean>(container.isPublic)
 
-  const [showFilePicker, setShowFilePicker] = useState<"thumbnail" | "logo" | "poster" | null>(null);
+  const [showFilePicker, setShowFilePicker] = useState<"thumbnail" | "logo" | "poster" | "banner" | null>(null);
   const [thumbnail, setThumbnail] = useState(container.thumbnail ?? "");
   const [logo, setLogo] = useState(container.logo ?? "");
   const [poster, setPoster] = useState(container.poster ?? "");
+  const [banner, setBanner] = useState(container.banner ?? "");
   
   const [hue, setHue] = useState(250); // Default hue
   const [colors, setColors] = useState({
@@ -59,6 +60,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
       thumbnail,
       logo,
       poster,
+      banner,
       isPublic,
       color: colors,
     });
@@ -148,6 +150,23 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
               </div>
             </div>
 
+            <div>
+              <Label className="text-text/75 block text-sm font-medium mb-1">Banner</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={banner}
+                  onChange={(e) => setBanner(e.target.value)}
+                  className="text-text/75 border-border/75 focus-visible:ring-0 focus-visible:border-primary/75"  
+                />
+                <Button type="button" variant="opposite" onClick={() => {
+                  setOpen(false);
+                  setShowFilePicker("banner");
+                }}>
+                  Velg
+                </Button>
+              </div>
+            </div>
+
             <div className="dark:bg-green-950/25 bg-green-100/50 rounded-md flex justify-between items-center px-4 py-2">
               <Label className="m-0 text-green-950 dark:text-green-200 block text-sm font-medium">Offentligjør</Label>
               <Switch color="red"
@@ -197,6 +216,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
           if (showFilePicker === "thumbnail") setThumbnail(url);
           if (showFilePicker === "logo") setLogo(url);
           if (showFilePicker === "poster") setPoster(url);
+          if (showFilePicker === "banner") setBanner(url);
           setShowFilePicker(null);
           setTimeout(() => setOpen(true), 100); // delay reopen to allow dialog unmount
         }}

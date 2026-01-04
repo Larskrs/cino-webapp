@@ -112,7 +112,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
 
   {/* POSTER IMAGE – fades out */}
   <Image
-    src={getPoster(preview.posters, ["banner", "video", "poster"])}
+    src={getPoster(preview.posters, ["banner", "video"])}
     alt={preview.title}
     fill
     priority

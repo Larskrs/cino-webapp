@@ -63,7 +63,9 @@ export default function EpisodePlayer({
           <Image
             src={poster}
             alt={ep?.title ?? "Episode thumbnail"}
-            fill
+            width={1920}
+            height={1080}
+            quality={100}
             className="object-cover rounded-md"
           />
         ) : (

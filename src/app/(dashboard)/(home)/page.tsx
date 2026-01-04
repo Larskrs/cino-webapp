@@ -22,7 +22,7 @@ export default function StreamingPage() {
   }, [selectedId])
 
   return (
-      <div className="bg-background duration-600 ease-out">
+      <div className="min-h-[100dvh] bg-background duration-600 ease-out">
         {!isLoading && <Hero
         link={(i) => {
           const slug = containers?.items?.[i]?.slug
@@ -37,6 +37,7 @@ export default function StreamingPage() {
             description: latest?.description,
             badge: media.title,
             posters: {
+              banner: media.banner,
               video: latest?.thumbnail,
             },
             videoId: latest?.videoSrc,
