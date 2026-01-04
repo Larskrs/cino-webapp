@@ -12,7 +12,7 @@ export default function ContainerOrEpisodeList() {
 
   const containerQuery = api.media.list_containers.useQuery({
     limit: 12,
-    isPublic: true,
+    isPublic: null,
   });
 
   const episodesQuery = api.media.admin_list_recent_episodes.useQuery();

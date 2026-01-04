@@ -14,6 +14,8 @@ import { type MediaContainer } from "@prisma/client";
 import type { ThemeColor } from "@/app/_components/theme-injection";
 import FilePickerDialog from "@/app/_components/files/file-picker";
 import ThemeInjection from "@/app/_components/theme-injection";
+import { Switch } from "@/components/ui/switch";
+import { SwitchThumb } from "@radix-ui/react-switch";
 
 interface EditContainerDialogProps {
   container: MediaContainer
@@ -25,6 +27,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(container.title);
   const [slug, setSlug] = useState(container.slug)
+  const [isPublic, setIsPublic] = useState<boolean>(container.isPublic)
 
   const [showFilePicker, setShowFilePicker] = useState<"thumbnail" | "logo" | "poster" | null>(null);
   const [thumbnail, setThumbnail] = useState(container.thumbnail ?? "");
@@ -56,6 +59,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
       thumbnail,
       logo,
       poster,
+      isPublic,
       color: colors,
     });
   };
@@ -142,6 +146,16 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
                   Velg
                 </Button>
               </div>
+            </div>
+
+            <div className="dark:bg-green-950/25 bg-green-100/50 rounded-md flex justify-between items-center px-4 py-2">
+              <Label className="m-0 text-green-950 dark:text-green-200 block text-sm font-medium">Offentligjør</Label>
+              <Switch color="red"
+                defaultChecked={isPublic}
+                onCheckedChange={(v) => setIsPublic(v)}
+                thumbClassName="data-[state=unchecked]:bg-white dark:data-[state=unchecked]:bg-green-950 data-[state=checked]:bg-green-100 dark:data-[state=checked]:bg-green-950"
+                className="scale-125 data-[state=checked]:bg-green-400 data-[state=unchecked]:bg-neutral-300 dark:data-[state=unchecked]:bg-green-900">
+              </Switch>
             </div>
 
             <Collapsible>

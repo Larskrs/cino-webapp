@@ -95,7 +95,7 @@ const ListContainersInput = z.object({
   q: z.string().optional(),
   type: MediaTypeEnum.optional(),
   genre: z.string().optional(),
-  isPublic: z.boolean().optional(),
+  isPublic: z.boolean().nullable().optional(),
   isLive: z.boolean().optional(),
 
   cursor: z.string().optional(), // id cursor
@@ -141,57 +141,93 @@ async function requirePermission(ctx: any, permission: string) {
 export const mediaRouter = createTRPCRouter({
   /* ------------------------------ Containers ------------------------------ */
 
-  list_containers: publicProcedure
-    .input(ListContainersInput)
-    .query(async ({ ctx, input }) => {
-      const where: any = {}
+list_containers: publicProcedure
+  .input(ListContainersInput)
+  .query(async ({ ctx, input }) => {
+    const where: any = {}
 
-      if (input.q) {
-        where.OR = [
-          { title: { contains: input.q, mode: "insensitive" } },
-          { description: { contains: input.q, mode: "insensitive" } },
-          { slug: { contains: input.q, mode: "insensitive" } },
-        ]
+    const canViewNonPublic =
+      hasPermission(ctx?.session?.user?.id ?? "", "media.admin.read")
+
+    /* ---------------- Search ---------------- */
+    if (input.q) {
+      where.OR = [
+        { title: { contains: input.q, mode: "insensitive" } },
+        { description: { contains: input.q, mode: "insensitive" } },
+        { slug: { contains: input.q, mode: "insensitive" } },
+      ]
+    }
+
+    /* ---------------- Type ---------------- */
+    if (input.type) where.type = input.type
+
+    /* ---------------- isPublic logic ---------------- */
+
+    if (typeof input.isPublic === "boolean") {
+
+      if (input.isPublic === false && !canViewNonPublic) {
+        throw new Error("You do not have permission to view non-public containers")
       }
-      if (input.type) where.type = input.type
-      if (typeof input.isPublic === "boolean") where.isPublic = input.isPublic
-      if (typeof input.isLive === "boolean") where.isLive = input.isLive
-      if (input.genre) where.genres = { has: input.genre }
 
-      const limit = input.limit ?? 24
-      const items = await ctx.db.mediaContainer.findMany({
-        where,
-        take: limit + 1,
-        ...(input.cursor
-          ? {
-              skip: 1,
-              cursor: { id: input.cursor },
-            }
-          : {}),
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        include: {
-          _count: { select: { seasons: true } },
-          seasons: {
-            take: 1,
-            orderBy: [{ createdAt: "desc" }],
-            include: {
-                episodes: {
-                    take: 1,
-                    orderBy: [{ episodeNumber: "asc" }, { createdAt: "desc" }]
-                }
-            }
+      where.isPublic = input.isPublic
+    } else {
+      // isPublic === null | undefined
+      if (!canViewNonPublic) {
+        // 👤 Normal users default to public only
+        where.isPublic = true
+      }
+      // 🛡️ Admins get everything (no filter applied)
+    }
+
+    /* ---------------- isLive ---------------- */
+    if (typeof input.isLive === "boolean") {
+      where.isLive = input.isLive
+    }
+
+    /* ---------------- Genre ---------------- */
+    if (input.genre) {
+      where.genres = { has: input.genre }
+    }
+
+    const limit = input.limit ?? 24
+
+    const items = await ctx.db.mediaContainer.findMany({
+      where,
+      take: limit + 1,
+      ...(input.cursor
+        ? {
+            skip: 1,
+            cursor: { id: input.cursor },
           }
+        : {}),
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      include: {
+        _count: { select: { seasons: true } },
+        seasons: {
+          take: 1,
+          orderBy: [{ createdAt: "desc" }],
+          include: {
+            episodes: {
+              take: 1,
+              orderBy: [
+                { episodeNumber: "asc" },
+                { createdAt: "desc" },
+              ],
+            },
+          },
         },
-      })
+      },
+    })
 
-      let nextCursor: string | undefined = undefined
-      if (items.length > limit) {
-        const next = items.pop()!
-        nextCursor = next.id
-      }
+    let nextCursor: string | undefined
+    if (items.length > limit) {
+      const next = items.pop()!
+      nextCursor = next.id
+    }
 
-      return { items, nextCursor }
-    }),
+    return { items, nextCursor }
+  }),
+
 
   get_container: publicProcedure
     .input(z.object({ id: z.string().optional(), slug: z.string().optional() }).refine((v) => v.id || v.slug, "Provide id or slug"))
@@ -215,7 +251,9 @@ export const mediaRouter = createTRPCRouter({
 
       // If private, only admin (or your own ACL) should see
       if (!container.isPublic) {
-        await requirePermission(ctx, "media.admin.read")
+        if (!hasPermission(ctx?.session?.user?.id ?? "", "media.admin.read")) {
+          await requirePermission(ctx, "media.admin.read")
+        }
       }
 
       return container
@@ -307,7 +345,11 @@ export const mediaRouter = createTRPCRouter({
         select: { id: true, isPublic: true },
       })
       if (!container) throw new TRPCError({ code: "NOT_FOUND", message: "Container not found" })
-      if (!container.isPublic) await requireAdmin(ctx)
+      if (!container.isPublic) {
+        if (!hasPermission(ctx?.session?.user?.id ?? "", "media.admin.read")) {
+          await requirePermission(ctx, "media.admin.read")
+        }
+      }
 
       return ctx.db.mediaSeason.findMany({
         where: { containerId: input.containerId },
@@ -402,7 +444,11 @@ export const mediaRouter = createTRPCRouter({
         include: { container: { select: { isPublic: true } } },
       })
       if (!season) throw new TRPCError({ code: "NOT_FOUND", message: "Season not found" })
-      if (!season.container.isPublic) await requireAdmin(ctx)
+      if (!season.container.isPublic) {
+        if (!hasPermission(ctx?.session?.user?.id ?? "", "media.admin.read")) {
+          await requirePermission(ctx, "media.admin.read")
+        }
+      }
 
       return ctx.db.mediaEpisode.findMany({
         where: { seasonId: input.seasonId },
