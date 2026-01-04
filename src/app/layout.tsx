@@ -12,6 +12,7 @@ import { auth } from "@/server/auth";
 import { PostPreviewProvider } from "@/hooks/post-preview";
 import { ContextMenuProvider } from "@/hooks/context-menu-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { MediaSelectionProvider } from "./(dashboard)/(home)/serie/[id]/_components/media-selection-provider";
 
 export const metadata: Metadata = {
   title: "Cino.no",

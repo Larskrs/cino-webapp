@@ -112,7 +112,7 @@ export function PostCardPrimitive ({
               )}
 
               {post.poll && (
-  <Card className="mt-2 p-4 flex flex-col gap-2">
+                <Card className="mt-2 p-4 flex flex-col gap-2">
     <CardTitle>{post.poll.title}</CardTitle>
     <CardDescription>{post.poll.description}</CardDescription>
 
@@ -159,8 +159,8 @@ export function PostCardPrimitive ({
     </div>
 
     <CardDescription>Total Votes ({post.poll.options.reduce((sum, o) => sum + o._count.entries, 0) ?? 0})</CardDescription>
-  </Card>
-)}
+                </Card>
+              )}
 
               {/* Reply button */}
               {!post.parentId && (

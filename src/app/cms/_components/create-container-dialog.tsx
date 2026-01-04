@@ -42,7 +42,7 @@ export default function ContainerDialog({ container, onSuccess, triggerLabel = "
 
   const createContainer = api.media.create_container.useMutation({
     onSuccess: () => {
-      toast.success("Container opprettet");
+      toast.success("Medie opprettet");
       setOpen(false);
       onSuccess?.();
       router.push("/cms/"+slug)
@@ -52,7 +52,7 @@ export default function ContainerDialog({ container, onSuccess, triggerLabel = "
 
   const deleteContainer = api.media.delete_container.useMutation({
     onSuccess: () => {
-      toast.success("Container slettet");
+      toast.success("Medie slettet");
       setOpen(false);
       onSuccess?.();
     },

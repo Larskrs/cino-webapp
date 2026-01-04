@@ -13,6 +13,7 @@ export default function ThemeInjection({ color }: { color: ThemeColor }) {
       --secondary: ${color.secondary};
       --primary: ${color.primary};
       --accent: ${color.text};
+      --text: ${color.text}
     }
   `
 

@@ -43,6 +43,15 @@ export default async function Page({
     text: ""
   })
 
+  let noSeasons = media.seasons.length == 0
+
+  if (media.seasons.length == 0) {
+    return <div className="min-h-[calc(100dvh-var(--nav-height))] flex flex-col items-center justify-center">
+      <ThemeInjection color={media.color as ThemeColor} />
+      <h1 className="text-3xl text-accent">Mangler sesonger</h1>
+    </div>
+  }
+
   // 🔍 If episode is specified, try to resolve it
   if (requestedEpisodeId) {
     for (const season of media.seasons) {

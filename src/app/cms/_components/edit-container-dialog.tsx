@@ -13,6 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { type MediaContainer } from "@prisma/client";
 import type { ThemeColor } from "@/app/_components/theme-injection";
 import FilePickerDialog from "@/app/_components/files/file-picker";
+import ThemeInjection from "@/app/_components/theme-injection";
 
 interface EditContainerDialogProps {
   container: MediaContainer
@@ -65,30 +66,27 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
         <DialogTrigger asChild>
           {children ?? <Button variant="opposite">Rediger</Button>}
         </DialogTrigger>
-        <DialogContent className="max-h-[90dvh] container overflow-y-auto border-0" style={{
-          background: "var(--background)",
-          color: "var(--accent)",
-        }}>
+        <DialogContent className="max-h-[90dvh] container overflow-y-auto border-0">
           <DialogHeader>
             <DialogTitle className="text-primary">Rediger Medie</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
             {/* Tittel */}
             <div>
-              <Label className="mb-1 block text-sm font-medium">Tittel</Label>
+              <Label className="text-text/75 mb-1 block text-sm font-medium">Tittel</Label>
               <Input
                 value={title}
                 onChange={(e) => {setTitle(e.target.value); setSlug(slugify(e.target.value))}}
-                className="border-primary/25 focus-visible:ring-0 focus-visible:border-primary/75"  
+                className="text-text/75 border-border/75 focus-visible:ring-0 focus-visible:border-primary/75"  
                 required
               />
             </div>
 
             {/* Nettlenke */}
             <div>
-              <Label className="mb-1 block text-sm font-medium">Nettlenke</Label>
+              <Label className="text-text/75 mb-1 block text-sm font-medium">Nettlenke</Label>
               <Input
-                className="border-primary/25 focus-visible:ring-0 focus-visible:border-primary/50"
+                className="text-text/75 border-border/75 focus-visible:ring-0 focus-visible:border-primary/50"
                 value={slug}
                 onChange={(e) => setSlug(slugify(e.target.value))}
                 required
@@ -96,12 +94,12 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Videobilde</label>
+              <Label className="text-text/75 block text-sm font-medium mb-1">Videobilde</Label>
               <div className="flex gap-2">
                 <Input
                   value={thumbnail}
                   onChange={(e) => setThumbnail(e.target.value)}
-                  className="border-primary/25 focus-visible:ring-0 focus-visible:border-primary/75"  
+                  className="text-text/75 border-border/75 focus-visible:ring-0 focus-visible:border-primary/75"  
                 />
                 <Button type="button" variant="opposite" onClick={() => {
                   setOpen(false);
@@ -113,12 +111,12 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Banner</label>
+              <Label className="text-text/75 block text-sm font-medium mb-1">Logo</Label>
               <div className="flex gap-2">
                 <Input
                   value={logo}
                   onChange={(e) => setLogo(e.target.value)}
-                  className="border-primary/25 focus-visible:ring-0 focus-visible:border-primary/75"  
+                  className="text-text/75 border-border/75 focus-visible:ring-0 focus-visible:border-primary/75"  
                 />
                 <Button type="button" variant="opposite" onClick={() => {
                   setOpen(false);
@@ -130,12 +128,12 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Plakat</label>
+              <Label className="text-text/75 block text-sm font-medium mb-1">Plakat</Label>
               <div className="flex gap-2">
                 <Input
                   value={poster}
                   onChange={(e) => setPoster(e.target.value)}
-                  className="border-primary/25 focus-visible:ring-0 focus-visible:border-primary/75"  
+                  className="text-text/75 border-border/75 focus-visible:ring-0 focus-visible:border-primary/75"  
                 />
                 <Button type="button" variant="opposite" onClick={() => {
                   setOpen(false);
@@ -154,7 +152,7 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
                     <div className="size-6 rounded-full" style={{ backgroundColor: value }} />
                 ))}</div>
               </div>
-              <CollapsibleContent className="bg-black/50 border-2 p-3 border-secondary rounded-r-md rounded-bl-md">
+              <CollapsibleContent className="border-2 p-3 border-secondary rounded-r-md rounded-bl-md">
                 <OklchThemeEditor
                   value={colors}
                   onChange={setColors}

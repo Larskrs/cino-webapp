@@ -60,7 +60,7 @@ export default function ContainerPage({ params }: ContainerPageProps) {
 
   return (
     <>
-    <ThemeInjection color={container.color as ThemeColor} />
+    {/* <ThemeInjection color={container.color as ThemeColor} /> */}
     <div className="md:grid md:grid-cols-4 grid-cols-1 gap-6 min-h-screen text-primary bg-background">
       {/* Venstreside: Sesonger */}
       <aside className="md:col-span-1 bg-secondary p-4 flex flex-col max-h-100 overflow-y-auto md:min-h-screen">

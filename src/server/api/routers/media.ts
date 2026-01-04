@@ -234,7 +234,7 @@ export const mediaRouter = createTRPCRouter({
             thumbnail: input.thumbnail ?? null,
             banner: input.banner ?? null,
             poster: input.poster ?? null,
-            color: (input.color ?? null) as any,
+            color: (input.color ?? { background: "", primary: "", secondary: "", text: ""}) as any,
             type: input.type,
             genres: input.genres ?? [],
             isPublic: input.isPublic ?? true,

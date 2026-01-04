@@ -33,7 +33,9 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
     if (timerRef.current) clearTimeout(timerRef.current)
 
     timerRef.current = setTimeout(() => {
-      setPlayTrailer(true)
+      if (preview?.videoId) {
+        setPlayTrailer(true)
+      }
     }, TRAILER_DELAY)
 
     return () => {
@@ -141,7 +143,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
               {preview.badge}
             </Badge>
 
-            <h1 className="text-2xl md:text-4xl max-w-lg font-bold text-accent">
+            <h1 className="text-2xl md:text-4xl xl:text-5xl max-w-lg font-bold text-accent">
               {preview.title}
             </h1>
 
