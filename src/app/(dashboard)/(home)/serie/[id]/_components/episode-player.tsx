@@ -78,7 +78,7 @@ export default function EpisodePlayer({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 12, scale: 0.96 }}
               transition={{ duration: 0.45, ease: "easeOut" }}
-              className="pointer-events-none absolute bottom-16 left-8 z-10"
+              className="pointer-events-none absolute bottom-8 left-8 z-10"
             >
               <Image
                 src={logo}
