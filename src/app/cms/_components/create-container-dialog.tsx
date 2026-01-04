@@ -81,7 +81,7 @@ export default function ContainerDialog({ container, onSuccess, triggerLabel = "
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className={cn(className)} variant={container ? "destructive" : "default"}>{typeof triggerLabel === "string" ? triggerLabel : <Icon />}</Button>
+        <Button className={cn(className)} variant={container ? "opposite" : "default"}>{typeof triggerLabel === "string" ? triggerLabel : <Icon />}</Button>
       </DialogTrigger>
 
         <DialogContent className="max-h-[90dvh] overflow-y-auto border-0" style={{

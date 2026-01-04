@@ -65,14 +65,13 @@ export function EditContainerDialog({ container, children }: EditContainerDialog
         <DialogTrigger asChild>
           {children ?? <Button variant="opposite">Rediger</Button>}
         </DialogTrigger>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto border-0" style={{
+        <DialogContent className="max-h-[90dvh] container overflow-y-auto border-0" style={{
           background: "var(--background)",
           color: "var(--accent)",
         }}>
           <DialogHeader>
             <DialogTitle className="text-primary">Rediger Medie</DialogTitle>
           </DialogHeader>
-
           <form onSubmit={handleUpdate} className="space-y-4">
             {/* Tittel */}
             <div>
