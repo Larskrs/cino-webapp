@@ -85,7 +85,7 @@ export default function EpisodePlayer({
                 alt="Show logo"
                 width={300}
                 height={150}
-                className="select-none object-contain w-full max-w-[25vw] sm:max-w-[300px]"
+                className="select-none object-contain w-full max-w-[25vw] sm:max-w-[400px]"
                 draggable={false}
               />
             </motion.div>
