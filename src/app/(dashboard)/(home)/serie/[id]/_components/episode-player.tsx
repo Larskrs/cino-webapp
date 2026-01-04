@@ -39,7 +39,7 @@ export default function EpisodePlayer({
 
   return (
     <div className="relative max-w-[1920px] mx-auto p-4">
-      <div className="relative bg-black/50 rounded-md mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] aspect-video overflow-hidden">
+      <div className="relative rounded-xl mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] aspect-video overflow-hidden">
 
         {videoSrc ? (
           <VideoPlayer
@@ -64,7 +64,7 @@ export default function EpisodePlayer({
             src={poster}
             alt={ep?.title ?? "Episode thumbnail"}
             fill
-            className="object-cover"
+            className="object-cover rounded-md"
           />
         ) : (
           <div className="w-full h-full bg-black" />
@@ -74,11 +74,11 @@ export default function EpisodePlayer({
         <AnimatePresence>
           {logo && !hideLogo && (
             <motion.div
-              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.96 }}
-              transition={{ duration: 0.45, ease: "easeOut" }}
-              className="pointer-events-none absolute bottom-8 left-8 z-10"
+            initial={{ opacity: 0, y: 64,}}
+            animate={{ opacity: 1, y: 0,}}
+            exit={{ opacity: 0, y: 32 }}
+            transition={{ type: "spring" }}
+            className="pointer-events-none absolute left-12 bottom-16 flex flex-col items-start justify-end z-10"
             >
               <Image
                 src={logo}
