@@ -410,7 +410,7 @@ export const mediaRouter = createTRPCRouter({
       })
     }),
 
-  get_episode: protectedProcedure
+  get_episode: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const ep = await ctx.db.mediaEpisode.findUnique({
@@ -420,7 +420,7 @@ export const mediaRouter = createTRPCRouter({
         },
       })
       if (!ep) throw new TRPCError({ code: "NOT_FOUND", message: "Episode not found" })
-      if (!ep.season.container.isPublic) await requireAdmin(ctx)
+      if (!ep.season.container.isPublic) await requirePermission(ctx, "media.admin.write")
       return ep
     }),
 
