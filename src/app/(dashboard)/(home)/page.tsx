@@ -10,7 +10,9 @@ import ThemeInjection from "@/app/_components/theme-injection";
 
 export default function StreamingPage() {
 
-  const { data: containers, isLoading, error, isError } = api.media.list_containers.useQuery({})
+  const { data: containers, isLoading, error, isError } = api.media.list_containers.useQuery({
+    isPublic: true
+  })
 
   const router = useRouter()
 

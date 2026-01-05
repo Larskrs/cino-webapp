@@ -66,7 +66,7 @@ export default function EpisodePlayer({
             width={1920}
             height={1080}
             quality={100}
-            className="object-cover rounded-md"
+            className="object-cover h-full w-full rounded-md"
           />
         ) : (
           <div className="w-full h-full bg-black" />
