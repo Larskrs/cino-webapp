@@ -7,6 +7,7 @@ import clsx from "clsx"
 import { cn } from "@/lib/utils"
 import { getPoster, type PosterFormats } from "@/lib/poster"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 export type MediaRowItem = {
   id: string
@@ -150,6 +151,15 @@ export default function MediaRow({
   swipeStartTime.current = Date.now()
 }
 
+const handleClickItem = (item: MediaRowItem, index: number) => {
+  if (item?.link) {
+    router.push(item?.link)
+    return
+  }
+
+  onItemClick?.(item, index)
+}
+
 const onPointerUp = (e: React.PointerEvent) => {
   if (swipeStartX.current === null || swipeStartTime.current === null) return
 
@@ -218,6 +228,8 @@ const onPointerUp = (e: React.PointerEvent) => {
     "lg": "w-[70vw] sm:w-[45vw] md:w-75 lg:w-100 xl:w-125"
   }
 
+  const router = useRouter()
+
   return (
     <section className={cn("relative w-full", className)}>
       {title && (
@@ -249,7 +261,7 @@ const onPointerUp = (e: React.PointerEvent) => {
           {items.map((item, index) => (
             <article
               key={item.id}
-              onClick={() => onItemClick?.(item, index)}
+              onClick={() => handleClickItem?.(item, index)}
               onMouseEnter={() => handleMouseEnter(item, index)}
               onMouseLeave={handleMouseLeave}
               ref={index === 0 ? itemRef : undefined}

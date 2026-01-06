@@ -38,6 +38,10 @@ export default async function StreamingPage() {
             seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjroc0pc0003w25aqxocaq6r"
             title="Nyheter"
           />
+          <EpisodeRow
+            seasonId="cmjznahrx0005ty8gcosmjrdb" containerId="cmjzm3oc40003ty8gnngmic6j"
+            title="Nyheter"
+          />
         </div>
       </div>
   );
@@ -58,7 +62,6 @@ async function EpisodeRow({
       api.media.get_container({ id: containerId }),
     ]);
 
-    // Hard bailouts
     if (!episodes || episodes.length === 0) return null;
     if (!container) return null;
 
