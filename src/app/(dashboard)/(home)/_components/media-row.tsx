@@ -224,8 +224,8 @@ const onPointerUp = (e: React.PointerEvent) => {
 
   const sizes = {
     "sm": "w-[45vw] sm:w-[22vw] md:w-55 lg:w-60 xl:w-80",
-    "md": "w-[55vw] sm:w-[30vw] md:w-60 lg:w-75 xl:w-90",
-    "lg": "w-[70vw] sm:w-[45vw] md:w-75 lg:w-100 xl:w-125"
+    "md": "w-[55vw] sm:w-[30vw] md:w-60 lg:w-75 xl:w-100",
+    "lg": "w-[70vw] sm:w-[45vw] md:w-100 lg:w-[35vw] xl:w-125" 
   }
 
   const router = useRouter()
@@ -266,16 +266,15 @@ const onPointerUp = (e: React.PointerEvent) => {
               onMouseLeave={handleMouseLeave}
               ref={index === 0 ? itemRef : undefined}
               className={clsx(
-                "shrink-0 cursor-pointer transition-transform duration-300 p-2",
+                "shrink-0 cursor-pointer transition-transform duration-300 py-2 px-2",
               
                 sizes[size],
-                "max-w-[420px] min-w-[180px]"
+                "min-w-[180px]"
               )}
             >
               <div
                 className={cn(
-                    onItemHover ? (index === selectedIndex ? "border-2 border-primary" : "border-background border-2") : "",
-                    "relative hover:-translate-y-2 duration-150 hover:shadow-[0px_4px_8px] hover:shadow-black/50 overflow-hidden rounded-lg"
+                    "relative hover:-translate-y-2 duration-150 bg-background hover:shadow-[0px_4px_8px] hover:shadow-black/50 overflow-hidden rounded-lg"
                     )}>
                 <div className={cn("relative aspect-video w-full", posterType === "video" ? "aspect-video" : "aspect-[27/40]")}>
                   <Image
@@ -286,7 +285,10 @@ const onPointerUp = (e: React.PointerEvent) => {
                     width={512}
                     height={512}
                     quality={100}
-                    className="object-cover w-full h-full"
+                    className={cn(
+                      onItemHover ? (index === selectedIndex ? "opacity-100" : "opacity-50") : "",
+                      "object-cover w-full h-full duration-250"
+                    )}
                   />
                 </div>
               </div>

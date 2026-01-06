@@ -79,10 +79,10 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
   if (!preview) return null
 
   return (
-    <section className="w-full pb-6">
+    <section className="w-full px-0 -mt-[var(--nav-height)] pb-0">
       <div
         ref={previewRef}
-        className="-mt-[var(--nav-height)] relative w-full overflow-hidden lg:h-[60dvh] xl:h-[80dvh] 2xl:h-[75dvh] h-125 bg-black"
+        className="-mt-[var(--nav-height)] overflow-hidden relative w-full lg:h-[60dvh] xl:h-[80dvh] 2xl:h-[75dvh] h-125 bg-black"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -117,7 +117,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
     fill
     priority
     className={cn(
-      "object-cover transition-opacity duration-500",
+      "object-cover transition-opacity rounded-lg duration-500",
       playTrailer && inView ? "opacity-0" : "opacity-100"
     )}
   />
@@ -126,8 +126,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
         </AnimatePresence>
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/0 to-transparent" />
-        <div className="absolute h-[50dvh] inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/0 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/75 via-background/0 to-transparent" />
 
         {/* Meta */}
         <motion.div
@@ -138,12 +137,12 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
           transition={{ duration: 0.45, ease: "easeOut", delay: 0.15 }}
           className="absolute inset-0 flex flex-col justify-end md:justify-center"
         >
-          <div className="container mx-auto xl:-translate-y-16 p-6 md:p-8 space-y-3">
+          <div className="lg:ml-32 xl:-translate-y-16 p-6 md:p-8 space-y-3">
             <Badge variant="secondary" className="bg-primary text-small text-background gap-2 px-3 w-fit">
               {preview.badge}
             </Badge>
 
-            <h1 className="text-2xl md:text-4xl xl:text-5xl max-w-lg font-bold text-accent">
+            <h1 className="text-3xl md:text-4xl xl:text-5xl max-w-lg font-bold text-accent">
               {preview.title}
             </h1>
 
@@ -155,14 +154,15 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
       </div>
 
       <MediaRow
-        className="xl:-mt-25 px-2 max-w-[1700px] mx-auto"
-        items={medias}
+        className="xl:-mt-40 mx-auto max-w-500 pl-2"
+        items={medias.map((item, index) => {
+          const _ = item
+          _.link = "/serie/"+(_?.slug ?? _?.id)
+          return _
+        })}
         size="lg"
         posterType="video"
         selectedIndex={previewIndex}
-        onItemClick={(_, index) => {
-          router.push(link?.(index) ?? ("/serie/"+_?.id))
-        }}
         onItemHover={(_, index) => {
           setPreviewIndex(index)
           setColors({
