@@ -23,7 +23,7 @@ export default async function StreamingPage() {
             badge: media.title,
             posters: {
               banner: media.banner,
-              video: latest?.thumbnail,
+              video: media.thumbnail ?? latest?.thumbnail,
             },
             videoId: latest?.videoSrc,
             color: media.color
