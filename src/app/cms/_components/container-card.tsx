@@ -20,7 +20,7 @@ export default function ContainerCard({ container, className }: ContainerCardPro
 
   return (
     <li className={cn("list-none relative", className)}>
-      {container.isPublic && <Lock className="absolute z-1 p-1 size-6 bg-secondary rounded-sm top-2 left-2" />}
+      {!container.isPublic && <Lock className="absolute z-1 p-1 size-6 bg-secondary rounded-sm top-2 left-2" />}
       <Link
         href={`/cms/${container.id}`}
         className={cn(
