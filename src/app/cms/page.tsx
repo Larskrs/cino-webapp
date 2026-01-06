@@ -1,6 +1,5 @@
 import ContainerOrEpisodeList from "./_components/cms-list";
 import ContainerDialog from "./_components/create-container-dialog";
-import { AdminMediaEpisodeList } from "./_components/media-episode-list";
 
 export default function CMSHome () {
   return (
@@ -9,7 +8,6 @@ export default function CMSHome () {
         <h1 className="text-2xl font-bold">Welcome to the CMS</h1>
         <ContainerOrEpisodeList />
         <ContainerDialog />
-        {/* <AdminMediaEpisodeList compact /> */}
       </div>
     </div>
   )

@@ -12,6 +12,7 @@ export type MediaRowItem = {
   id: string
   slug?: string
   title: string
+  link?: string
   posters: PosterFormats
 }
 

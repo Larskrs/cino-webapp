@@ -1,35 +1,18 @@
-"use client"
-import { Loader2 } from "lucide-react";
+"use server"
 import Hero from "./_components/hero";
 import MediaRow from "./_components/media-row";
-import { useSelectedMedia } from "./_components/selected-media-hook";
-import { useEffect, useState } from "react";
-import { api } from "@/trpc/react";
-import { useRouter } from "next/navigation"
-import ThemeInjection from "@/app/_components/theme-injection";
+import { api } from "@/trpc/server";
 
-export default function StreamingPage() {
+export default async function StreamingPage() {
 
-  const { data: containers, isLoading, error, isError } = api.media.list_containers.useQuery({
+  const containers = await api.media.list_containers({
     isPublic: true
   })
 
-  const router = useRouter()
-
-  const { selectedId, setSelectedId } = useSelectedMedia()
-
-  useEffect (() => {
-    if (selectedId !== "")
-    router.push("/serie/"+selectedId)
-  }, [selectedId])
-
   return (
       <div className="min-h-[100dvh] bg-background duration-600 ease-out">
-        {!isLoading && <Hero
-        link={(i) => {
-          const slug = containers?.items?.[i]?.slug
-          return slug ? `/serie/${slug}` : ""
-        }} medias={containers?.items?.map((media, index) => {
+        {<Hero
+        medias={containers?.items?.map((media, index) => {
 
           const latest = media?.seasons?.[0]?.episodes?.[0]
 
@@ -60,46 +43,63 @@ export default function StreamingPage() {
   );
 }
 
-function EpisodeRow({ seasonId, containerId, title }: { seasonId: string, containerId: string, title?: string }) {
-  const episodes = api.media.list_episodes.useQuery({ seasonId });
-  const container = api.media.get_container.useQuery({ id: containerId })
-  const router = useRouter()
+async function EpisodeRow({
+  seasonId,
+  containerId,
+  title,
+}: {
+  seasonId: string;
+  containerId: string;
+  title?: string;
+}) {
+  try {
+    const [episodes, container] = await Promise.all([
+      api.media.list_episodes({ seasonId }),
+      api.media.get_container({ id: containerId }),
+    ]);
 
-  if (episodes.isLoading || container.isLoading) {
+    // Hard bailouts
+    if (!episodes || episodes.length === 0) return null;
+    if (!container) return null;
+
     return (
-      <div className="flex justify-center items-center py-10">
-        <Loader2 className="animate-spin w-6 h-6 text-muted-foreground" />
-      </div>
+      <MediaRow
+        title={title ?? container.title}
+        posterType="video"
+        showTitle
+        size="md"
+        items={episodes.map((ep) => ({
+          id: ep.id,
+          link:
+            "/serie/" +
+            (container.slug ?? containerId) +
+            "?e=" +
+            ep.id,
+          title: ep.title,
+          description: ep.description ?? "",
+          posters: {
+            video: ep.thumbnail ?? "",
+          },
+          videoId: ep.videoSrc ?? "",
+          color: {
+            background: "oklch(0.2 0.01 220)",
+            primary: "oklch(0.85 0.1 220)",
+            accent: "oklch(0.7 0.12 250)",
+          },
+        }))}
+      />
     );
+  } catch (error) {
+    // Optional: log only in dev
+    if (process.env.NODE_ENV === "development") {
+      console.error("EpisodeRow failed:", {
+        seasonId,
+        containerId,
+        error,
+      });
+    }
+
+    // Don't render anything on error
+    return <></>;
   }
-
-  if (!episodes?.data?.length) return <></>;
-  
-  console.log(container.data)
-
-  return (
-    <MediaRow
-      title={container?.data?.title}
-      posterType="video"
-      showTitle={true}
-      size="md"
-      items={episodes?.data?.map((ep) => ({
-        id: ep.id,
-        title: ep.title,
-        description: ep.description ?? "",
-        posters: {
-          video: ep.thumbnail ?? "",
-        },
-        videoId: ep.videoSrc ?? "",
-        color: {
-          background: "oklch(0.2 0.01 220)",
-          primary: "oklch(0.85 0.1 220)",
-          accent: "oklch(0.7 0.12 250)",
-        },
-      }))}
-      onItemClick={(item, index) => {
-        router.push("/serie/"+(container.data?.slug ?? containerId)+"?e="+item?.id)
-      }}
-    />
-  );
 }

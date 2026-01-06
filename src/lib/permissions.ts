@@ -14,6 +14,11 @@ export const userPermissions: Record<string, string[]> = {
     "media.admin.write",
     "media.episode.publish",
   ],
+  "cmk1vlgmx0005tym4uxpyz3f2": [
+    "media.admin.read",
+    "media.admin.write",
+    "media.episode.publish",
+  ],
 }
 
 export function hasPermission(userId: string, permission: string): boolean {
