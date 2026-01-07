@@ -119,7 +119,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
     priority
     quality={100}
     className={cn(
-      "object-cover transition-opacity duration-500",
+      "object-cover absolute inset-0 w-full h-full transition-opacity duration-500",
       playTrailer && inView ? "opacity-0" : "opacity-100"
     )}
   />
