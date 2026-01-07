@@ -114,8 +114,10 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
   <Image
     src={getPoster(preview.posters, ["banner", "video"])}
     alt={preview.title}
-    fill
+    width={1920}
+    height={1080}
     priority
+    quality={100}
     className={cn(
       "object-cover transition-opacity duration-500",
       playTrailer && inView ? "opacity-0" : "opacity-100"
