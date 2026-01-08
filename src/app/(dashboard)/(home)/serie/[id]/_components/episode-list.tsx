@@ -19,7 +19,7 @@ export default function EpisodeList({
   const episodes = data?.episodes
 
   return (
-    <ul className="col-span-3 flex flex-col gap-3">
+    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
       {episodes?.map((ep, index) => {
         const active = ep.id === episodeId
 
@@ -27,27 +27,29 @@ export default function EpisodeList({
             <button
               onClick={() => setEpisodeId(ep.id)}
               className={cn(
-                "group relative h-fit grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] lg:grid-cols-[200px_1fr] gap-4 rounded-xl p-2 pr-4 w-full text-left transition-all",
-                "bg-secondary/15 hover:bg-secondary/50",
-                active && "bg-secondary hover:bg-secondary"
+                "group relative h-fit flex flex-col gap-1 rounded-xl w-full text-left transition-all",
               )}
             >
               {/* Thumbnail */}
-              <div className="relative aspect-video overflow-hidden">
+              <div className={cn("relative aspect-video p-2",
+                active ? "group-hover:border-secondary" : ""
+              )}>
                 {ep.thumbnail && (
                   <Image
                     src={ep.thumbnail}
                     alt={ep.title}
                     fill
-                    className="object-cover rounded-lg bg-background text-transparent"
+                    className={cn("object-cover rounded-lg bg-background text-transparent",
+                      active ? "outline-2 outline-offset-2 outline-primary" : ""
+                    )}
                   />
                 )}
               </div>
 
               {/* Text */}
-              <div className="flex flex-col gap-1 py-2 min-w-0">
+              <div className="flex flex-col gap-1 min-w-0">
 
-                <h3 className="font-normal text-accent leading-tight truncate">
+                <h3 className="font-normal text-accent text-lg line-clamp-1">
                   {ep.title}
                 </h3>
 

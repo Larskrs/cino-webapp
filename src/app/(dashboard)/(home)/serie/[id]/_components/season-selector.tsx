@@ -1,15 +1,17 @@
 // app/serie/[id]/season-selector.tsx
 "use client"
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react"
 import { useSelection } from "./media-selection-provider"
 import type { MediaSeason } from "@prisma/client"
 
-type Season = {
-  id: string
-  title: string
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function SeasonSelector({
   seasons,
@@ -19,29 +21,50 @@ export default function SeasonSelector({
   const { seasonId, setSeasonId } = useSelection()
 
   return (
-    <ul className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2 w-full max-w-xs">
+      <span className="text-sm font-medium text-primary">
+        Velg sesong
+      </span>
 
-      <h1 className="text-primary">Velg Sesong</h1>
+      <Select
+        value={seasonId ?? undefined}
+        onValueChange={setSeasonId}
+      >
+        <SelectTrigger
+          className="
+            text-text
+            border-none
+            px-6
+            focus:ring-primary
+            bg-secondary
+            dark:bg-secondary
+            hover:bg-primary dark:hover:bg-primary
+            data-[state=open]:bg-primary data-[state=open]:text-accent
+          "
+        >
+          <SelectValue placeholder="Velg sesong…" />
+        </SelectTrigger>
 
-      {seasons.map((season) => {
-        const active = season.id === seasonId
-
-        return (
-          <li key={season.id}>
-            <button
-              onClick={() => setSeasonId(season.id)}
-              className={cn(
-                "w-full cursor-pointer text-left rounded-sm px-4 py-2 transition-colors",
-                active
-                  ? "bg-primary text-background"
-                  : "bg-primary/25 text-primary hover:bg-primary hover:text-background"
-              )}
+        <SelectContent
+          className="
+            bg-background
+            border-primary/30
+          "
+        >
+          {seasons.map((season) => (
+            <SelectItem
+              key={season.id}
+              value={season.id}
+              className="
+                focus:bg-primary focus:text-background
+                data-[state=checked]:bg-primary data-[state=checked]:text-background
+              "
             >
               {season.title}
-            </button>
-          </li>
-        )
-      })}
-    </ul>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }

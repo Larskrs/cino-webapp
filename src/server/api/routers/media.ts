@@ -205,12 +205,12 @@ list_containers: publicProcedure
         _count: { select: { seasons: true } },
         seasons: {
           take: 1,
-          orderBy: [{ createdAt: "desc" }],
+          orderBy: [{ seasonNumber: "desc" }, { createdAt: "desc" }],
           include: {
             episodes: {
               take: 1,
               orderBy: [
-                { episodeNumber: "asc" },
+                { episodeNumber: "desc" },
                 { createdAt: "desc" },
               ],
             },

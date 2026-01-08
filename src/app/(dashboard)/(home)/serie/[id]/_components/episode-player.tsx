@@ -40,9 +40,22 @@ export default function EpisodePlayer({
   return (
     <div className="relative max-w-[1920px] mx-auto p-4">
       <div className="relative rounded-xl mb-4 w-full max-h-[calc(100dvh-var(--nav-height)-8rem)] aspect-video overflow-hidden">
-
-        {videoSrc ? (
-          <VideoPlayer
+        <motion.div
+          key={ep?.id}
+          className="h-full w-full"
+          initial={{ scale: 1.15 }}
+          animate={{ scale: 1 }}
+          transition={{
+            duration: 1.6,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          style={{
+            transformOrigin: "center center",
+            willChange: "transform",
+          }}
+        >
+          {videoSrc ? (
+            <VideoPlayer
             key={episodeId ?? initialEpisode.id}
             className="w-full h-full object-cover"
             src={videoSrc}
@@ -58,19 +71,21 @@ export default function EpisodePlayer({
             onTimeUpdate={(e) => {
               if (e.currentTarget.currentTime > 0.25) markPlayed();
             }}
-          />
-        ) : poster ? (
-          <Image
+            />
+          ) : poster ? (
+            <Image
             src={poster}
             alt={ep?.title ?? "Episode thumbnail"}
             width={1920}
             height={1080}
             quality={100}
             className="object-cover h-full w-full rounded-md"
-          />
-        ) : (
-          <div className="w-full h-full bg-black" />
-        )}
+            />
+          ) : (
+            <div className="w-full h-full bg-black" />
+          )}
+        </motion.div>
+        
 
         {/* 🎬 Animated Logo Overlay */}
         <AnimatePresence>
