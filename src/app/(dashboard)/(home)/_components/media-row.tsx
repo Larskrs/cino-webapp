@@ -223,9 +223,9 @@ const onPointerUp = (e: React.PointerEvent) => {
   }, [])
 
   const sizes = {
-    "sm": "w-[45vw] sm:w-[22vw] md:w-55 lg:w-60 xl:w-80",
-    "md": "w-[55vw] sm:w-[30vw] md:w-60 lg:w-75 xl:w-100",
-    "lg": "w-[70vw] sm:w-[45vw] md:w-100 lg:w-[35vw] xl:w-125" 
+    "sm": "w-[45vw] sm:w-[22vw] md:w-55 lg:w-60 xl:w-70",
+    "md": "w-[40vw] sm:w-[30vw] md:w-60 lg:w-75 xl:w-100",
+    "lg": "w-[70vw] sm:w-[45vw] md:w-100 lg:w-[35vw] xl:w-100" 
   }
 
   const router = useRouter()

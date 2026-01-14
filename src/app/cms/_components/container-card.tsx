@@ -56,7 +56,7 @@ export default function ContainerCard({ container, className }: ContainerCardPro
           )}
 
           <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-            {container._count?.seasons !== undefined && (
+            {container.type == "SERIES" && container._count?.seasons !== undefined && (
               <span className="flex items-center gap-1">
                 <Layers className="h-3 w-3" />
                 {container._count.seasons} sesong{container._count.seasons === 1 ? "" : "er"}

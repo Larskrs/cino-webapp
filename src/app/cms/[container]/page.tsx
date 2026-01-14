@@ -63,9 +63,17 @@ export default function ContainerPage({ params }: ContainerPageProps) {
     {/* <ThemeInjection color={container.color as ThemeColor} /> */}
     <div className="md:grid md:grid-cols-4 grid-cols-1 gap-6 min-h-screen text-primary bg-background">
       {/* Venstreside: Sesonger */}
-      <aside className="md:col-span-1 bg-secondary p-4 flex flex-col max-h-100 overflow-y-auto md:min-h-screen">
-        <div className="mb-4">
-          <h1 className="text-2xl font-semibold flex gap-2 items-center justify-between">
+      <aside className="md:col-span-1 bg-secondary p-0 flex flex-col max-h-100 overflow-y-auto md:min-h-screen">
+        <div className="relative h-50 w-full overflow-hidden">
+          <Image
+            src={container.banner ?? container.thumbnail ?? "https://placehold.co/300x200/png?text=Mangler+bilde"}
+            alt={container.title}
+            width={300}
+            height={100}
+            className="z-0 object-cover absolute inset-0 w-full h-full rounded-none"
+          />
+          <div className="z-1 absolute bottom-0 left-0 right-0 p-4">
+          <h1 className="text-md font-semibold text-white flex gap-2 items-end justify-between">
             {container.title}
             <div className="flex flex-row gap-1">
               <ContainerDialog
@@ -78,15 +86,16 @@ export default function ContainerPage({ params }: ContainerPageProps) {
             
           </h1>
         </div>
+        </div>
 
-        <div className="flex items-center justify-between mb-2">
+        <div className="px-4 flex items-center justify-between mb-2">
           <h2 className="text-lg font-medium">Sesonger</h2>
         </div>
 
         {seasonsLoading ? (
           <p>Laster sesonger...</p>
         ) : (
-          <ul className="space-y-1">
+          <ul className="space-y-1 px-4">
             <CreateSeasonDialog containerId={container.id} seasonCount={seasons?.length ?? 0}>
                 <Button className="w-full mb-3 hover:text-background hover:bg-primary bg-background/75 text-primary font-semibold" size="sm">+ Ny</Button>
             </CreateSeasonDialog>

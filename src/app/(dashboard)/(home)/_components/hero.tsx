@@ -82,7 +82,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
     <section className="w-full px-0 -mt-[var(--nav-height)] pb-0">
       <div
         ref={previewRef}
-        className="-mt-[var(--nav-height)] overflow-hidden relative w-full lg:h-[60dvh] xl:h-[80dvh] 2xl:h-[75dvh] h-125 bg-black"
+        className="-mt-[var(--nav-height)] overflow-hidden relative w-full lg:h-[60dvh] xl:h-[100dvh] 2xl:h-[75dvh] h-125 bg-black"
       >
         <AnimatePresence mode="wait">
           <motion.div
