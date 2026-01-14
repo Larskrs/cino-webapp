@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "@/trpc/react";
 import { MultiFileUploader, type UploadedFile } from "@/app/_components/files/file-upload";
 import { Button } from "@/components/ui/button";
@@ -22,36 +22,23 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
-import mime from "mime-types"
+import mime from "mime-types";
 
 /* -------------------------------------------------------------------------- */
 /*                                Component Props                             */
 /* -------------------------------------------------------------------------- */
 
 interface FilePickerDialogProps {
-  /** Optional — used for direct API binding like changing project image */
   entityId?: string;
   entityType?: "project" | "post" | "user" | string;
-
-  openDefault?: boolean
-
-  /** File restrictions */
+  openDefault?: boolean;
   maxFiles?: number;
   accept?: string;
   type?: "image" | "video";
-
-  /** Optional — preselected or current image URL */
   currentFiles?: string[] | null;
-
-  /** Called when upload(s) complete */
   onUpload?: (files: UploadedFile[]) => void;
-
   onClose?: () => void;
-
-  /** Custom dialog trigger */
   children?: ReactNode;
-
-  /** Title override */
   title?: string;
 }
 
@@ -78,27 +65,61 @@ export default function FilePickerDialog({
     currentFiles?.[0] ?? null
   );
 
-  const utils = api.useUtils();
-  const { colors } = useTheme();
-
   const isSingle = maxFiles === 1;
+  const { colors } = useTheme();
+  const utils = api.useUtils();
 
-  /* -------------------------------- Mutations ------------------------------- */
+  /* ---------------------------- Pagination state ---------------------------- */
+  const [cursor, setCursor] = useState(1);
+  const [files, setFiles] = useState<any[]>([]);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  /* ------------------------------- Query ----------------------------------- */
+  const { data, isFetching } = api.files.list.useQuery(
+    {
+      cursor,
+      per_page: 24,
+      // type,
+    },
+    {
+      enabled: open && tab === "select",
+    }
+  );
+
+  /* ------------------------- Accumulate results ---------------------------- */
+  useEffect(() => {
+    if (!data?.items) return;
+
+    setFiles((prev) =>
+      cursor === 1 ? data.items : [...prev, ...data.items]
+    );
+  }, [data, cursor]);
+
+  /* ------------------------- Infinite scroll ------------------------------- */
+  useEffect(() => {
+    if (!loadMoreRef.current || !data?.nextCursor) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && data.nextCursor && !isFetching) {
+          setCursor(data.nextCursor);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [data?.nextCursor, isFetching]);
+
+  /* ------------------------------- Mutations ------------------------------- */
   const changeProjectImage = api.projects.change_image.useMutation({
-    onSuccess: (data) => {
+    onSuccess: () => {
       utils.projects.get.invalidate({ projectId: entityId! });
       toast.success("Image updated");
       setOpen(false);
     },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
-
-  /* -------------------------------- Fetch existing ------------------------------- */
-  const [files] = api.files.list.useSuspenseQuery({
-    per_page: 50,
-    type: type
+    onError: (err) => toast.error(err.message),
   });
 
   /* -------------------------------------------------------------------------- */
@@ -106,113 +127,111 @@ export default function FilePickerDialog({
   /* -------------------------------------------------------------------------- */
 
   return (
-    <Dialog open={open} onOpenChange={(open) => {
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
         setOpen(open);
-        if (!open) onClose?.()
-      }}>
+        if (!open) {
+          setCursor(1);
+          setFiles([]);
+          onClose?.();
+        }
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-
-        <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList
-            className={cn(
-              "grid w-full mb-4",
-              isSingle ? "grid-cols-2" : "grid-cols-2"
-            )}
-          >
-            <TabsTrigger value="upload">Upload new</TabsTrigger>
-            <TabsTrigger value="select">Select existing</TabsTrigger>
+      <DialogContent className="min-w-[min(75rem,calc(100vw-2rem))] h-[min(65rem,calc(100dvh-2rem))] flex flex-col overflow-hidden">
+        <div className="container mx-auto">
+        <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col">
+          <TabsList className="grid grid-cols-2 w-full mb-4">
+            <TabsTrigger value="upload">Last opp fil</TabsTrigger>
+            <TabsTrigger value="select" className="px-4">Velg fra biblioteket</TabsTrigger>
           </TabsList>
 
-          {/* ------------------------------------------------------------------ */}
-          {/* SELECT EXISTING TAB */}
-          {/* ------------------------------------------------------------------ */}
-          <TabsContent value="select">
+          {/* --------------------------- SELECT EXISTING --------------------------- */}
+          <TabsContent value="select" className="flex-1 overflow-hidden">
             <div
               className={cn(
-                "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto p-1 rounded-md",
-                colors.cardBackground,
-                "border border-neutral-200 dark:border-neutral-700"
+                "grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3",
+                "p-1 overflow-y-auto rounded-md",
               )}
             >
-              {files.total === 0 && (
-                <p className="col-span-full text-center text-sm text-neutral-500 dark:text-neutral-400 py-6">
+              {files.length === 0 && !isFetching && (
+                <p className="col-span-full text-center text-sm text-muted-foreground py-6">
                   No uploaded files yet
                 </p>
               )}
 
-              {files.items?.map((file) => {
+              {files.map((file) => {
                 const url = `/api/v1/files?fid=${file.id}`;
-                const selected = preview === url;
+                const isVideo =
+                  mime.lookup(file.name)?.toString().startsWith("video");
 
                 return (
                   <button
                     key={file.id}
+                    type="button"
                     onClick={() => {
-                      if (isSingle) {
-                        setPreview(url);
-                        onUpload?.([
-                          {
-                            id: file.id,
-                            url,
-                            type: "image",
-                            name: file.name ?? "File",
-                          },
-                        ]);
-                        if (entityType === "project") {
-                          changeProjectImage.mutate({
-                            projectId: entityId!,
-                            fileId: file.id,
-                          });
-                        }
-                        setOpen(false);
-                      } else {
-                        // Multi-select logic could go here
+                      if (!isSingle) {
                         toast.info("Multi-select not implemented yet");
+                        return;
                       }
+
+                      setPreview(url);
+                      onUpload?.([
+                        {
+                          id: file.id,
+                          url,
+                          type: isVideo ? "video" : "image",
+                          name: file.name ?? "File",
+                        },
+                      ]);
+
+                      if (entityType === "project" && entityId) {
+                        changeProjectImage.mutate({
+                          projectId: entityId,
+                          fileId: file.id,
+                        });
+                      }
+
+                      setOpen(false);
                     }}
-                    className={cn(
-                      "relative aspect-square rounded-md overflow-hidden transition-all border-2 outline-2 outline-transparent",
-                      selected
-                        ? "border-transparent outline-indigo-400"
-                        : "border-transparent hover:outline-indigo-100"
-                    )}
+                    className="relative aspect-square rounded-md overflow-hidden border transition hover:ring-2 hover:ring-indigo-300"
                   >
-                    {mime.lookup(file.name).toString().startsWith("video") ? (
+                    {isVideo ? (
                       <video
                         src={url}
-                        className="object-cover w-full h-full"
                         muted
+                        playsInline
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <Image
                         src={url}
                         alt={file.name ?? "Image"}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover"
+                        width={160}
+                        height={160}
+                        sizes="(max-width: 320px) 50vw, 25vw"
+                        className="object-contain w-full h-full"
                       />
                     )}
                   </button>
                 );
               })}
+
+              {data?.nextCursor && (
+                <div ref={loadMoreRef} className="col-span-full py-4 text-center">
+                  <span className="text-sm text-muted-foreground">
+                    Loading more…
+                  </span>
+                </div>
+              )}
             </div>
           </TabsContent>
 
-          {/* ------------------------------------------------------------------ */}
-          {/* UPLOAD TAB */}
-          {/* ------------------------------------------------------------------ */}
+          {/* ------------------------------- UPLOAD -------------------------------- */}
           <TabsContent value="upload">
-            <div
-              className={cn(
-                "flex flex-col items-center gap-4",
-                !isSingle && "mt-2"
-              )}
-            >
+            <div className="flex flex-col items-center gap-4">
               <MultiFileUploader
                 maxFiles={maxFiles}
                 accept={accept}
@@ -222,6 +241,7 @@ export default function FilePickerDialog({
                   if (isSingle && uploadedFiles[0]) {
                     const uploaded = uploadedFiles[0];
                     setPreview(uploaded.url);
+
                     if (entityType === "project" && entityId) {
                       changeProjectImage.mutate({
                         projectId: entityId,
@@ -235,6 +255,8 @@ export default function FilePickerDialog({
                       ? `${uploadedFiles.length} files uploaded`
                       : "File uploaded"
                   );
+                  
+                  utils.files.invalidate()
                 }}
               />
 
@@ -242,10 +264,13 @@ export default function FilePickerDialog({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-red-500 hover:text-red-600"
+                  className="text-red-500"
                   onClick={() => {
                     if (entityType === "project" && entityId) {
-                      changeProjectImage.mutate({ projectId: entityId, fileId: null });
+                      changeProjectImage.mutate({
+                        projectId: entityId,
+                        fileId: null,
+                      });
                     }
                     setPreview(null);
                     toast.success("Image removed");
@@ -258,11 +283,12 @@ export default function FilePickerDialog({
           </TabsContent>
         </Tabs>
 
-        <DialogFooter>
+        <DialogFooter className="pt-3 mt-auto">
           <Button variant="secondary" onClick={() => setOpen(false)}>
             Close
           </Button>
-        </DialogFooter>
+        </DialogFooter>    
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -61,26 +61,27 @@ export default function ContainerPage({ params }: ContainerPageProps) {
   return (
     <>
     {/* <ThemeInjection color={container.color as ThemeColor} /> */}
-    <div className="md:grid md:grid-cols-4 grid-cols-1 gap-6 min-h-screen text-primary bg-background">
+    <div className="p-6 container h-full mx-auto md:grid md:grid-cols-4 grid-cols-1 gap-6 space-y-8 min-h-[calc(100dvh-var(--nav-height))] text-primary">
       {/* Venstreside: Sesonger */}
-      <aside className="md:col-span-1 bg-secondary p-0 flex flex-col max-h-100 overflow-y-auto md:min-h-screen">
-        <div className="relative h-50 w-full overflow-hidden">
+      <aside className="md:col-span-1 p-0 flex flex-col overflow-y-auto md:min-h-[calc(100dvh-var(--nav-height))] h-full">
+        <div className="relative h-50 w-full overflow-hidden rounded-lg">
+          <div className="bg-gradient-to-t from-background/75 to-background/0 absolute h-1/2 inset-x-0 bottom-0 z-1" />
           <Image
             src={container.banner ?? container.thumbnail ?? "https://placehold.co/300x200/png?text=Mangler+bilde"}
             alt={container.title}
             width={300}
             height={100}
-            className="z-0 object-cover absolute inset-0 w-full h-full rounded-none"
+            className="z-0 rounded-lg object-cover absolute inset-0 w-full h-full"
           />
           <div className="z-1 absolute bottom-0 left-0 right-0 p-4">
           <h1 className="text-md font-semibold text-white flex gap-2 items-end justify-between">
             {container.title}
             <div className="flex flex-row gap-1">
               <ContainerDialog
-                className="py-2 px-0 w-8 rounded- h-fit bg-background text-primary hover:text-background hover:bg-primary"
+                className="py-2 px-0 w-8 rounded- h-fit bg-secondary text-primary hover:text-background hover:bg-primary"
                 onSuccess={() => {}} triggerLabel={Trash} container={{title: container.title, id: container.id}} />
               <EditContainerDialog container={container}>
-                <Button className="hover:text-background hover:bg-primary text-primary font-semibold" variant="outline" size="sm">Rediger</Button>
+                <Button className="hover:text-background bg-secondary hover:bg-primary text-primary font-semibold" variant={"opposite"} size="sm">Rediger</Button>
               </EditContainerDialog>
             </div>
             
@@ -134,7 +135,7 @@ export default function ContainerPage({ params }: ContainerPageProps) {
       </aside>
 
       {/* Hovedinnhold: Episoder */}
-      <main className="md:col-span-3 p-4">
+      <main className="md:col-span-3">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg text-primary font-medium">Episoder</h2>
           {selectedSeasonId && (
