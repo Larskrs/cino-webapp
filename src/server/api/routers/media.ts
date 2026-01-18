@@ -264,6 +264,26 @@ list_containers: publicProcedure
     .mutation(async ({ ctx, input }) => {
 
       try {
+        const movieSeason = {
+          seasons: {
+            create: {
+              episodes: {
+                create: {
+                  title: "Film",
+                  videoSrc: "",
+                  episodeNumber: 1,
+                },
+              },
+            },
+          },
+        }
+        const defaultColor = {
+          background: "oklch(0.12 0.05 208.00)",
+          primary: "oklch(0.7 0.5 110.00)",
+          secondary: "oklch(0.25 0.12 208.00)",
+          text: "oklch(0.75 0.05 208.00)"
+        }
+
         const created = await ctx.db.mediaContainer.create({
           data: {
             slug: input.slug,
@@ -272,11 +292,12 @@ list_containers: publicProcedure
             thumbnail: input.thumbnail ?? null,
             banner: input.banner ?? null,
             poster: input.poster ?? null,
-            color: (input.color ?? { background: "", primary: "", secondary: "", text: ""}) as any,
+            color: (input.color ?? defaultColor) as any,
             type: input.type,
             genres: input.genres ?? [],
-            isPublic: input.isPublic ?? true,
+            isPublic: input.isPublic ?? false,
             isLive: input.isLive ?? false,
+            ...(input.type === "MOVIE" ? movieSeason : {}),
           },
         })
         return created

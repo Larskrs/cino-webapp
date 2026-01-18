@@ -156,7 +156,7 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
       </div>
 
       <MediaRow
-        className="xl:-mt-40 mx-auto max-w-500 pl-2"
+        className="xl:-mt-25 mx-auto max-w-500 pl-2"
         items={medias.map((item, index) => {
           const _ = item
           _.link = "/serie/"+(_?.slug ?? _?.id)

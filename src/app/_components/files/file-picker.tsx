@@ -140,7 +140,7 @@ export default function FilePickerDialog({
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent className="min-w-[min(75rem,calc(100vw-2rem))] h-[min(65rem,calc(100dvh-2rem))] flex flex-col overflow-hidden">
+      <DialogContent className="min-w-[min(75rem,calc(100vw-2rem))] h-[min(65rem,calc(100dvh-2rem))] flex flex-col overflow-y-auto">
         <div className="container mx-auto">
         <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col">
           <TabsList className="grid grid-cols-2 w-full mb-4">
@@ -149,7 +149,7 @@ export default function FilePickerDialog({
           </TabsList>
 
           {/* --------------------------- SELECT EXISTING --------------------------- */}
-          <TabsContent value="select" className="flex-1 overflow-hidden">
+          <TabsContent value="select" className="flex-1 overflow-auto">
             <div
               className={cn(
                 "grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3",
