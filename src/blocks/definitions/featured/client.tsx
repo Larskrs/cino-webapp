@@ -22,7 +22,7 @@ export function FeaturedClient({ data }: { data: FeaturedData }) {
       description={media.description ?? media.description ?? undefined}
       slug={container.slug}
       thumbnail={media.thumbnail ?? container.thumbnail ?? ""}
-      title={media.title}
+      title={container.title}
       publishedAt={"Se den nå!"}
     />
 }

@@ -29,7 +29,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col h-screen w-full gap-2">
-      <Button variant={"opposite"} className="mx-auto" onClick={(e) => setView(!view)} >{view ? "Edit Page" : "View Page"}</Button>
+      <Button variant={"opposite"} className="fixed z-100 bottom-4 right-4 mx-auto" onClick={(e) => setView(!view)} >{view ? "Edit Page" : "View Page"}</Button>
       {!view ? <div className="mx-auto container max-w-5xl flex flex-col p-2">
         <EditorBlocks
           blocks={blocks}
@@ -49,7 +49,7 @@ export default function Page() {
       />
       </div> : <div className="mt-16 flex flex-col gap-16"><ClientBlocks blocks={blocks} /></div>}
 
-            <pre>
+      <pre>
         {JSON.stringify(blocks, null, 4)}
       </pre>
     </div>
