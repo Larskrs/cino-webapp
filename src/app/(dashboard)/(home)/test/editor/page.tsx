@@ -47,7 +47,7 @@ export default function Page() {
           setBlocks((prev) => [...prev, block])
         }
       />
-      </div> : <div className="mt-16"><ClientBlocks blocks={blocks} /></div>}
+      </div> : <div className="mt-16 flex flex-col gap-16"><ClientBlocks blocks={blocks} /></div>}
 
             <pre>
         {JSON.stringify(blocks, null, 4)}
