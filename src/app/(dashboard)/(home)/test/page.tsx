@@ -1,57 +1,39 @@
 import { ServerBlocks } from "@/blocks/renderers/server-blocks"
 
-export default async function Page() {
-  return (
-    <div className="flex flex-col">
+let HomePageJSON: unknown = null
 
-    <ServerBlocks
-      blocks={[
-    {
-        "id": "davos",
-        "type": "hero",
-        "data": {
-            "containers": [
-                "cmk33r3kd0000tydcsrmxebdv",
-                "cmkj0yt2g0008tyu0lqyhqq88",
-                "cmjzm2ez50002ty8grbdm1jze"
-            ]
-        }
-    },
-    {
-        "id": "2",
-        "type": "media_row",
-        "data": {
-            "containers": [],
-            "episodes": [
-                "cmk33s81d0005tydcw0ux0ktt",
-                "cmjzm3oc40003ty8gnngmic6j"
-            ],
-            "posterType": "poster",
-            "showTitle": true,
-            "title": "Nye filmer"
-        }
-    },
-    {
-        "id": "0j0xcM2HlU4_8CXi6HBWO",
-        "type": "featured",
-        "data": {
-            "container": "cmjzm2ez50002ty8grbdm1jze"
-        }
-    },
-    {
-        "id": "EhfWRuZV7V2o7lwmNwwTC",
-        "type": "media_row",
-        "data": {
-            "episodes": [
-                "cmk33r3kd0000tydcsrmxebdv",
-                "cmkj0yt2g0008tyu0lqyhqq88",
-                "cmjzm2ez50002ty8grbdm1jze"
-            ],
-            "posterType": "video"
-        }
-    }
-]}
-      />
+try {
+  HomePageJSON = (await import("@/../home.page.json")).default
+} catch (error) {
+  console.error("[HomePageJSON] Failed to load or parse JSON", error)
+}
+
+function isValidBlocks(value: unknown): value is any[] {
+  return Array.isArray(value)
+}
+
+export default async function Page() {
+  if (!HomePageJSON) {
+    return (
+      <div className="p-6 text-muted-foreground">
+        Failed to load page configuration
       </div>
+    )
+  }
+
+  if (!isValidBlocks(HomePageJSON)) {
+    console.error("[HomePageJSON] Invalid blocks format", HomePageJSON)
+
+    return (
+      <div className="p-6 text-red-500">
+        Page configuration is invalid
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col pb-32">
+      <ServerBlocks blocks={HomePageJSON} />
+    </div>
   )
 }
