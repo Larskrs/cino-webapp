@@ -97,7 +97,7 @@ const ListContainersInput = z.object({
   genre: z.string().optional(),
   isPublic: z.boolean().nullable().optional(),
   isLive: z.boolean().optional(),
-
+  select: z.array(z.string()).optional(),
   cursor: z.string().optional(), // id cursor
   limit: z.number().int().min(1).max(50).default(24),
 })
@@ -156,6 +156,12 @@ list_containers: publicProcedure
         { description: { contains: input.q, mode: "insensitive" } },
         { slug: { contains: input.q, mode: "insensitive" } },
       ]
+    }
+    /* --------------- Select --------------- */
+    if (input.select) {
+      where.id = {
+        in: input.select
+      }
     }
 
     /* ---------------- Type ---------------- */
@@ -474,6 +480,21 @@ list_containers: publicProcedure
       return ctx.db.mediaEpisode.findMany({
         where: { seasonId: input.seasonId },
         orderBy: [{ episodeNumber: "desc" }, { createdAt: "desc" }],
+      })
+    }),
+
+  get_episodes: publicProcedure
+    .input(z.object({ select: z.array(z.string()) }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.mediaEpisode.findMany({
+        where: { id: { in: input.select } },
+        include: { 
+          season: {
+            include: {
+              container: true
+            }
+          }
+        }
       })
     }),
 

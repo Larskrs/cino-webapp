@@ -224,7 +224,7 @@ const onPointerUp = (e: React.PointerEvent) => {
 
   const sizes = {
     "sm": "w-[45vw] sm:w-[22vw] md:w-55 lg:w-60 xl:w-[15vw] 2xl:w-75",
-    "md": "w-[40vw] sm:w-[30vw] md:w-60 lg:w-75 xl:w-[25vw] 2xl:w-100",
+    "md": "w-[55vw] sm:w-[45vw] md:w-85 lg:w-[30vw] xl:w-[25vw] 2xl:w-100",
     "lg": "w-[70vw] sm:w-[45vw] md:w-100 lg:w-[35vw] xl:w-[36vw] 2xl:w-125" 
   }
 
@@ -234,7 +234,7 @@ const onPointerUp = (e: React.PointerEvent) => {
     <section className={cn("relative w-full", className)}>
       {title && (
         <div className="-mb-1 ml-2 flex items-end justify-between">
-          <h3 className="duration-500 text-primary font-semibold text-2xl md:text-2xl xl:text-3xl">
+          <h3 className="duration-500 text-accent font-semibold text-2xl md:text-2xl xl:text-3xl">
             {title}
           </h3>
         </div>

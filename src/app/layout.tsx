@@ -14,6 +14,7 @@ import { ContextMenuProvider } from "@/hooks/context-menu-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { MediaSelectionProvider } from "./(dashboard)/(home)/serie/[id]/_components/media-selection-provider";
 
+
 export const metadata: Metadata = {
   title: "Cino.no",
   description: "Digitale produksjonsverktøy for Film & TV",
@@ -45,19 +46,22 @@ export default async function RootLayout({
   const session = await auth()
 
   return (
-    <html lang="en" className={cn("bg-background", geist.variable, courier.variable)}>
-      <ThemeProvider initialTheme={savedTheme}>
-        <SessionProvider session={session}>
-          <PostPreviewProvider>
-            <TRPCReactProvider>
-              <ContextMenuProvider>
-                {children}
-                <Toaster />
-              </ContextMenuProvider>
-            </TRPCReactProvider>
-          </PostPreviewProvider>
-        </SessionProvider>
-      </ThemeProvider>
+    <html
+      lang="en"
+      className={cn("bg-background", geist.variable, courier.variable)}
+    >
+        <ThemeProvider initialTheme={savedTheme}>
+          <SessionProvider session={session}>
+            <PostPreviewProvider>
+              <TRPCReactProvider>
+                <ContextMenuProvider>
+                  {children}
+                  <Toaster />
+                </ContextMenuProvider>
+              </TRPCReactProvider>
+            </PostPreviewProvider>
+          </SessionProvider>
+        </ThemeProvider>
     </html>
-  );
+  )
 }

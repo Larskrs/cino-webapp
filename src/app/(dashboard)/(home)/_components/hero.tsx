@@ -140,9 +140,9 @@ export default function Hero({ medias, link }: { medias: any[], link?: (index: n
           className="absolute inset-0 flex flex-col justify-end md:justify-center"
         >
           <div className="lg:ml-32 xl:-translate-y-16 p-6 md:p-8 space-y-3">
-            <Badge variant="secondary" className="bg-primary text-small text-background gap-2 px-3 w-fit">
+            {preview.badge && <Badge variant="secondary" className="bg-primary text-small text-background gap-2 px-3 w-fit">
               {preview.badge}
-            </Badge>
+            </Badge>}
 
             <h1 className="text-3xl md:text-4xl xl:text-5xl max-w-lg font-bold text-accent">
               {preview.title}

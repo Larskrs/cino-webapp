@@ -1,29 +1,41 @@
 // ThemeInjection.tsx
 export type ThemeColor = {
-  primary: string
-  secondary: string
-  background: string
-  text: string
+  primary?: string
+  secondary?: string
+  background?: string
+  text?: string
 }
 
-export default function ThemeInjection({ color }: { color: ThemeColor }) {
+export default function ThemeInjection({ color }: { color?: ThemeColor }) {
+  if (!color) return null
+
+  const vars: string[] = []
+
+  if (color.background) {
+    vars.push(`--background: ${color.background};`)
+    vars.push(`background: ${color.background};`)
+  }
+
+  if (color.secondary) {
+    vars.push(`--secondary: ${color.secondary};`)
+  }
+
+  if (color.primary) {
+    vars.push(`--primary: ${color.primary};`)
+  }
+
+  if (color.text) {
+    vars.push(`--text: ${color.text};`)
+    vars.push(`--accent: ${color.text};`)
+  }
+
+  if (!vars.length) return null
+
   const css = `
     :root {
-      --background: ${color.background};
-      --secondary: ${color.secondary};
-      --primary: ${color.primary};
-      --accent: ${color.text};
-      --text: ${color.text};
-      background: ${color.background};
-    }
-    html {
-      background: ${color.background};
+      ${vars.join("\n")}
     }
   `
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{ __html: css }}
-    />
-  )
+  return <style dangerouslySetInnerHTML={{ __html: css }} />
 }

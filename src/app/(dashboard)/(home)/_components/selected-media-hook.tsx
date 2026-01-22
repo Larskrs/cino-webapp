@@ -11,10 +11,7 @@ export type SelectedMediaContextType = {
   setSelectedId: (id: string) => void
   previewIndex: number
   setPreviewIndex: (index: number) => void
-  colors: {
-    background: string
-    primary: string
-  }
+  colors: ThemeColor
   setColors: (colors: ThemeColor) => void
 }
 
