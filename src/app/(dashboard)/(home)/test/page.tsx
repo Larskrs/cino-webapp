@@ -32,7 +32,7 @@ export default async function Page() {
   }
 
   return (
-    <div className="flex flex-col pb-32">
+    <div className="flex flex-col pb-32 gap-16">
       <ServerBlocks blocks={HomePageJSON} />
     </div>
   )
