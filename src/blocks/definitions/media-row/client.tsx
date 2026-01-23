@@ -16,11 +16,14 @@ export function MediaRowClient({ data }: { data: MediaRowData }) {
   }
 
   return <div className="container mx-auto max-w-7xl"><MediaRow
-  size={data.posterType === "poster" ? "sm" : "md"}
+  size={data.size}
   posterType={data.posterType}
   showTitle={data.showTitle}
   title={data.title}
-  items={episodes?.map((media, index) => {
+  items={data.episodes?.map((e, index) => {
+
+    const media = episodes.find(media => media.id === e)
+    if (!media) return null
 
     const container = media.season.container
 

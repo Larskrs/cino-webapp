@@ -19,7 +19,7 @@ export type MediaRowItem = {
 
 interface MediaRowProps {
   title?: string
-  items: MediaRowItem[]
+  items: (MediaRowItem | null)[]
   showTitle?: boolean
   size?: "sm" | "md" | "lg"
   className?: string
@@ -258,7 +258,10 @@ const onPointerUp = (e: React.PointerEvent) => {
   onPointerDown={onPointerDown}
   onPointerUp={onPointerUp}
 >
-          {items.map((item, index) => (
+          {items.map((item, index) => {
+            if (!item) return null
+
+            return (
             <article
               key={item.id}
               onClick={() => handleClickItem?.(item, index)}
@@ -294,7 +297,7 @@ const onPointerUp = (e: React.PointerEvent) => {
               </div>
               {showTitle && <p className="text-primary text-lg mt-0.5 line-clamp-1">{item.title}</p>}
             </article>
-          ))}
+          )})}
         </motion.div>
 
         {/* LEFT CONTROL */}
