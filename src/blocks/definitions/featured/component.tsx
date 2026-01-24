@@ -48,7 +48,7 @@ export default function FeaturedComponent({
 
       // 🔑 Edge trigger: NOT visible → visible (while scrolling down)
       if (scrollingDown && !wasVisibleRef.current && isVisibleNow) {
-        set(colors)
+        setColors(colors)
         // optional debug
         // console.log("Activated:", title)
       }
