@@ -7,7 +7,6 @@ import { api } from "@/trpc/react"
 export function HeroClient({ data }: { data: HeroData }) {
 
   const {data: containers, isLoading} = api.media.list_containers.useQuery({
-    isPublic: true,
     select: data.containers
   })
 
@@ -16,8 +15,11 @@ export function HeroClient({ data }: { data: HeroData }) {
   }
 
   return <Hero
-        medias={containers?.items?.map((media, index) => {
+        medias={data.containers?.map((m, index) => {
 
+          const media = containers.items?.find(media => media.id === m)
+          if (!media) return null
+          
           const latest = media?.seasons?.[0]?.episodes?.[0]
 
           return {

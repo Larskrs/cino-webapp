@@ -8,13 +8,15 @@ import { api } from "@/trpc/server"
 export async function HeroServer({ data }: { data: HeroData }) {
 
   const containers = await api.media.list_containers({
-    isPublic: true,
     select: data.containers
   })
 
   return <div>
         {<Hero
-        medias={containers?.items?.map((media, index) => {
+        medias={data.containers?.map((m, index) => {
+
+          const media = containers.items?.find(media => media.id === m)
+          if (!media) return null
 
           const latest = media?.seasons?.[0]?.episodes?.[0]
 

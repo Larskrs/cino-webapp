@@ -102,6 +102,30 @@ const ListContainersInput = z.object({
   limit: z.number().int().min(1).max(50).default(24),
 })
 
+/* ----------------------------- Category / Page ---------------------------- */
+
+const CategoryCreateInput = z.object({
+  slug: z.string().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use kebab-case slug"),
+  title: z.string().min(1),
+  description: z.string().optional().nullable(),
+  parentId: z.string().optional().nullable(),
+})
+
+const CategoryUpdateInput = z.object({
+  id: z.string(),
+  slug: z.string().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use kebab-case slug").optional(),
+  title: z.string().optional(),
+  description: z.string().optional().nullable(),
+  parentId: z.string().optional().nullable(),
+})
+
+const PageUpsertInput = z.object({
+  id: z.string().optional(),          // if omitted → create
+  data: z.unknown(),                  // JSON page payload
+  categoryId: z.string().nullable(),  // null = homepage / global page
+})
+
+
 /* ------------------------------ Auth helpers ------------------------------ */
 /**
  * Swap this with your own permissions model:
@@ -645,5 +669,195 @@ admin_list_recent_episodes: permittedProcedure("media.admin.read")
         },
       },
     })
+  }),
+
+  /* ------------------------------ Categories ------------------------------- */
+
+list_categories: publicProcedure
+  .query(async ({ ctx }) => {
+    return ctx.db.mediaCategory.findMany({
+      where: { parentId: null },
+      include: {
+        children: {
+          include: {
+            children: true,
+          },
+        },
+        page: true,
+      },
+      orderBy: { title: "asc" },
+    })
+  }),
+
+get_category: publicProcedure
+  .input(z.object({ id: z.string().optional(), slug: z.string().optional() })
+    .refine(v => v.id || v.slug, "Provide id or slug"))
+  .query(async ({ ctx, input }) => {
+    const category = await ctx.db.mediaCategory.findUnique({
+      where: input.id ? { id: input.id } : { slug: input.slug! },
+      include: {
+        parent: true,
+        children: true,
+        page: true,
+      },
+    })
+
+    if (!category) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Category not found" })
+    }
+
+    return category
+  }),
+
+create_category: permittedProcedure("media.admin.write")
+  .input(CategoryCreateInput)
+  .mutation(async ({ ctx, input }) => {
+    try {
+      return await ctx.db.mediaCategory.create({
+        data: {
+          slug: input.slug,
+          title: input.title,
+          description: input.description ?? null,
+          parentId: input.parentId ?? null,
+        },
+      })
+    } catch (e: any) {
+      if (e?.code === "P2002") {
+        throw new TRPCError({ code: "CONFLICT", message: "Category slug already exists" })
+      }
+      throw e
+    }
+  }),
+
+update_category: permittedProcedure("media.admin.write")
+  .input(CategoryUpdateInput)
+  .mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.mediaCategory.findUnique({
+      where: { id: input.id },
+    })
+    if (!existing) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Category not found" })
+    }
+
+    try {
+      return await ctx.db.mediaCategory.update({
+        where: { id: input.id },
+        data: {
+          slug: input.slug,
+          title: input.title,
+          description: input.description,
+          parentId: input.parentId,
+        },
+      })
+    } catch (e: any) {
+      if (e?.code === "P2002") {
+        throw new TRPCError({ code: "CONFLICT", message: "Category slug already exists" })
+      }
+      throw e
+    }
+  }),
+
+delete_category: permittedProcedure("media.admin.write")
+  .input(z.object({ id: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.mediaCategory.findUnique({
+      where: { id: input.id },
+    })
+    if (!existing) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Category not found" })
+    }
+
+    // children + page handled by relations (page is SetNull)
+    await ctx.db.mediaCategory.delete({ where: { id: input.id } })
+    return { ok: true }
+  }),
+
+/* -------------------------------- Pages -------------------------------- */
+
+list_pages: permittedProcedure("media.admin.read")
+  .query(async ({ ctx }) => {
+    return ctx.db.mediaPage.findMany({
+      include: {
+        category: true,
+      },
+      orderBy: { createdAt: "desc" },
+    })
+  }),
+
+get_page: publicProcedure
+  .input(z.object({
+    id: z.string().optional(),
+    categoryId: z.string().optional().nullable(),
+  }).refine(v => v.id || "categoryId" in v, "Provide id or categoryId"))
+  .query(async ({ ctx, input }) => {
+    const page = await ctx.db.mediaPage.findFirst({
+      where: input.id
+        ? { id: input.id }
+        : { categoryId: input.categoryId ?? null },
+    })
+
+    if (!page) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" })
+    }
+
+    return page
+  }),
+
+/**
+ * Upsert page:
+ * - categoryId = null → homepage / global page
+ * - categoryId = string → category page (1:1 enforced by schema)
+ */
+upsert_page: permittedProcedure("media.admin.write")
+  .input(PageUpsertInput)
+  .mutation(async ({ ctx, input }) => {
+    if (input.id) {
+      const existing = await ctx.db.mediaPage.findUnique({
+        where: { id: input.id },
+      })
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" })
+      }
+
+      return ctx.db.mediaPage.update({
+        where: { id: input.id },
+        data: {
+          data: input.data as any,
+          categoryId: input.categoryId ?? null,
+        },
+      })
+    }
+
+    try {
+      return await ctx.db.mediaPage.create({
+        data: {
+          data: input.data as any,
+          categoryId: input.categoryId ?? null,
+        },
+      })
+    } catch (e: any) {
+      // unique categoryId (1 page per category)
+      if (e?.code === "P2002") {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This category already has a page",
+        })
+      }
+      throw e
+    }
+  }),
+
+delete_page: permittedProcedure("media.admin.write")
+  .input(z.object({ id: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.mediaPage.findUnique({
+      where: { id: input.id },
+    })
+    if (!existing) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" })
+    }
+
+    await ctx.db.mediaPage.delete({ where: { id: input.id } })
+    return { ok: true }
   }),
 })

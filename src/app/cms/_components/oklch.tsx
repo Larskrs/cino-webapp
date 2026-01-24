@@ -39,9 +39,9 @@ function fromOklch(color?: string | null): [number, number, number] {
 
 
 export function OklchThemeEditor({ value, onChange }: OklchThemeEditorProps) {
-  const [lightness, setLightness] = useState(0);
-  const [chroma, setChroma] = useState(0);
-  const [hue, setHue] = useState(0);
+  const [lightness, setLightness] = useState(0.5);
+  const [chroma, setChroma] = useState(0.2);
+  const [hue, setHue] = useState(140);
   const [colors, setColors] = useState<OklchColor>(value);
   const [showRaw, setShowRaw] = useState(false);
 
@@ -56,9 +56,9 @@ useEffect(() => {
 
   const generateFromOklch = (l: number, c: number, h: number): OklchColor => {
     return {
-      background: toOklch(Math.max(0.05, l - 0.45), c * 0.3, h),
+      background: toOklch(l - 0.3, c * 0.5, h),
+      secondary: toOklch(l - 0.35, c * 0.5, (h) % 360),
       primary: toOklch(l, c, h),
-      secondary: toOklch(Math.max(0.05, l - 0.3), c * 0.75, (h) % 360),
       text: toOklch(Math.min(1, l + 0.4), c * 0.25, (h) % 360),
     };
   };

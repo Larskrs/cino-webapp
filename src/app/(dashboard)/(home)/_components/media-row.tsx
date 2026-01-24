@@ -295,7 +295,7 @@ const onPointerUp = (e: React.PointerEvent) => {
                   />
                 </div>
               </div>
-              {showTitle && <p className="text-primary text-lg mt-0.5 line-clamp-1">{item.title}</p>}
+              {showTitle && <p className="text-accent text-lg mt-0.5 line-clamp-1">{item.title}</p>}
             </article>
           )})}
         </motion.div>

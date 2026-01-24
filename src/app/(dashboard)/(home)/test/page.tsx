@@ -1,39 +1,54 @@
 import { ServerBlocks } from "@/blocks/renderers/server-blocks"
-
-let HomePageJSON: unknown = null
-
-try {
-  HomePageJSON = (await import("@/../home.page.json")).default
-} catch (error) {
-  console.error("[HomePageJSON] Failed to load or parse JSON", error)
-}
+import type { BlockInstance } from "@/blocks/types"
+import { db } from "@/server/db" // adjust if your prisma export lives elsewhere
 
 function isValidBlocks(value: unknown): value is any[] {
   return Array.isArray(value)
 }
 
 export default async function Page() {
-  if (!HomePageJSON) {
+  /* ---------------------------------------------------------------------- */
+  /* Load homepage from DB                                                   */
+  /* ---------------------------------------------------------------------- */
+
+  const homepage = await db.mediaPage.findFirst({
+    where: { categoryId: null },
+    select: {
+      data: true,
+    },
+  })
+
+  if (!homepage) {
     return (
       <div className="p-6 text-muted-foreground">
-        Failed to load page configuration
+        Homepage is not configured
       </div>
     )
   }
 
-  if (!isValidBlocks(HomePageJSON)) {
-    console.error("[HomePageJSON] Invalid blocks format", HomePageJSON)
+  const blocks = homepage.data as BlockInstance[]
+
+  /* ---------------------------------------------------------------------- */
+  /* Validation                                                             */
+  /* ---------------------------------------------------------------------- */
+
+  if (!isValidBlocks(blocks)) {
+    console.error("[Homepage] Invalid blocks format", blocks)
 
     return (
       <div className="p-6 text-red-500">
-        Page configuration is invalid
+        Homepage configuration is invalid
       </div>
     )
   }
 
+  /* ---------------------------------------------------------------------- */
+  /* Render                                                                 */
+  /* ---------------------------------------------------------------------- */
+
   return (
     <div className="flex flex-col pb-32 gap-16">
-      <ServerBlocks blocks={HomePageJSON} />
+      <ServerBlocks blocks={blocks} />
     </div>
   )
 }

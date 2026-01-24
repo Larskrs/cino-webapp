@@ -4,6 +4,7 @@ import { api } from "@/trpc/server"
 import { type FeaturedData } from "./schema"
 import MediaRow from "@/app/(dashboard)/(home)/_components/media-row"
 import FeaturedComponent from "./component"
+import type { ThemeColor } from "@/app/_components/theme-injection"
 
 export async function FeaturedServer({ data }: { data: FeaturedData }) {
 
@@ -20,5 +21,6 @@ export async function FeaturedServer({ data }: { data: FeaturedData }) {
       thumbnail={media.thumbnail ?? container.thumbnail ?? ""}
       title={container.title}
       publishedAt={"Se den nå!"}
+      colors={container.color as ThemeColor}
     />
 }

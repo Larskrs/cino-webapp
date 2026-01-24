@@ -1,108 +1,58 @@
-"use server"
-import Hero from "./_components/hero";
-import MediaRow from "./_components/media-row";
-import { api } from "@/trpc/server";
+import { ServerBlocks } from "@/blocks/renderers/server-blocks"
+import type { BlockInstance } from "@/blocks/types"
+import { db } from "@/server/db" // adjust if your prisma export lives elsewhere
 
-export default async function StreamingPage() {
-
-  const containers = await api.media.list_containers({
-    isPublic: true
-  })
-
-  return (
-      <div className="min-h-[100dvh] bg-background duration-600 ease-out">
-        {<Hero
-        medias={containers?.items?.map((media, index) => {
-
-          const latest = media?.seasons?.[0]?.episodes?.[0]
-
-          return {
-            id: media.id,
-            title: latest?.title,
-            description: latest?.description,
-            badge: media.title,
-            posters: {
-              banner: media.banner,
-              video: media.thumbnail ?? latest?.thumbnail,
-            },
-            videoId: latest?.videoSrc,
-            color: media.color
-          }
-        }) ?? []} />}
-        <div className="flex flex-col mx-auto gap-8 max-w-7xl pb-16 py-6 px-2">
-          <EpisodeRow
-            seasonId="cmjvvva2m00024bzteuisgxfl" containerId="cmjvvueex00004bztnrsgpzwr"
-            title="Julebord 25"
-          />
-          <EpisodeRow
-            seasonId="cmjru7i230005w25a7pe4vf82" containerId="cmjroc0pc0003w25aqxocaq6r"
-            title="Nyheter"
-          />
-          <EpisodeRow
-            seasonId="cmjznahrx0005ty8gcosmjrdb" containerId="cmjzm3oc40003ty8gnngmic6j"
-            title="Nyheter"
-          />
-        </div>
-      </div>
-  );
+function isValidBlocks(value: unknown): value is any[] {
+  return Array.isArray(value)
 }
 
-async function EpisodeRow({
-  seasonId,
-  containerId,
-  title,
-}: {
-  seasonId: string;
-  containerId: string;
-  title?: string;
-}) {
-  try {
-    const [episodes, container] = await Promise.all([
-      api.media.list_episodes({ seasonId }),
-      api.media.get_container({ id: containerId }),
-    ]);
+export default async function Page() {
+  /* ---------------------------------------------------------------------- */
+  /* Load homepage from DB                                                   */
+  /* ---------------------------------------------------------------------- */
 
-    if (!episodes || episodes.length === 0) return null;
-    if (!container) return null;
+  const homepage = await db.mediaPage.findFirst({
+    where: { categoryId: null },
+    select: {
+      data: true,
+    },
+  })
+
+  if (!homepage) {
+    return (
+      <div className="text-neutral-500 p-8 bg-neutral-950 border-neutral-900 border-2 items-center justify-center flex w-fit mx-auto">
+        <h1 className="text-3xl">
+          Homepage configuration is missing
+        </h1>
+      </div>
+    )
+  }
+
+  const blocks = homepage.data as BlockInstance[]
+
+  /* ---------------------------------------------------------------------- */
+  /* Validation                                                             */
+  /* ---------------------------------------------------------------------- */
+
+  if (!isValidBlocks(blocks)) {
+    console.error("[Homepage] Invalid blocks format", blocks)
 
     return (
-      <MediaRow
-        title={title ?? container.title}
-        posterType="video"
-        showTitle
-        size="md"
-        items={episodes.map((ep) => ({
-          id: ep.id,
-          link:
-            "/serie/" +
-            (container.slug ?? containerId) +
-            "?e=" +
-            ep.id,
-          title: ep.title,
-          description: ep.description ?? "",
-          posters: {
-            video: ep.thumbnail ?? "",
-          },
-          videoId: ep.videoSrc ?? "",
-          color: {
-            background: "oklch(0.2 0.01 220)",
-            primary: "oklch(0.85 0.1 220)",
-            accent: "oklch(0.7 0.12 250)",
-          },
-        }))}
-      />
-    );
-  } catch (error) {
-    // Optional: log only in dev
-    if (process.env.NODE_ENV === "development") {
-      console.error("EpisodeRow failed:", {
-        seasonId,
-        containerId,
-        error,
-      });
-    }
-
-    // Don't render anything on error
-    return <></>;
+      <div className="text-red-500 p-8 bg-red-950 border-red-900 border-2 items-center justify-center flex w-fit mx-auto">
+        <h1 className="text-3xl">
+          Homepage configuration is invalid
+        </h1>
+      </div>
+    )
   }
+
+  /* ---------------------------------------------------------------------- */
+  /* Render                                                                 */
+  /* ---------------------------------------------------------------------- */
+
+  return (
+    <div className="bg-background transition-colors duration-700 flex flex-col pb-32 gap-16">
+      <ServerBlocks blocks={blocks} />
+    </div>
+  )
 }

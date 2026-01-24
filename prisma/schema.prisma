@@ -435,6 +435,7 @@ model MediaContainer {
 
   type        MediaType
   genres      String[]
+  categories  MediaCategory[]
 
   isPublic    Boolean  @default(true)
   isLive      Boolean  @default(false)
@@ -489,4 +490,38 @@ model MediaEpisode {
 
   @@unique([seasonId, episodeNumber])
   @@index([isLive])
+}
+
+model MediaPage {
+  id         String @id @default(cuid())
+
+  // JSON-driven page definition (blocks, layout, etc.)
+  data       Json
+
+  // Optional category connection
+  categoryId String?  @unique
+  category   MediaCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model MediaCategory {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+
+  title       String
+  description String?
+
+  // Self-referencing hierarchy
+  parentId    String?
+  parent      MediaCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    MediaCategory[] @relation("CategoryTree")
+
+  // Optional connected page
+  page        MediaPage?
+  containers  MediaContainer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

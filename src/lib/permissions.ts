@@ -9,7 +9,7 @@ export const userPermissions: Record<string, string[]> = {
     "media.admin.write",
     "media.episode.publish",
   ],
-  "cmfxugfy90000tyh08d57deiw": [
+  "cmksiwa6s0000ty0k0p6pnmez": [
     "media.admin.read",
     "media.admin.write",
     "media.episode.publish",
