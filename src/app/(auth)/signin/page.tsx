@@ -7,7 +7,7 @@ import logger from "logger.mjs"
 
 const SIGNIN_ERROR_URL = "/error"
 
-export async function signInAction(
+async function signInAction(
   providerId: string,
   callbackUrl?: string
 ) {
