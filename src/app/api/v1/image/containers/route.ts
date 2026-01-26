@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import sharp from "sharp"
 import { db } from "@/server/db"
+import logger from "logger.mjs"
 
 export const runtime = "nodejs"
 
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
       ? src
       : `${process.env.NEXT_PUBLIC_URL}${src}`
 
-          console.log(imageUrl)
+          logger.info(imageUrl)
 
     // 3️⃣ Fetch image
     const imageBuffer = await fetch(imageUrl).then(r =>
