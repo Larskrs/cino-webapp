@@ -88,7 +88,7 @@ export default function Page() {
 
       {/* Content */}
       {!view ? (
-        <div className="mx-auto pb-128 container max-w-5xl flex flex-col gap-4 p-2">
+        <div className="mx-auto pb-128 container max-w-7xl flex flex-col gap-4 p-2">
           <EditorBlocks
             blocks={blocks}
             onUpdateOrder={setBlocks}
@@ -111,7 +111,7 @@ export default function Page() {
         </div>
       ) : (
           <SelectedMediaProvider>
-            <div className="mt-16 pb-75 bg-background flex flex-col gap-16">
+            <div className="mt-16 pb-75 duration-1500 transition-colors bg-background flex flex-col gap-8 xl:gap-16">
               <ClientBlocks blocks={blocks} />
             </div>
           </SelectedMediaProvider>

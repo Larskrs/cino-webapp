@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { ResponsiveNav, type NavLink } from "../_components/nav";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Blocks, Edit, Home, Info, MessagesSquareIcon, Moon, Sun } from "lucide-react";
+import { Blocks, Edit, Home, Info, LayoutDashboard, MessagesSquareIcon, Moon, Sun } from "lucide-react";
 import { useTheme, type ThemeColors, type ThemeKey } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,7 +74,10 @@ const links: NavLink[] = [
     : []),
 
   ...((isMediaPage && hasPermission(session?.data?.user?.id ?? "", "media.admin.write"))
-    ? [{ label: "CMS", key: "cms", icon: Edit, href: "/cms/"+(pathname.split("/")?.[2] ?? "")}]
+    ? [
+      { label: "CMS", key: "cms", icon: LayoutDashboard, href: "/cms/"+(pathname.split("/")?.[2] ?? "")},
+      { label: "Edit Page", key: "edit-page", icon: Edit, href: "/cms/page/editor"}
+    ]
     : []
   )
 ];
@@ -85,31 +88,8 @@ const links: NavLink[] = [
     <div className="bg-background">
       <ResponsiveNav links={links} />
 
-      {post && <PostPreviewDisplay />}
-
-      {/* Loading animation */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div
-            key="loader"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut"}}
-            className={"fixed inset-0 z-50 flex flex-col items-center justify-center text-primary bg-background"}
-          >
-            <motion.div
-              className="mb-4"
-              initial={{ scale: 3, opacity: 0}}
-              animate={{ scale: 1, opacity: [0, 0, 1] }}
-              transition={{ duration: 2, ease: "anticipate" }}
-            >
-              <Logo className="size-full" /> {/* Replace <Home /> with your desired Lucide icon */}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {post && <PostPreviewDisplay key={post}/>}
+      
       <main>
       {!loading && children}
       </main>

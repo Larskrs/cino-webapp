@@ -15,7 +15,7 @@ export function MediaRowClient({ data }: { data: MediaRowData }) {
     return (<div>loading...</div>)
   }
 
-  return <div className="container mx-auto max-w-7xl"><MediaRow
+  return <div className="container mx-auto"><MediaRow
   size={data.size}
   posterType={data.posterType}
   showTitle={data.showTitle}

@@ -10,7 +10,7 @@ export async function MediaRowServer({ data }: { data: MediaRowData }) {
     select: data.episodes
   })
 
-  return <div className="container mx-auto max-w-7xl"><MediaRow
+  return <div className="container mx-auto"><MediaRow
   size={data.size}
   posterType={data.posterType}
   showTitle={data.showTitle}

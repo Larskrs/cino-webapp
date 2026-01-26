@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Menu, MoreHorizontal } from "lucide-react";
+import { ChevronDown, Menu, MoreHorizontal, User } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -147,7 +147,9 @@ export function ResponsiveNav({ links }: Props) {
           ? <Link href={`/user/${session?.data?.user?.id}`} className="size-12 w-12 h-auto hover:outline-1 outline-primary/50 border-2 border-transparent rounded-full relative cursor-pointer opacity-90 hover:opacity-100">
               <Avatar className="size-auto bg-zinc-300" src={session?.data?.user?.image || "/svg/user/placeholder-avatar.svg"} />
             </Link>
-          : <Button className="ml-auto bg-background text-primary hover:bg-primary hover:text-background" onClick={() => {signIn()}}>Sign in</Button>
+          : <Button className="ml-auto bg-background text-primary hover:bg-primary hover:text-background" onClick={() => {signIn()}}>
+            <User />Logg inn
+            </Button>
         }
       </div>
     </div>

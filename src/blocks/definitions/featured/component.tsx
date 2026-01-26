@@ -47,7 +47,7 @@ export default function FeaturedComponent({
       const isVisibleNow = centerY >= min && centerY <= max
 
       // 🔑 Edge trigger: NOT visible → visible (while scrolling down)
-      if (scrollingDown && !wasVisibleRef.current && isVisibleNow) {
+      if (!wasVisibleRef.current && isVisibleNow) {
         setColors(colors)
         // optional debug
         // console.log("Activated:", title)
@@ -70,18 +70,18 @@ export default function FeaturedComponent({
   }, [colors, setColors, title])
 
   return (
-    <div ref={ref} className="container max-w-7xl mx-auto mt-4 p-2">
+    <div ref={ref} className="container mx-auto mt-4 p-2">
       <Link href={`/serie/${slug}`} className="text-accent">
-        <h2 className="hidden md:flex text-2xl lg:text-3xl font-semibold mb-1">
+        <h2 className="hidden mb-2 lg:mb-4 md:flex text-2xl lg:text-3xl 2xl:text-4xl font-semibold">
           {title}
         </h2>
 
-        <div className="w-full rounded-xl bg-background transition-colors duration-700 overflow-hidden">
+        <div className="w-full rounded-xl bg-background transition-colors duration-1000 overflow-hidden">
           <div className="grid grid-cols-5">
             {/* Thumbnail */}
             <div className="col-span-full md:col-span-3 aspect-video relative">
               {publishedAt && (
-                <p className="absolute left-4 top-4 z-10 bg-accent text-background transition-colors duration-700 px-3 py-0.5 rounded-sm">
+                <p className="absolute text-md xl:text-lg left-4 top-4 z-10 bg-accent text-background transition-colors duration-1000 px-3 py-0.5 rounded-sm">
                   {publishedAt}
                 </p>
               )}
@@ -96,12 +96,12 @@ export default function FeaturedComponent({
             </div>
 
             {/* Text panel */}
-            <div className="col-span-full md:col-span-2 bg-secondary transition-colors duration-700 flex flex-col justify-center p-6">
-              <h2 className="md:hidden text-lg sm:text-xl font-semibold">
+            <div className="col-span-full md:col-span-2 bg-secondary transition-colors duration-1000 flex flex-col justify-center p-6">
+              <h2 className="md:hidden text-lg transition-colors duration-1000 sm:text-xl font-semibold">
                 {title}
               </h2>
 
-              <p className="text-base lg:text-lg text-muted-foreground mt-2">
+              <p className="text-base lg:text-lg xl:text-xl text-muted-foreground mt-2">
                 {description}
               </p>
             </div>

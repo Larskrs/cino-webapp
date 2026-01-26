@@ -51,7 +51,7 @@ export default async function Page() {
   /* ---------------------------------------------------------------------- */
 
   return (
-    <div className="bg-background transition-colors duration-700 flex flex-col pb-32 gap-16">
+    <div className="bg-background transition-colors duration-700 flex flex-col pb-32 gap-8 xl:gap-16">
       <ServerBlocks blocks={blocks} />
     </div>
   )
