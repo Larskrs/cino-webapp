@@ -1,14 +1,51 @@
 "use server"
 
 import { redirect } from "next/navigation"
-import { signIn, providerMap } from "@/server/auth"
+import { signIn } from "@/server/auth"
 import { AuthError } from "next-auth"
-import { cn } from "@/lib/utils"
 import logger from "logger.mjs"
-import Logo from "public/lucide/logo"
-import Discord from "public/lucide/discord"
 
 const SIGNIN_ERROR_URL = "/error"
+
+export async function signInAction(
+  providerId: string,
+  callbackUrl?: string
+) {
+  logger.info("Sign-in attempt", {
+    providerId,
+    callbackUrl,
+  })
+
+  try {
+    await signIn(providerId, {
+      redirectTo: callbackUrl ?? "/",
+    })
+  } catch (error) {
+    if (error instanceof AuthError) {
+      logger.info("AuthError during sign-in", {
+        providerId,
+        type: error.type,
+        cause: error.cause,
+      })
+
+      redirect(`${SIGNIN_ERROR_URL}?error=${error.type}`)
+    }
+
+    logger.error("Unknown error during sign-in", {
+      providerId,
+      callbackUrl,
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+    })
+
+    throw error
+  }
+}
+
+import { providerMap } from "@/server/auth"
+import { cn } from "@/lib/utils"
+import Logo from "public/lucide/logo"
+import Discord from "public/lucide/discord"
 
 export default async function SignInPage({
   searchParams,
@@ -18,7 +55,6 @@ export default async function SignInPage({
   const { callbackUrl } = await searchParams
 
   logger.info("SignInPage rendered", {
-    callbackUrl,
     providers: Object.values(providerMap).map(p => p.id),
   })
 
@@ -36,41 +72,11 @@ export default async function SignInPage({
         {Object.values(providerMap).map((provider) => (
           <form
             key={provider.id}
-            action={async () => {
-              "use server"
-
-              logger.info("Sign-in attempt", {
-                providerId: provider.id,
-                callbackUrl: callbackUrl ?? "/",
-              })
-
-              try {
-                await signIn(provider.id, {
-                  redirectTo: callbackUrl ?? "/",
-                })
-              } catch (error) {
-                if (error instanceof AuthError) {
-                  logger.info("AuthError during sign-in", {
-                    providerId: provider.id,
-                    type: error.type,
-                    cause: error.cause,
-                  })
-
-                  return redirect(
-                    `${SIGNIN_ERROR_URL}?error=${error.type}`
-                  )
-                }
-
-                logger.error("Unknown error during sign-in", {
-                  providerId: provider.id,
-                  callbackUrl,
-                  error,
-                  stack: error instanceof Error ? error.stack : undefined,
-                })
-
-                throw error
-              }
-            }}
+            action={signInAction.bind(
+              null,
+              provider.id,
+              callbackUrl
+            )}
           >
             <button
               type="submit"
